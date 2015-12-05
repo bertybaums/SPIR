@@ -1,0 +1,33 @@
+##
+## Initial number of agents
+##
+num.agents.S = 990
+num.agents.P = 0
+num.agents.I = 10
+num.agents.R = 0
+
+##
+## Payoffs
+##
+payoff.S = 1
+payoff.P = 0.98
+payoff.I = 0
+payoff.R = 0.99
+
+##
+## Disease Information
+##
+beta.S = 0.2
+beta.P = 0.1
+gamma = 0.05
+
+##
+## Decision information
+##
+decision.prob = 0.1
+time.horizon = 100
+
+##
+## Simulation information
+##
+time.steps = 1000

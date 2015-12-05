@@ -1,6 +1,4 @@
-from enum import Enum
-
-class State(Enum):
+class State():
     S = 0
     P = 1
     I = 2

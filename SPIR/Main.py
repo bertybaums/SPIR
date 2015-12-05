@@ -4,33 +4,91 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from random import randint, shuffle, uniform
-from time import process_time
+from sys import argv, exit
 
 ##
-## User libraries
+## Our classes
 ##
-from SPIR.Agent import Agent
-from SPIR.State import State
+from Agent import Agent
+from State import State
 
 if __name__ == '__main__':
     pass
+
+if (len(argv) < 2):
+    print("usage: Main.py [config file]")
+    exit()
+
+##
+## Constants
+##
+NUM_AGENTS_S = "num.agents.S"
+NUM_AGENTS_P = "num.agents.P"
+NUM_AGENTS_I = "num.agents.I"
+NUM_AGENTS_R = "num.agents.R"
+PAYOFF_S = "payoff.S"
+PAYOFF_P = "payoff.P"
+PAYOFF_I = "payoff.I"
+PAYOFF_R = "payoff.R"
+BETA_S = "beta.S"
+BETA_P = "beta.P"
+GAMMA = "gamma"
+DECISION_PROB = "decision.prob"
+TIME_HORIZON = "time.horizon"
+TIME_STEPS = "time.steps"
 
 ##
 ## Input Variables
 ##
 nAgents = {State.S: 990, State.P: 0, State.I: 10, State.R: 0}
-payoffs = {State.S: 7, State.P: 4, State.I: 0, State.R: 4}
-disease = {'b1': 0.2, 'b2': 0.01, 'g': 0.05}
+payoffs = {State.S: 7, State.P: 5, State.I: 0, State.R: 4}
+disease = {'bs': 0.2, 'bp': 0.01, 'g': 0.05}
 
-T = 500
-H = 100
-D = 0.5
-N = 0
+decisionProb = 0.1
+timeHorizon = 100
+timeSteps = 500
+numAgents = 0
+        
+##
+## Read configuration file
+##
+f = open(str(argv[1]), 'r')
+for line in f.readlines():
+    param = line.replace(' ', '').split('=')
+   
+    if (param[0] == NUM_AGENTS_S):
+        nAgents[State.S] = int(param[1])
+    elif (param[0] == NUM_AGENTS_P):
+        nAgents[State.P] = int(param[1])
+    elif (param[0] == NUM_AGENTS_I):
+        nAgents[State.I] = int(param[1])
+    elif (param[0] == NUM_AGENTS_R):
+        nAgents[State.R] = int(param[1])
+    elif (param[0] == PAYOFF_S):
+        payoffs[State.S] = float(param[1])
+    elif (param[0] == PAYOFF_P):
+        payoffs[State.P] = float(param[1])
+    elif (param[0] == PAYOFF_I):
+        payoffs[State.I] = float(param[1])
+    elif (param[0] == PAYOFF_R):
+        payoffs[State.R] = float(param[1])
+    elif (param[0] == BETA_S):
+        disease['bs'] = float(param[1])
+    elif (param[0] == BETA_P):
+        disease['bp'] = float(param[1])
+    elif (param[0] == GAMMA):
+        disease['g'] = float(param[1])
+    elif (param[0] == DECISION_PROB):
+        decisionProb = float(param[1])
+    elif (param[0] == TIME_HORIZON):
+        timeHorizon = int(param[1])
+    elif (param[0] == TIME_STEPS):
+        timeSteps = int(param[1])
 
 ##
 ## Output variables
 ##
-outputs = np.zeros((T,4), float)
+outputs = np.zeros((timeSteps,4), float)
 accS = 0
 accP = 0
 accI = 0
@@ -42,15 +100,15 @@ accR = 0
 agents = {State.S: [], State.P: [], State.I: [], State.R: []}
 for state in nAgents:
     for index in range(0, nAgents[state]):
-        agents[state].append(Agent(N, state, disease))
-        N += 1
+        agents[state].append(Agent(numAgents, state, disease))
+        numAgents += 1
 
 ##
 ## Run the simulation
 ##
 t = 0
-i = len(agents[State.I]) / N
-while ((t < T) and (i > 0)):
+i = len(agents[State.I]) / float(numAgents)
+while ((t < timeSteps) and (i > 0)):
     ##
     ## Recording output metric values
     ##
@@ -86,9 +144,9 @@ while ((t < T) and (i > 0)):
     ## Decision
     ##
     for agent in (agents[State.S] + agents[State.P]):
-        if (uniform(0.0,1.0) < D):
+        if (uniform(0.0,1.0) < decisionProb):
             before = agent.getState()
-            after = agent.decide(payoffs, i, H)
+            after = agent.decide(payoffs, i, timeHorizon)
             if (before != after):
                 index = agents[before].index(agent)
                 agents[before].pop(index)
@@ -109,12 +167,12 @@ while ((t < T) and (i > 0)):
         agents[State.R].append(agent)
     
     t += 1
-    i = len(agents[State.I]) / N
+    i = len(agents[State.I]) / float(numAgents)
 
 ##
 ## Graphical visualization
 ##
-x = range(T)
+x = range(timeSteps)
 
 s = tuple(y[0] for y in outputs)
 p = tuple(y[1] for y in outputs)
@@ -127,7 +185,6 @@ lineI, = plt.plot(x, i, "y")
 lineR, = plt.plot(x, r, "g")
 plt.legend((lineS, lineP, lineI, lineR), ('S', 'P', 'I', 'R'),
            title='Legend')
-plt.annotate('Time..: ' + str(process_time()), xy=(300,600))
 plt.annotate('Area.S: ' + str(accS), xy=(300,550))
 plt.annotate('Area.P: ' + str(accP), xy=(300,500))
 plt.annotate('Area.I: ' + str(accI), xy=(300,450))

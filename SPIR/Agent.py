@@ -1,5 +1,12 @@
+##
+## Python libraries
+##
 from random import uniform
-from SPIR.State import State
+
+##
+## Our classes
+##
+from State import State
 
 class Agent(object):
     
@@ -29,10 +36,10 @@ class Agent(object):
     def interact(self, partner):
         if (partner.getState() == State.I):
             if (self.state == State.S):
-                if (uniform(0.0,1.0) < self.disease['b1']):
+                if (uniform(0.0,1.0) < self.disease['bs']):
                     self.state = State.I
             elif (self.state == State.P):
-                if (uniform(0.0,1.0) < self.disease['b2']):
+                if (uniform(0.0,1.0) < self.disease['bp']):
                     self.state = State.I
         return self.state
     
@@ -42,7 +49,7 @@ class Agent(object):
     def decide(self, payoffs, i, h):
         if (((self.state == State.S) or (self.state == State.P)) and (i > 0)):
             ## Calculate utility Susceptible
-            p = i * self.disease['b1']
+            p = i * self.disease['bs']
             q = self.disease['g']
             Tss = (1 - ((1 - p)**h)) / p
             if (p != q):
@@ -52,7 +59,7 @@ class Agent(object):
             Trs = h - Tss - Tis
             
             ## Calculate utility Prophylactic
-            p = i * self.disease['b2']
+            p = i * self.disease['bp']
             q = self.disease['g']
             Tpp = (1 - ((1 - p)**h)) / p
             if (p != q):
@@ -63,8 +70,6 @@ class Agent(object):
             
             US = (payoffs[State.S] * Tss) + (payoffs[State.I] * Tis) + (payoffs[State.R] * Trs)
             UP = (payoffs[State.P] * Tpp) + (payoffs[State.I] * Tip) + (payoffs[State.R] * Trp)
-            
-            #print(payoffs[State.S], " ", Tss, " ", payoffs[State.I], " ",Tis, " ", payoffs[State.R], " ", Trs, " ", payoffs[State.P], " ", Tpp, " ", payoffs[State.I], " ",Tip, " ", payoffs[State.R], " ", Trp)
             
             if (US >= UP):
                 self.state = State.S
