@@ -2,6 +2,7 @@
 ## Python libraries
 ##
 from matplotlib import pyplot as plt
+from multiprocessing import Pool, Manager
 import numpy as np
 from os.path import isfile
 from random import randint, shuffle, uniform
@@ -13,13 +14,25 @@ from time import clock
 ##
 from Agent import Agent
 from State import State
+    
+def decide(args):
+    agent = args[0]
+    payoffs = args[1]
+    i = args[2]
+    timeHorizon = args[3]
+    before = agent.getState()
+    after = agent.decide(payoffs, i, timeHorizon)
+    if (before != after):
+        index = agents[before].index(agent)
+        agents[before].pop(index)
+        agents[after].append(agent)
 
 if __name__ == '__main__':
     pass
     
 
-if (len(argv) < 2):
-    print("usage: Main.py [config file]")
+if (len(argv) < 3):
+    print("usage: Main.py [config file] [processes]")
     exit()
 
 ##
@@ -56,6 +69,9 @@ decisionProb = 0.1
 timeHorizon = 100
 timeSteps = 500
 numAgents = 0
+
+numProcs = int(argv[2])
+manager = Manager()
         
 ##
 ## Read configuration file
@@ -154,15 +170,18 @@ while ((t < timeSteps) and (i > 0)):
     ##
     ## Decision
     ##
+    processes = Pool(numProcs)
+    args = manager.list()
     for agent in (agents[State.S] + agents[State.P]):
         if (uniform(0.0,1.0) < decisionProb):
-            before = agent.getState()
-            agent.decide(payoffs, i, timeHorizon)
-            after = agent.decide(payoffs, i, timeHorizon)
-            if (before != after):
-                index = agents[before].index(agent)
-                agents[before].pop(index)
-                agents[after].append(agent)
+            l = [agent, payoffs, i, timeHorizon]
+            args = l
+            processes.apply_async(decide, (args,))
+            l = args[0]
+            agent = l
+    
+    processes.close()
+    processes.join()
     
     ##
     ## Recover
@@ -209,8 +228,4 @@ plt.annotate('Area.P: ' + str(accP), xy=(int(timeSteps / float(2)),
                                          int((numAgents / float(2)) * 0.9)))
 plt.annotate('Area.I: ' + str(accI), xy=(int(timeSteps / float(2)),
                                          int((numAgents / float(2)) * 0.8)))
-plt.show()
-
-i = tuple(y[2] / float(numAgents) for y in outputs)
-lineI, = plt.plot(x, i, "y")
 plt.show()
