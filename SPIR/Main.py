@@ -197,10 +197,13 @@ p = tuple(y[1] for y in outputs)
 i = tuple(y[2] for y in outputs)
 r = tuple(y[3] for y in outputs)
 
-lineS, = plt.plot(x, s, "r")
-lineP, = plt.plot(x, p, "b")
-lineI, = plt.plot(x, i, "y")
-lineR, = plt.plot(x, r, "g")
+fig = plt.figure()
+fig.add_subplot(11)
+
+lineS, = fig.plot(x, s, "r")
+lineP, = fig.plot(x, p, "b")
+lineI, = fig.plot(x, i, "y")
+lineR, = fig.plot(x, r, "g")
 plt.legend((lineS, lineP, lineI, lineR), ('S', 'P', 'I', 'R'),
            title='Legend')
 plt.annotate('Area.S: ' + str(accS), xy=(int(timeSteps / float(2)),

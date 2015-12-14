@@ -7,7 +7,7 @@
 ## Download Project from GitHub
 * Open a terminal
 * Navigate to the directory where you want to download the SPIR code
-* Type: git clone git@github.com:bertybaums/SPIR
+* Type: git clone https://github.com/bertybaums/SPIR.git
 
 ## Configure
 You can configure the simulation for running by changing the values of the parameters in the _config.txt_ file.

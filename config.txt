@@ -1,9 +1,9 @@
 ##
 ## Initial number of agents
 ##
-num.agents.S = 99999
+num.agents.S = 9990
 num.agents.P = 0
-num.agents.I = 1
+num.agents.I = 10
 num.agents.R = 0
 
 ##
@@ -17,9 +17,9 @@ payoff.R = 1
 ##
 ## Disease Information
 ##
-beta.S = 0.125
+beta.S = 0.133
 beta.P = 1
-gamma = 0.1
+gamma = 0.105
 
 ##
 ## Decision information
