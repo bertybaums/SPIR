@@ -13,10 +13,12 @@ class Agent(object):
     ##
     ## Constructor
     ##
-    def __init__(self, num, state, disease):
+    def __init__(self, num, state, disease, timeHorizon, payoffs):
         self.num = num
         self.state = state
         self.disease = disease
+        self.timeHorizon = timeHorizon
+        self.payoffs = payoffs
         
     ##
     ## Get agent identification
@@ -29,12 +31,24 @@ class Agent(object):
     ##
     def getState(self):
         return self.state
+    
+    ##
+    ## Get agent disease information
+    ##
+    def getDisease(self):
+        return self.disease
+    
+    ##
+    ## Get agent payoffs
+    ##
+    def getPayoffs(self):
+        return self.payoffs
         
     ##
     ## Interact
     ##
-    def interact(self, partner):
-        if (partner.getState() == State.I):
+    def interact(self, state):
+        if (state == State.I):
             if (self.state == State.S):
                 if (uniform(0.0,1.0) < self.disease['bs']):
                     self.state = State.I
@@ -46,35 +60,39 @@ class Agent(object):
     ##
     ## Decide between Susceptible and Prophylactic
     ##
-    def decide(self, payoffs, i, h):
+    def decide(self, i):
         if (((self.state == State.S) or (self.state == State.P)) and (i > 0)):
-            ## Calculate utility Susceptible
-            p = i * self.disease['bs']
+            h = self.timeHorizon
             q = self.disease['g']
-            Tss = (1 - ((1 - p)**h)) / p
-            if (p != q):
-                Tis = (1 / q) - (((p * ((1 - q)**h)) / (q * (p - q))) * (1 - (((1 - p) / (1 - q))**h))) - (((1 - p)**h) / q)
+            
+            ## Calculate expected times of Susceptible
+            ps = i * self.disease['bs']
+            Tss = (1 - ((1 - ps)**h)) / ps
+            if (ps != q):
+                Tis = (1 / q) - (((ps * ((1 - q)**h)) / (q * (ps - q))) * (1 - (((1 - ps) / (1 - q))**h))) - (((1 - ps)**h) / q)
             else:
-                Tis = (1 / q) - ((p * h * ((1 - q)**(h-1))) /q) - (((1 - p)**h) / q)
+                Tis = (1 / q) - ((ps * h * ((1 - q)**(h-1))) / q) - (((1 - ps)**h) / q)
             Trs = h - Tss - Tis
             
-            ## Calculate utility Prophylactic
-            p = i * self.disease['bp']
-            q = self.disease['g']
-            Tpp = (1 - ((1 - p)**h)) / p
-            if (p != q):
-                Tip = (1 / q) - (((p * ((1 - q)**h)) / (q * (p - q))) * (1 - (((1 - p) / (1 - q))**h))) - (((1 - p)**h) / q)
+            ## Calculate expected times of Prophylactic
+            pp = i * self.disease['bp']
+            Tpp = (1 - ((1 - pp)**h)) / pp
+            if (pp != q):
+                Tip = (1 / q) - (((pp * ((1 - q)**h)) / (q * (pp - q))) * (1 - (((1 - pp) / (1 - q))**h))) - (((1 - pp)**h) / q)
             else:
-                Tip = (1 / q) - ((p * h * ((1 - q)**(h-1))) /q) - (((1 - p)**h) / q)
+                Tip = (1 / q) - ((pp * h * ((1 - q)**(h-1))) / q) - (((1 - pp)**h) / q)
             Trp = h - Tpp - Tip
             
-            US = (payoffs[State.S] * Tss) + (payoffs[State.I] * Tis) + (payoffs[State.R] * Trs)
-            UP = (payoffs[State.P] * Tpp) + (payoffs[State.I] * Tip) + (payoffs[State.R] * Trp)
+            ## Calculate Expected Utilities
+            US = (self.payoffs[State.S] * Tss) + (self.payoffs[State.I] * Tis) + (self.payoffs[State.R] * Trs)
+            
+            UP = (self.payoffs[State.P] * Tpp) + (self.payoffs[State.I] * Tip) + (self.payoffs[State.R] * Trp)
             
             if (US >= UP):
                 self.state = State.S
             else:
                 self.state = State.P
+            
         return self.state
     
     ##
@@ -83,5 +101,6 @@ class Agent(object):
     def recover(self):
         if ((self.state == State.I) and (uniform(0.0,1.0) < self.disease['g'])):
             self.state = State.R
-        return self.state
+            return True
+        return False
     

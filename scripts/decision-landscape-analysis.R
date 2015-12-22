@@ -2,13 +2,29 @@ library(data.table)
 library(lattice)
 library(rgl)
 
-H <- seq(1,100)
-I <- seq(0.01,1.00,0.01)
+##
+## Input parameters
+##
+# Payoffs (S, P, I, R)
+payoffs <- c(1, 0.99, 0, 0.95)
 
-payoffs = c(1, 0.99, 0, 1)
-bs <- 0.1
-bp <- 0.01
+# Infection probability (Susceptible)
+bs <- 0.15
+
+# Prophylactic protection
+rho <- 0.16
+
+# Infection probability (Prophylactic)
+bp <- rho * bs
+
+# Recover probability
 g <- 0.05
+
+# Range of Time Horizon to evaluate
+H <- seq(1,100)
+
+# Range of Proportion of infected to evaluate
+I <- seq(0.01,1.00,0.01)
 
 data <- NULL
 for(h in H){
@@ -33,22 +49,25 @@ for(h in H){
     Trp <- h - Tpp - Tip
     Up <- (payoffs[2] * Tpp) + (payoffs[3] * Tip) + (payoffs[4] * Trp)
     
-    data <- rbind(data, cbind(h, i*100, Us, Up))
+    data <- rbind(data, cbind(h, i, Us, Up))
   }
 }
 
-colnames(data) <- c("h","i","Us","Up")
+colnames(data) <- c("h","i","US","UP")
 data <- data.table(data)
+
+##
+## Wireframe 3D plot
+##
+wireframe(US + UP ~ h * i, data,
+          xlab="Time Horizon \n (H)",
+          ylab="Frequency of Infectious \n (i)",
+          zlab="E(U)\n[S=Black]\n[P=Blue]",
+          arrows=FALSE, scales=list(arrows=FALSE), aspect=c(1, 1),
+          col=c("black","blue"))
 
 ##
 ## Interactive 3D plot
 ##
-plot3d(data$h, data$i, data$Up, col="red")
-plot3d(data$h, data$i, data$Us, add = TRUE)
-
-##
-## Passive 3D plot
-##
-grid <- expand.grid(x=H, y=I*100)
-wireframe(data$Us + data$Up ~ y + x, grid, xlab="H", ylab="i", zlab="Us (Blue) \n\n\n Up (Red)",
-          arrows=FALSE, scales=list(arrows=FALSE), aspect=c(1, 1), col=c("blue","red"))
+plot3d(data$h, data$i, data$US, col="black")
+plot3d(data$h, data$i, data$UP, col="blue", add = TRUE)

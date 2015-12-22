@@ -1,4 +1,4 @@
-# SPIR (Susceptible-Prophylactic-Infectious-Recovered) Agent-Based Simulation Model
+# SPIR (Susceptible-Prophylactic-Infected-Recovered) Agent-Based Simulation Model
 
 ## Software Pre-requisites
 * Python 2.7+
