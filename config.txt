@@ -31,3 +31,10 @@ time.horizon = 100
 ## Simulation information
 ##
 time.steps = 1000
+
+##
+## Output information
+##
+output.file = output.csv
+output.header = True
+output.separator = ;

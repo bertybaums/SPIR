@@ -5,7 +5,7 @@ library(ggplot2)
 ## Input parameters
 ##
 # Payoffs (S, P, I, R)
-payoffs <- c(1, 0.99, 0, 0.95)
+payoffs <- c(1, 0.99, 0, 1)
 
 # Infection probability (Susceptible)
 bs <- 0.15
@@ -121,7 +121,7 @@ ggplot(na.omit(error), aes(x=h, y=value*100))+
 ##
 ## Plot Expected Utility of Susceptible and Prophylactic for a specific H
 ##
-inputH <- 5
+inputH <- 15
 
 colnames(data) <- c("h","i","oUS","oUP","aUS","aUP")
 data <- data.table(data)

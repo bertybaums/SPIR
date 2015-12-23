@@ -6,10 +6,11 @@ from random import uniform
 ##
 ## Our classes
 ##
+from Constants import Constant
 from State import State
 
 class Agent(object):
-    
+        
     ##
     ## Constructor
     ##
@@ -50,10 +51,10 @@ class Agent(object):
     def interact(self, state):
         if (state == State.I):
             if (self.state == State.S):
-                if (uniform(0.0,1.0) < self.disease['bs']):
+                if (uniform(0.0,1.0) < self.disease[Constant.BETA_S]):
                     self.state = State.I
             elif (self.state == State.P):
-                if (uniform(0.0,1.0) < self.disease['bp']):
+                if (uniform(0.0,1.0) < self.disease[Constant.BETA_P]):
                     self.state = State.I
         return self.state
     
@@ -63,10 +64,10 @@ class Agent(object):
     def decide(self, i):
         if (((self.state == State.S) or (self.state == State.P)) and (i > 0)):
             h = self.timeHorizon
-            q = self.disease['g']
+            q = self.disease[Constant.GAMMA]
             
             ## Calculate expected times of Susceptible
-            ps = i * self.disease['bs']
+            ps = i * self.disease[Constant.BETA_S]
             Tss = (1 - ((1 - ps)**h)) / ps
             if (ps != q):
                 Tis = (1 / q) - (((ps * ((1 - q)**h)) / (q * (ps - q))) * (1 - (((1 - ps) / (1 - q))**h))) - (((1 - ps)**h) / q)
@@ -75,7 +76,7 @@ class Agent(object):
             Trs = h - Tss - Tis
             
             ## Calculate expected times of Prophylactic
-            pp = i * self.disease['bp']
+            pp = i * self.disease[Constant.BETA_P]
             Tpp = (1 - ((1 - pp)**h)) / pp
             if (pp != q):
                 Tip = (1 / q) - (((pp * ((1 - q)**h)) / (q * (pp - q))) * (1 - (((1 - pp) / (1 - q))**h))) - (((1 - pp)**h) / q)
@@ -99,7 +100,7 @@ class Agent(object):
     ## Recover
     ##
     def recover(self):
-        if ((self.state == State.I) and (uniform(0.0,1.0) < self.disease['g'])):
+        if ((self.state == State.I) and (uniform(0.0,1.0) < self.disease[Constant.GAMMA])):
             self.state = State.R
             return True
         return False
