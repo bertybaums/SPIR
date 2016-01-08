@@ -1,7 +1,7 @@
 ##
 ## Initial number of agents
 ##
-num.agents.S = 9999
+num.agents.S = 99999
 num.agents.P = 0
 num.agents.I = 1
 num.agents.R = 0
@@ -12,7 +12,7 @@ num.agents.R = 0
 payoff.S = 1
 payoff.P = 0.99
 payoff.I = 0
-payoff.R = 0.95
+payoff.R = 1
 
 ##
 ## Disease Information
@@ -25,7 +25,7 @@ gamma = 0.048
 ## Decision information
 ##
 decision.prob = 0.2
-time.horizon = 100
+time.horizon = 3
 
 ##
 ## Simulation information
@@ -35,6 +35,6 @@ time.steps = 1000
 ##
 ## Output information
 ##
-output.file = output.csv
+output.file = ../output.csv
 output.header = True
 output.separator = ;

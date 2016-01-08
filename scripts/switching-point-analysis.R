@@ -121,7 +121,7 @@ ggplot(na.omit(error), aes(x=h, y=value*100))+
 ##
 ## Plot Expected Utility of Susceptible and Prophylactic for a specific H
 ##
-inputH <- 15
+inputH <- 60
 
 colnames(data) <- c("h","i","oUS","oUP","aUS","aUP")
 data <- data.table(data)

@@ -1,5 +1,7 @@
+library(data.table)
 library(deSolve)
 library(foreach)
+library(ggplot2)
 library(doParallel)
 registerDoParallel(cores=2)
 
@@ -8,9 +10,12 @@ registerDoParallel(cores=2)
 ##
 calc_iswitch <- function(h, bs, bp, g, payoffs){
   difSP <- 10000
-  iswitch <- NA
+  iswitch <- NULL
+  iState <- NULL
+  pI <- 0
   pUs <- NULL
   pUp <- NULL
+  n <- 0
   for(i in seq(0.00001,1.0,0.00001)){
     p <- i * bs
     Tss <- (1 - ((1 - p)^h)) / p
@@ -40,12 +45,35 @@ calc_iswitch <- function(h, bs, bp, g, payoffs){
       pUp <- Up
     }
     
+    if (is.null(iState)){
+      if (Us > Up){
+        # Susceptible
+        iState <- 0
+      } else {
+        # Prophylactic
+        iState <- 1
+      }
+    }
+    
     if (((Us >= Up) && (pUs < pUp)) || ((Up >= Us) && (pUp < pUs))) {
-      iswitch <- i
+      iswitch <- rbind(iswitch, cbind(h, pI, i, iState, n))
+      
+      if ((Us >= Up) && (pUs < pUp)){
+        # Susceptible
+        iState <- 0
+      } else if ((Up >= Us) && (pUp < pUs)){
+        # Prophylactic
+        iState <- 1
+      }
+      
+      pI <- i
       pUs <- Us
       pUp <- Up
+      n <- n + 1
     }
   }
+  
+  iswitch <- rbind(iswitch, cbind(h, pI, 1, iState, n))
   
   return(iswitch)
 }
@@ -57,12 +85,13 @@ SPIRmodel <- function(Time, State, Pars){
   with(as.list(c(State, Pars)),{
     
     i <- I / (S+P+I+R)
-    if ((!is.na(iswitch)) && (i > iswitch)){
-      Switch <- 1
-    } else {
-      Switch <- 0
+    for (index in 1:nrow(iswitch)){
+      if ((i >= iswitch[index,2]) && (i <= iswitch[index,3])){
+        Switch <- iswitch[index,4]
+        break
+      }
     }
-    
+
     dS <- -bs*i*S - Switch*decision.prob*S + (1-Switch)*decision.prob*P
     dP <- -bp*i*P + Switch*decision.prob*S - (1-Switch)*decision.prob*P
     dI <- bs*i*S + bp*i*P - g*I
@@ -76,13 +105,13 @@ SPIRmodel <- function(Time, State, Pars){
 ## Input parameters
 ##
 pars <- list(
-  payoffs <- c(1, 0.99, 0, 0.95),
+  payoffs <- c(1, 0.99, 0, 1),
   bs <- 0.15,
   rho <- 0.16,
   bp <- rho * bs,
   g <- 0.05,
-  decision.prob <- 0.05,
-  time.horizon <- 100,
+  decision.prob <- 0,
+  time.horizon <- 3,
   iswitch <- calc_iswitch(time.horizon, bs, bp, g, payoffs)
 )
 
@@ -96,24 +125,44 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 
 ##
 ## Plot the proportion of infected over time.
-## The dashed line represents the i switching point
+## The dashed line represents the i switching point(s)
 ##
-if (is.na(iswitch)) iswitch <- 0
 plot(I / (S+P+I+R) ~ time, out, type="l", col="red",
-     ylim=c(0, max(iswitch, max(I / (S+P+I+R)))),
+     ylim=c(0,1),
      main=c("SPIR Behavioral Decision ODE Model"),
      xlab=c("Time"), ylab=c("Proportion infected (i)"))
 
-lines(rep(iswitch,length(times)) ~ times, type="l", lty="dashed")
+for (index in 1:nrow(iswitch)){
+  lines(rep(iswitch[index,3],length(times)) ~ times, type="l", lty="dashed")
+}
 
 ##
 ## Analyzing the iSwitch in relation to the time horizon
 ##
-H <- seq(3, 1000, 1)
+H <- seq(3, 2000, 1)
 
-iSwitch <- foreach(h=H) %dopar%
+iSwitch <- foreach(h=H, .combine=rbind) %dopar%
   calc_iswitch(h, bs, bp, g, payoffs)
 
-plot(H, iSwitch, type="l", col="red",
-     xlim=c(min(H),max(H)), ylim=c(0,1),
-     xlab="Time Horizon", ylab="i Switch")
+data <- data.table(iSwitch)
+data <- data[which(h <= 200)]
+
+ggplot(data, aes(x=h, y=i, group=n, color=factor(n))) +
+  xlab("Time Horizon") +
+  ylab("i Switch") +
+  geom_line() +
+  geom_ribbon(data=subset(data,n==0 | n==2),
+              aes(x=h, ymax=i, ymin=pI), fill="black") +
+  geom_ribbon(data=subset(data,n==1),
+              aes(x=h, ymax=i, ymin=pI), fill="blue") +
+  scale_color_manual(values=c("black","blue", "black")) +
+  theme(axis.title.x = element_text(colour = 'black', size = 18, face = 'bold'),
+        axis.title.y = element_text(colour = 'black', size = 18, face = 'bold'),
+        axis.text.x = element_text(colour = 'black', size = 12, face = 'bold'),
+        axis.text.y = element_text(colour = 'black', size = 12, face = 'bold'),
+        axis.line = element_line(colour = 'black', size = 1.5, linetype = 'solid'),
+        panel.background = element_rect(fill = "transparent",colour = NA),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_blank(),
+        legend.position = "none")
+

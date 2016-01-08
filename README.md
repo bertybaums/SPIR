@@ -18,7 +18,7 @@ To execute the simulation,
 * Navigate to the SPIR root directory
 * Type: python SPIR/Main.py -v -g configFile config.txt
 
-You should see as a result a graphic with the dynamic over time of agents in the Susceptible, Prophylactic, Infectious, Recovered state.
+You should see as a result a graphic with the dynamics of agents in the Susceptible, Prophylactic, Infectious, Recovered state.
 
 ## Scripts
 There are several R Statistics scripts available in the directory _scripts_. These scripts have different aims:

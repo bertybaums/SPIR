@@ -96,7 +96,7 @@ if (args.__contains__(Constant.F)):
     ##
     f = open(args.filename, 'r')
     for line in f.readlines():
-        param = line.replace(' ', '').split('=')
+        param = line.rstrip('\n').replace(' ', '').split('=')
        
         if (param[0] == Constant.NUM_AGENTS_S):
             nAgents[State.S] = int(param[1])
