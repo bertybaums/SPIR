@@ -205,14 +205,16 @@ while ((t < timeSteps) and (i > 0)):
         a1State = a1.getState()
         a2State = a2.getState()
         
+        a1S = a1State
+        a2S = a2State
+        
         if (a1State == State.I):
             infected.append(a1)
+            a2S = a2.interact(a1State)
             
         if (a2State == State.I):
             infected.append(a2)
-        
-        a1S = a1.interact(a2State)
-        a2S = a2.interact(a1State)
+            a1S = a1.interact(a2State)
         
         num[t, a1S] = num[t, a1S] + 1
         num[t, a2S] = num[t, a2S] + 1

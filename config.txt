@@ -9,23 +9,23 @@ num.agents.R = 0
 ##
 ## Payoffs
 ##
-payoff.S = 1
-payoff.P = 0.99
-payoff.I = 0
-payoff.R = 1
+payoff.S = 1.00
+payoff.P = 0.95
+payoff.I = 0.95
+payoff.R = 1.00
 
 ##
 ## Disease Information
 ##
-beta.S = 0.139
-beta.P = 0.023
-gamma = 0.048
+beta.S = 0.96
+beta.P = 0.48
+gamma = 0.5
 
 ##
 ## Decision information
 ##
-decision.prob = 0.2
-time.horizon = 3
+decision.prob = 20
+time.horizon = 100
 
 ##
 ## Simulation information

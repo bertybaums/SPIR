@@ -1,14 +1,14 @@
 library(data.table)
-library(deSolve)
 library(foreach)
 library(ggplot2)
 library(doParallel)
-registerDoParallel(cores=2)
+registerDoParallel(cores=3)
 
 ##
 ## Calculates i switching point
 ##
-calc_iswitch <- function(h, bs, rho, gamma, payoffs){
+calc_iswitch <- function(h, bs, rho, g, payoffs){
+
   difSP <- 10000
   iswitch <- NULL
   iState <- NULL
@@ -16,7 +16,7 @@ calc_iswitch <- function(h, bs, rho, gamma, payoffs){
   pUs <- NULL
   pUp <- NULL
   n <- 0
-  g <- gamma
+  
   for(i in seq(0.00001,1.0,0.00001)){
     p <- i * bs
     Tss <- (1 - ((1 - p)^h)) / p
@@ -27,7 +27,7 @@ calc_iswitch <- function(h, bs, rho, gamma, payoffs){
     }
     Trs <- h - Tss - Tis
     Us <- (payoffs[1] * Tss) + (payoffs[3] * Tis) + (payoffs[4] * Trs)
-
+    
     p <- i * bs * rho
     Tpp <- (1 - ((1 - p)^h)) / p
     if (p != g){
@@ -57,7 +57,7 @@ calc_iswitch <- function(h, bs, rho, gamma, payoffs){
     }
     
     if (((Us >= Up) && (pUs < pUp)) || ((Up >= Us) && (pUp < pUs))) {
-      iswitch <- rbind(iswitch, cbind(h, pI, i, iState, n))
+      iswitch <- rbind(iswitch, cbind(h, bs, rho, g, pI, 1, iState, n))
       
       if ((Us >= Up) && (pUs < pUp)){
         # Susceptible
@@ -66,90 +66,59 @@ calc_iswitch <- function(h, bs, rho, gamma, payoffs){
         # Prophylactic
         iState <- 1
       }
-      
+        
       pI <- i
       pUs <- Us
       pUp <- Up
       n <- n + 1
     }
   }
-  
-  iswitch <- rbind(iswitch, cbind(h, pI, 1, iState, n))
-  
+    
+  iswitch <- rbind(iswitch, cbind(h, bs, rho, g, pI, 1, iState, n))
+
   return(iswitch)
 }
 
-##
-## SPIR ODE model
-##
-SPIRmodel <- function(Time, State, Pars){
-  with(as.list(c(State, Pars)),{
-    
-    i <- I / (S+P+I+R)
-    for (index in 1:nrow(iswitch)){
-      if ((i >= iswitch[index,2]) && (i <= iswitch[index,3])){
-        Switch <- iswitch[index,4]
-        break
-      }
-    }
 
-    dS <- -Bs * i * S - Switch * delta * S + (1 - Switch) * delta * P
-    dP <- -Bp * i * P + Switch * delta * S - (1 - Switch) * delta * P
-    dI <- Bs * i * S + Bp * i * P - gamma * I
-    dR <- gamma * I
-    
-    return(list(c(dS,dP,dI,dR)))
-  })
-}
+##
+## Analyzing the iSwitch in relation to the time horizon for specific diseases
+##
 
 ##
 ## Input parameters
 ##
-pars <- list(
-  R0 <- 1.5,
-  duration <- 4,
-  gamma <- 1 / duration,
-  Bs <- R0 / duration,
-  rho <- 0.5,
-  Bp <- Bs * rho,
-  bs <- 1 - exp(-Bs),
-  h <- 200,
-  delta <- 0,
-  payoffs <- c(1.00, 0.95, 0.60, 1.00),
-  iswitch <- calc_iswitch(h, bs, rho, gamma, payoffs)
-)
 
-yinit <- c(S = 100000 - 1, P = 0, I = 1, R = 0)
-times <- seq(1, 1000, 1)
+# Payoffs (S, P, I, R)
+payoffs <- c(1, 0.95, 0.60, 1.00)
 
-##
-## Solve the ODE
-##
-out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
+# Infection probability (Susceptible)
+bs <- 1 - exp(-1.5 / 4)
+
+# Prophylactic protection
+Rho <- seq(0.01, 1.00, 0.1)
+
+# Recover probability
+g <- 1 - exp(-1 / 4)
+
+# Range of Time Horizon to evaluate
+H <- seq(3, 365)
 
 ##
-## Plot the proportion of infected over time.
-## The dashed line represents the i switching point(s)
+## DO NOT FORGET TO EXCLUDE VALUES THAT RETURN NAN IN THE ISWITCH
 ##
-plot(I / (S+P+I+R) ~ time, out, type="l", col="red",
-     ylim=c(0,1),
-     main=c("SPIR Behavioral Decision ODE Model"),
-     xlab=c("Time"), ylab=c("Proportion infected (i)"))
-
-for (index in 1:nrow(iswitch)){
-  lines(rep(iswitch[index,3],length(times)) ~ times, type="l", lty="dashed")
-}
-
-##
-## Analyzing the generic iSwitch in relation to the time horizon
-##
-H <- seq(3, 2000, 1)
-
-iSwitch <- foreach(h=H, .combine=rbind) %dopar%
-  calc_iswitch(h, bs, bp, g, payoffs)
+iSwitch <- foreach(h=H, .combine=rbind) %:%
+  foreach(rho=Rho, .combine=rbind) %dopar%
+    calc_iswitch(h, bs, rho, g, payoffs)
 
 data <- data.table(iSwitch)
-data <- data[which(h <= 200)]
+colnames(data) <- c("h", "bs", "rho", "g", "pI", "i", "iState", "n")
+
+ggplot(na.omit(data), aes(h, rho), colour=i) +
+
+
+  stat_density2d(geom = "tile", contour = F, aes(fill = ..density..)) + 
+  scale_fill_gradient(low = "white", high = "blue")
+
 
 ggplot(data, aes(x=h, y=i, group=n, color=factor(n))) +
   xlab("Time Horizon") +
@@ -169,4 +138,3 @@ ggplot(data, aes(x=h, y=i, group=n, color=factor(n))) +
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
         legend.position = "none")
-

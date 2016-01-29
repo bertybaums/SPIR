@@ -20,14 +20,18 @@ bp <- rho * bs
 g <- 0.05
 
 # Range of Time Horizon to evaluate
-H <- seq(3,100)
+H <- seq(3,1000)
 
 # Range of Proportion of infected to evaluate
 I <- seq(0.0001,1.00,0.0001)
 
 
-data <- NULL
-error <- NULL
+rws <- length(H) * length(I)
+drw <- 1
+data <- matrix(data=0, nrow=rws, ncol=6)
+
+erw <- 1
+error <- matrix(data=0, nrow=length(H), ncol=4)
 for(h in H){
   ioswitch <- NA
   iaswitch <- NA
@@ -66,7 +70,8 @@ for(h in H){
     oUp <- (payoffs[2] * oTpp) + (payoffs[3] * oTip) + (payoffs[4] * oTrp)
     aUp <- (payoffs[2] * aTpp) + (payoffs[3] * aTip) + (payoffs[4] * aTrp)
     
-    data <- rbind(data, cbind(h, i, oUs, oUp, aUs, aUp))
+    data[drw,] <- c(h, i, oUs, oUp, aUs, aUp)
+    drw <- drw + 1
     
     if(is.null(poUs)){
       poUs <- oUs
@@ -84,27 +89,28 @@ for(h in H){
       paUp <- aUp
     }
     
-    if (((oUs >= oUp) && (poUs < poUp)) || ((oUp >= oUs) && (poUp < poUs))) {
+    if (is.na(ioswitch) && (((oUs >= oUp) && (poUs < poUp)) || ((oUp >= oUs) && (poUp < poUs)))) {
       ioswitch <- i
       poUs <- oUs
       poUp <- oUp
     }
     
-    if (((aUs >= aUp) && (paUs < paUp)) || ((aUp >= aUs) && (paUp < paUs))) {
+    if (is.na(iaswitch) && (((aUs >= aUp) && (paUs < paUp)) || ((aUp >= aUs) && (paUp < paUs)))) {
       iaswitch <- i
       paUs <- aUs
       paUp <- aUp
     }
   }
   
-  error <- rbind(error, cbind(h, ioswitch, iaswitch, abs(ioswitch - iaswitch) / ioswitch))
+  error[erw,] <- c(h, ioswitch, iaswitch, abs(ioswitch - iaswitch) / ioswitch)
+  erw <- erw + 1
 }
 
 ##
 ## Plot the error between the correct and approximated switching point
 ##
-colnames(error) <- c("h","ioswitch","iaswitch","value")
 error <- data.table(error)
+colnames(error) <- c("h","ioswitch","iaswitch","value")
 
 ggplot(na.omit(error), aes(x=h, y=value*100))+
   xlab("Time Horizon (H)") +
@@ -121,10 +127,10 @@ ggplot(na.omit(error), aes(x=h, y=value*100))+
 ##
 ## Plot Expected Utility of Susceptible and Prophylactic for a specific H
 ##
-inputH <- 60
+inputH <- 200
 
-colnames(data) <- c("h","i","oUS","oUP","aUS","aUP")
 data <- data.table(data)
+colnames(data) <- c("h","i","oUS","oUP","aUS","aUP")
 mdata <- melt(data, id=c("h","i"))
 
 ggplot(mdata[h == inputH], aes(x=i, y=value, colour=variable)) +

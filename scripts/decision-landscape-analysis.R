@@ -6,7 +6,7 @@ library(rgl)
 ## Input parameters
 ##
 # Payoffs (S, P, I, R)
-payoffs <- c(1, 0.99, 0, 0.95)
+payoffs <- c(1, 0.99, 0, 1)
 
 # Infection probability (Susceptible)
 bs <- 0.15
@@ -21,12 +21,14 @@ bp <- rho * bs
 g <- 0.05
 
 # Range of Time Horizon to evaluate
-H <- seq(1,100)
+H <- seq(1,368)
 
 # Range of Proportion of infected to evaluate
 I <- seq(0.01,1.00,0.01)
 
-data <- NULL
+rws <- length(H) * length(I)
+data <- matrix(data=0, nrow=rws, ncol=4)
+rw <- 1
 for(h in H){
   for(i in I){
     p <- i * bs
@@ -49,12 +51,13 @@ for(h in H){
     Trp <- h - Tpp - Tip
     Up <- (payoffs[2] * Tpp) + (payoffs[3] * Tip) + (payoffs[4] * Trp)
     
-    data <- rbind(data, cbind(h, i, Us, Up))
+    data[rw,] <- c(h, i, Us, Up)
+    rw <- rw + 1
   }
 }
 
-colnames(data) <- c("h","i","US","UP")
 data <- data.table(data)
+colnames(data) <- c("h","i","US","UP")
 
 ##
 ## Wireframe 3D plot
