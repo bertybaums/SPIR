@@ -2,20 +2,17 @@
 ## Python libraries
 ##
 import argparse
-from matplotlib import pyplot
-from matplotlib import gridspec
-from numpy import zeros
+from matplotlib import pyplot, gridspec
 from os.path import isfile
-from random import shuffle, uniform
 from sys import exit
 from time import clock
 
 ##
 ## Our classes
 ##
-from Agent import Agent
 from Constants import Constant
 from State import State
+from GillespieMethod import GillespieMethod
 
 if __name__ == '__main__':
     pass
@@ -23,6 +20,7 @@ if __name__ == '__main__':
 parser = argparse.ArgumentParser(prog="Main.py")
 
 parser.add_argument("-v", "--verbose", action="store_true")
+parser.add_argument("-o", "--output", action="store_true")
 parser.add_argument("-g", "--graphic", action="store_true")
 parser.add_argument("-d", "--debug", action="store_true")
 
@@ -82,8 +80,6 @@ timeSteps = 1000
 outputFile = "output.csv"
 outputHeader = True
 outputSep = ";"
-outputScreen = False
-outputGraphics = False
 
 if (args.__contains__(Constant.F)):
     
@@ -120,7 +116,7 @@ if (args.__contains__(Constant.F)):
             disease[Constant.BETA_P] = float(param[1])
         elif (param[0] == Constant.GAMMA):
             disease[Constant.GAMMA] = float(param[1])
-        elif (param[0] == Constant.DECISION_PROB):
+        elif (param[0] == Constant.DECISION):
             decisionProb = float(param[1])
         elif (param[0] == Constant.TIME_HORIZON):
             timeHorizon = int(param[1])
@@ -157,118 +153,28 @@ else:
 ##
 start = clock()
 
-##
-## Output variables
-##
-num = zeros((timeSteps, 4), int)
-total = zeros(4, int)
-
-##
-## Initialize agents
-##
 N = 0
-agents = []
-infected = []
-for state in nAgents:
-    
-    num[0, state] = nAgents[state]
-    total[state] = nAgents[state]
-    
-    for i in range(nAgents[state]):
-        agent = Agent(N, state, disease, timeHorizon, payoffs)
-        agents.append(agent)
-        N += 1
-        
-        if (state == State.I):
-            infected.append(agent)
+for t in nAgents:
+    N += nAgents[t]
 
-##
-## Run the simulation
-##
-t = 0
-i = num[t, State.I] / float(N)
-while ((t < timeSteps) and (i > 0)):
-    if (args.verbose):
-        print 'Timestep:', str(t)
-    
-    ##
-    ## Interaction
-    ##
-    shuffle(agents)
-    
-    n = N
-    infected = []
-    while(n > 1):
-        a1 = agents[n - 1]
-        a2 = agents[n - 2]
+method = GillespieMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
+
+num = method.execute()
         
-        a1State = a1.getState()
-        a2State = a2.getState()
-        
-        a1S = a1State
-        a2S = a2State
-        
-        if (a1State == State.I):
-            infected.append(a1)
-            a2S = a2.interact(a1State)
-            
-        if (a2State == State.I):
-            infected.append(a2)
-            a1S = a1.interact(a2State)
-        
-        num[t, a1S] = num[t, a1S] + 1
-        num[t, a2S] = num[t, a2S] + 1
-        
-        n = n - 2
-    
-    ##
-    ## Decision
-    ##
-    for agent in agents:
-        if (((agent.getState() == State.S) or
-             (agent.getState() == State.P)) and
-            (uniform(0.0, 1.0) < decisionProb)):
-            
-            state = agent.getState()
-            num[t, state] = num[t, state] - 1
-            
-            state = agent.decide(i)
-            num[t, state] = num[t, state] + 1
-    
-    ##
-    ## Recover
-    ##
-    for agent in infected:
-        if (agent.recover()):          
-            num[t, State.I] = num[t, State.I] - 1
-            num[t, State.R] = num[t, State.R] + 1
-    
-    ##
-    ## Updating output metric values
-    ##
-    total[State.S] = total[State.S] + num[t, State.S]
-    total[State.P] = total[State.P] + num[t, State.P]
-    total[State.I] = total[State.I] + num[t, State.I]
-    total[State.R] = total[State.R] + num[t, State.R]
-    
-    i = num[t, State.I] / float(N)    
-    t += 1
-    
 ##
 ## Output
 ##
-f = open(outputFile, "w")
+if (args.output):
+    f = open(outputFile, "w")
 
-if (outputHeader):
-    header = Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + "\n"
-    f.write(header)
+    if (outputHeader):
+        header = Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + "\n"
+        f.write(header)
     
-t = 0
-while (t < timeSteps):
-    line = str(t) + outputSep + str(num[t, State.S]) + outputSep + str(num[t, State.P]) + outputSep + str(num[t, State.I]) + outputSep + str(num[t, State.R]) + "\n"
-    f.write(line)
-    t += 1
-f.close()
+    for row in num:
+        line = str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[3]) + outputSep + str(row[4]) + "\n"
+        f.write(line)
+    f.close()
 
 ##
 ## Execution time
@@ -276,21 +182,25 @@ f.close()
 end = clock()
 
 if (args.verbose):
-    print('Processing Time:', str(end - start), 's')
+    print 'Processing Time:', str(end - start), 's'
 
 if (args.graphic):
     ##
     ## Graphical visualization
     ##
-    x = range(timeSteps)
-    
-    ##
-    ## Absolute numbers
-    ##
-    s = tuple(y[State.S] for y in num)
-    p = tuple(y[State.P] for y in num)
-    i = tuple(y[State.I] for y in num)
-    r = tuple(y[State.R] for y in num)
+    x = []
+    s = []
+    p = []
+    i = []
+    r = []
+    f = []
+    for row in num:
+        x.append(row[0] / float(N))
+        s.append(row[1])
+        p.append(row[2])
+        i.append(row[3])
+        r.append(row[4])
+        f.append(row[3] / float(N))
     
     fig = pyplot.figure()
     
@@ -303,21 +213,19 @@ if (args.graphic):
     lineR, = p1.plot(x, r, "g")
     pyplot.xlabel('Time')
     pyplot.ylabel('Number')
-    p1.legend((lineS, lineP, lineI, lineR), ('S', 'P', 'I', 'R'),
-              title='Legend')
-    p1.annotate('Area.S: ' + str(total[State.S]),
-                xy=(int(timeSteps / float(2)), int(N / float(2))))
-    p1.annotate('Area.P: ' + str(total[State.P]),
-                xy=(int(timeSteps / float(2)), int((N / float(2)) * 0.9)))
-    p1.annotate('Area.I: ' + str(total[State.I]),
-                xy=(int(timeSteps / float(2)), int((N / float(2)) * 0.8)))
+    p1.legend((lineS, lineP, lineI, lineR), ('S', 'P', 'I', 'R'), title='Legend')
+    #p1.annotate('Area.S: ' + str(total[State.S]),
+    #            xy=(int(timeSteps / float(2)), int(N / float(2))))
+    #p1.annotate('Area.P: ' + str(total[State.P]),
+    #            xy=(int(timeSteps / float(2)), int((N / float(2)) * 0.9)))
+    #p1.annotate('Area.I: ' + str(total[State.I]),
+    #            xy=(int(timeSteps / float(2)), int((N / float(2)) * 0.8)))
     
     ##
     ## Frequency
     ##
     p2 = fig.add_subplot(gs[1, 0])
-    i = tuple(y[State.I] / float(N) for y in num)
-    lineI, = p2.plot(x, i, "r")
+    lineI, = p2.plot(x, f, "r")
     pyplot.xlabel('Time')
     pyplot.ylabel('Proportion infected (i)')
     

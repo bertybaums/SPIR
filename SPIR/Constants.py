@@ -13,12 +13,21 @@ class Constant():
     BETA_S = "beta.S"
     BETA_P = "beta.P"
     GAMMA = "gamma"
-    DECISION_PROB = "decision.prob"
+    DECISION = "decision"
     TIME_HORIZON = "time.horizon"
     TIME_STEPS = "time.steps"
     OUTPUT_FILE = "output.file"
     OUTPUT_HEADER = "output.header"
     OUTPUT_SEP = "output.separator"
+    
+    ##
+    ## Interactions
+    ##
+    INT_SP = 0  # Decision Susceptible to Prophylactic
+    INT_PS = 1  # Decision Prophylactic to Susceptible
+    INT_SI = 2  # Infection of a Susceptible
+    INT_PI = 3  # Infection of a Prophylactic
+    INT_IR = 4  # Recovery of an Infected
     
     ##
     ## Command line parameters
@@ -50,3 +59,4 @@ class Constant():
     O_P = "prophylactic"
     O_I = "infected"
     O_R = "recovered"
+    

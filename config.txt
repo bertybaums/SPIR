@@ -1,9 +1,9 @@
 ##
 ## Initial number of agents
 ##
-num.agents.S = 99999
+num.agents.S = 99900
 num.agents.P = 0
-num.agents.I = 1
+num.agents.I = 100
 num.agents.R = 0
 
 ##
@@ -11,26 +11,26 @@ num.agents.R = 0
 ##
 payoff.S = 1.00
 payoff.P = 0.95
-payoff.I = 0.95
+payoff.I = 0.60
 payoff.R = 1.00
 
 ##
 ## Disease Information
 ##
-beta.S = 0.96
-beta.P = 0.48
-gamma = 0.5
+beta.S = 0.312
+beta.P = 0.156
+gamma = 0.25
 
 ##
 ## Decision information
 ##
-decision.prob = 20
+decision = 0
 time.horizon = 100
 
 ##
 ## Simulation information
 ##
-time.steps = 1000
+time.steps = 50000000
 
 ##
 ## Output information

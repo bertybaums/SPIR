@@ -114,10 +114,8 @@ data <- data.table(iSwitch)
 colnames(data) <- c("h", "bs", "rho", "g", "pI", "i", "iState", "n")
 
 ggplot(na.omit(data), aes(h, rho), colour=i) +
-
-
   stat_density2d(geom = "tile", contour = F, aes(fill = ..density..)) + 
-  scale_fill_gradient(low = "white", high = "blue")
+  scale_fill_gradient(low = "white", high = "black")
 
 
 ggplot(data, aes(x=h, y=i, group=n, color=factor(n))) +
