@@ -11,8 +11,9 @@ from time import clock
 ## Our classes
 ##
 from Constants import Constant
-from State import State
 from GillespieMethod import GillespieMethod
+from NaiveMethod import NaiveMethod
+from State import State
 
 if __name__ == '__main__':
     pass
@@ -157,7 +158,7 @@ N = 0
 for t in nAgents:
     N += nAgents[t]
 
-method = GillespieMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
+method = NaiveMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
 
 num = method.execute()
         
@@ -195,7 +196,7 @@ if (args.graphic):
     r = []
     f = []
     for row in num:
-        x.append(row[0] / float(N))
+        x.append(row[0])
         s.append(row[1])
         p.append(row[2])
         i.append(row[3])

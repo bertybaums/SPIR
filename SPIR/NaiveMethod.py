@@ -113,7 +113,7 @@ class NaiveMethod(object):
                     numagents[State.I] -= 1
                     numagents[State.R] += 1
             
-            num.append([0,
+            num.append([t,
                     numagents[State.S],
                     numagents[State.P],
                     numagents[State.I],
