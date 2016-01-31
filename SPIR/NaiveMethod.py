@@ -1,12 +1,14 @@
 ##
 ## Python libraries
 ##
+import math
 from random import shuffle, uniform
 
 ##
 ## Our classes
 ##
 from Agent import Agent
+from Constants import Constant
 from State import State
 
 class NaiveMethod(object):
@@ -28,12 +30,18 @@ class NaiveMethod(object):
         ##
         ## Initialize agents
         ##
+        pDisease = {Constant.BETA_S: 1 - math.exp(-self.disease[Constant.BETA_S]),
+                    Constant.BETA_P: 1 - math.exp(-self.disease[Constant.BETA_P]),
+                    Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
+        
+        self.decisionProb = 1 - math.exp(-self.decisionProb)
+                
         N = 0
         agents = []
         infected = []
         for state in self.nAgents:            
             for i in range(self.nAgents[state]):
-                agent = Agent(N, state, self.disease, self.timeHorizon, self.payoffs)
+                agent = Agent(N, state, pDisease, self.timeHorizon, self.payoffs)
                 agents.append(agent)
                 
                 if (state == State.I):
@@ -95,9 +103,7 @@ class NaiveMethod(object):
             ## Decision
             ##
             for agent in agents:
-                if (((agent.getState() == State.S) or
-                     (agent.getState() == State.P)) and
-                    (uniform(0.0, 1.0) < self.decisionProb)):
+                if (uniform(0.0, 1.0) < self.decisionProb):
                     
                     state = agent.getState()
                     numagents[state] -= 1
@@ -109,7 +115,7 @@ class NaiveMethod(object):
             ## Recover
             ##
             for agent in infected:
-                if (agent.recover()):
+                if (agent.recover() == State.R):
                     numagents[State.I] -= 1
                     numagents[State.R] += 1
             

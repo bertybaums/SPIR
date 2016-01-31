@@ -12,6 +12,7 @@ from time import clock
 ##
 from Constants import Constant
 from GillespieMethod import GillespieMethod
+from MicroMethod import MicroMethod
 from NaiveMethod import NaiveMethod
 from State import State
 
@@ -58,6 +59,8 @@ configCmd.add_argument(Constant.D, nargs=1, required=True,
                        help="Decision probability")
 configCmd.add_argument(Constant.H, nargs=1, required=True,
                        help="Time horizon")
+configCmd.add_argument(Constant.M, nargs=1, required=True,
+                       help="Simulation method")
 configCmd.add_argument(Constant.T, nargs=1, required=True,
                        help="Time steps")
 configCmd.add_argument(Constant.O, nargs=1, required=True,
@@ -77,6 +80,7 @@ payoffs = {State.S: 1, State.P: 0.9, State.I: 0, State.R: 1}
 disease = {Constant.BETA_S: 0.2, Constant.BETA_P: 0.01, Constant.GAMMA: 0.05}
 decisionProb = 0.1
 timeHorizon = 20
+method = 0
 timeSteps = 1000
 outputFile = "output.csv"
 outputHeader = True
@@ -121,6 +125,8 @@ if (args.__contains__(Constant.F)):
             decisionProb = float(param[1])
         elif (param[0] == Constant.TIME_HORIZON):
             timeHorizon = int(param[1])
+        elif (param[0] == Constant.METHOD):
+            method = int(param[1])
         elif (param[0] == Constant.TIME_STEPS):
             timeSteps = int(param[1])
         elif (param[0] == Constant.OUTPUT_FILE):
@@ -144,6 +150,7 @@ else:
     disease[Constant.GAMMA] = float(args.G[0])
     decisionProb = float(args.D[0])
     timeHorizon = int(args.H[0])
+    method = int(args.M[0])
     timeSteps = int(args.T[0])
     outputFile = args.O[0]
     outputHeader = bool(args.P[0])
@@ -158,9 +165,17 @@ N = 0
 for t in nAgents:
     N += nAgents[t]
 
-method = NaiveMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
-
-num = method.execute()
+##
+## Simulation method
+##
+if (method == Constant.METHOD_NAIVE):
+    m = NaiveMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
+elif (method == Constant.METHOD_GILLESPIE):
+    m = GillespieMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
+elif (method == Constant.METHOD_MICRO):
+    m = MicroMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
+    
+num = m.execute()
         
 ##
 ## Output

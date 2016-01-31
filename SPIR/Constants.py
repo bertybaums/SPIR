@@ -15,19 +15,11 @@ class Constant():
     GAMMA = "gamma"
     DECISION = "decision"
     TIME_HORIZON = "time.horizon"
+    METHOD = "method"
     TIME_STEPS = "time.steps"
     OUTPUT_FILE = "output.file"
     OUTPUT_HEADER = "output.header"
     OUTPUT_SEP = "output.separator"
-    
-    ##
-    ## Interactions
-    ##
-    INT_SP = 0  # Decision Susceptible to Prophylactic
-    INT_PS = 1  # Decision Prophylactic to Susceptible
-    INT_SI = 2  # Infection of a Susceptible
-    INT_PI = 3  # Infection of a Prophylactic
-    INT_IR = 4  # Recovery of an Infected
     
     ##
     ## Command line parameters
@@ -46,10 +38,27 @@ class Constant():
     G = "-G"
     D = "-D"
     H = "-H"
+    M = "-M"
     T = "-T"
     O = "-O"
     P = "-P"
     S = "-S"
+    
+    ##
+    ## Methods
+    ##
+    METHOD_NAIVE = 0
+    METHOD_GILLESPIE = 1
+    METHOD_MICRO = 2
+    
+    ##
+    ## Interactions
+    ##
+    INT_SP = 0  # Decision Susceptible to Prophylactic
+    INT_PS = 1  # Decision Prophylactic to Susceptible
+    INT_SI = 2  # Infection of a Susceptible
+    INT_PI = 3  # Infection of a Prophylactic
+    INT_IR = 4  # Recovery of an Infected
     
     ##
     ## Output

@@ -30,6 +30,7 @@ time.horizon = 100
 ##
 ## Simulation information
 ##
+method = 2
 time.steps = 50000000
 
 ##

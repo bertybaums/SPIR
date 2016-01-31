@@ -102,6 +102,5 @@ class Agent(object):
     def recover(self):
         if ((self.state == State.I) and (uniform(0.0,1.0) < self.disease[Constant.GAMMA])):
             self.state = State.R
-            return self.state
         return self.state
     

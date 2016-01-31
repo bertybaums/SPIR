@@ -32,6 +32,10 @@ class GillespieMethod(object):
         ##
         ## Initialize agents
         ##
+        pDisease = {Constant.BETA_S: 1 - math.exp(-self.disease[Constant.BETA_S]),
+                    Constant.BETA_P: 1 - math.exp(-self.disease[Constant.BETA_P]),
+                    Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
+        
         agents = []
         S = []
         P = []
@@ -40,7 +44,7 @@ class GillespieMethod(object):
         N = 0
         for state in self.nAgents:
             for i in range(self.nAgents[state]):
-                agent = Agent(N, state, self.disease, self.timeHorizon, self.payoffs)
+                agent = Agent(N, state, pDisease, self.timeHorizon, self.payoffs)
                 agents.append(agent)
                 
                 if (state == State.S):
