@@ -17,21 +17,22 @@ payoff.R = 1.00
 ##
 ## Disease Information
 ##
-beta.S = 0.312
-beta.P = 0.156
+beta.S = 0.3125
+beta.P = 0.1562
 gamma = 0.25
 
 ##
 ## Decision information
 ##
-decision = 0
-time.horizon = 100
+decision = 0.2
+time.horizon = 20
 
 ##
 ## Simulation information
 ##
-method = 2
-time.steps = 50000000
+method = 1
+replication = 2
+time.steps = 15000000
 
 ##
 ## Output information

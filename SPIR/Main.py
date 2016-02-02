@@ -4,6 +4,7 @@
 import argparse
 from matplotlib import pyplot, gridspec
 from os.path import isfile
+from random import seed
 from sys import exit
 from time import clock
 
@@ -11,6 +12,7 @@ from time import clock
 ## Our classes
 ##
 from Constants import Constant
+from GGillespieMethod import GGillespieMethod
 from GillespieMethod import GillespieMethod
 from MicroMethod import MicroMethod
 from NaiveMethod import NaiveMethod
@@ -19,12 +21,14 @@ from State import State
 if __name__ == '__main__':
     pass
 
+##
+## Command Line Argument Parsing
+##
 parser = argparse.ArgumentParser(prog="Main.py")
 
 parser.add_argument("-v", "--verbose", action="store_true")
 parser.add_argument("-o", "--output", action="store_true")
 parser.add_argument("-g", "--graphic", action="store_true")
-parser.add_argument("-d", "--debug", action="store_true")
 
 sb = parser.add_subparsers()
 
@@ -35,6 +39,7 @@ configFile.add_argument(Constant.F,
 configCmd = sb.add_parser("params")
 configCmd.add_argument(Constant.NS, nargs=1, required=True,
                        help="Initial number of Susceptible")
+
 configCmd.add_argument(Constant.NP, nargs=1, required=True,
                        help="Initial number of Prophylactic")
 configCmd.add_argument(Constant.NI, nargs=1, required=True,
@@ -61,6 +66,8 @@ configCmd.add_argument(Constant.H, nargs=1, required=True,
                        help="Time horizon")
 configCmd.add_argument(Constant.M, nargs=1, required=True,
                        help="Simulation method")
+configCmd.add_argument(Constant.R, nargs=1, required=True,
+                       help="Replication")
 configCmd.add_argument(Constant.T, nargs=1, required=True,
                        help="Time steps")
 configCmd.add_argument(Constant.O, nargs=1, required=True,
@@ -73,14 +80,15 @@ configCmd.add_argument(Constant.S, nargs=1, required=True,
 args = parser.parse_args()
 
 ##
-## Input Variables
+## Input Variables - Default Values
 ##
 nAgents = {State.S: 9999, State.P: 0, State.I: 10, State.R: 0}
 payoffs = {State.S: 1, State.P: 0.9, State.I: 0, State.R: 1}
 disease = {Constant.BETA_S: 0.2, Constant.BETA_P: 0.01, Constant.GAMMA: 0.05}
 decisionProb = 0.1
 timeHorizon = 20
-method = 0
+method = 1
+replication = 1
 timeSteps = 1000
 outputFile = "output.csv"
 outputHeader = True
@@ -127,6 +135,8 @@ if (args.__contains__(Constant.F)):
             timeHorizon = int(param[1])
         elif (param[0] == Constant.METHOD):
             method = int(param[1])
+        elif (param[0] == Constant.REPLICATION):
+            replication = int(param[1])
         elif (param[0] == Constant.TIME_STEPS):
             timeSteps = int(param[1])
         elif (param[0] == Constant.OUTPUT_FILE):
@@ -151,6 +161,7 @@ else:
     decisionProb = float(args.D[0])
     timeHorizon = int(args.H[0])
     method = int(args.M[0])
+    replication = int(args.R[0])
     timeSteps = int(args.T[0])
     outputFile = args.O[0]
     outputHeader = bool(args.P[0])
@@ -159,11 +170,8 @@ else:
 ##
 ## Initial time
 ##
-start = clock()
-
-N = 0
-for t in nAgents:
-    N += nAgents[t]
+if (args.verbose):
+    start = clock()
 
 ##
 ## Simulation method
@@ -174,8 +182,23 @@ elif (method == Constant.METHOD_GILLESPIE):
     m = GillespieMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
 elif (method == Constant.METHOD_MICRO):
     m = MicroMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
-    
-num = m.execute()
+elif (method == Constant.METHOD_GGILLESPIE):
+    m = GGillespieMethod(args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps)
+
+##
+## Execute simulation
+##
+r = 0
+while (r < replication):
+    num = m.execute()
+    r += 1
+
+##
+## Execution time
+##
+if (args.verbose):
+    end = clock()
+    print 'Processing Time:', str(end - start), 's'
         
 ##
 ## Output
@@ -193,17 +216,13 @@ if (args.output):
     f.close()
 
 ##
-## Execution time
+## Graphical visualization
 ##
-end = clock()
-
-if (args.verbose):
-    print 'Processing Time:', str(end - start), 's'
-
 if (args.graphic):
-    ##
-    ## Graphical visualization
-    ##
+    N = 0
+    for t in nAgents:
+        N += nAgents[t]
+    
     x = []
     s = []
     p = []
@@ -211,7 +230,7 @@ if (args.graphic):
     r = []
     f = []
     for row in num:
-        x.append(row[0])
+        x.append(row[0] / float(N))
         s.append(row[1])
         p.append(row[2])
         i.append(row[3])

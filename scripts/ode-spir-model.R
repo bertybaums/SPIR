@@ -9,7 +9,6 @@ registerDoParallel(cores=2)
 ## Calculates i switching point
 ##
 calc_iswitch <- function(h, bs, rho, gamma, payoffs){
-  difSP <- 10000
   iswitch <- NULL
   iState <- NULL
   pI <- 0
@@ -95,8 +94,8 @@ SPIRmodel <- function(Time, State, Pars){
 
     dS <- -Bs * i * S - Switch * delta * S + (1 - Switch) * delta * P
     dP <- -Bs * rho * i * P + Switch * delta * S - (1 - Switch) * delta * P
-    dI <- Bs * i * S + Bs * rho * i * P - gamma * I
-    dR <- gamma * I
+    dI <- Bs * i * S + Bs * rho * i * P - G * I
+    dR <- G * I
     
     return(list(c(dS,dP,dI,dR)))
   })
@@ -105,21 +104,39 @@ SPIRmodel <- function(Time, State, Pars){
 ##
 ## Input parameters
 ##
+
+## Seasonal Flu
 pars <- list(
   R0 <- 1.25,
   duration <- 4,
-  gamma <- 1 / duration,
+  G <- 1 / duration,
   Bs <- R0 / duration,
   bs <- 1 - exp(-Bs),
-  rho <- 0.5,
-  delta <- 0,
-  h <- 200,
+  rho <- 1,
+  gamma <- 1 - exp(-G),
+  delta <- 0.2,
+  h <- 20,
   payoffs <- c(1.00, 0.95, 0.60, 1.00),
   iswitch <- calc_iswitch(h, bs, rho, gamma, payoffs)
 )
 
+## Test
+pars <- list(
+  R0 <- 3,
+  duration <- 20,
+  G <- 1 / duration,
+  Bs <- R0 / duration,
+  bs <- 1 - exp(-Bs),
+  rho <- 0.16,
+  gamma <- 1 - exp(-G),
+  delta <- 0.2,
+  h <- 20,
+  payoffs <- c(1.00, 0.99, 0, 1.00),
+  iswitch <- calc_iswitch(h, bs, rho, gamma, payoffs)
+)
+
 yinit <- c(S = 100000 - 100, P = 0, I = 100, R = 0)
-times <- seq(1, 200, 1)
+times <- seq(1, 300, 1)
 
 ##
 ## Solve the ODE
@@ -131,11 +148,11 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 ## The dashed line represents the i switching point(s)
 ##
 plot(I / (S+P+I+R) ~ time, out, type="l", col="red",
-     ylim=c(0,0.025),
-     xlim=c(0,300),
+     #ylim=c(0,0.025),
+     xlim=c(0,150),
      main=c("SPIR Behavioral Decision ODE Model"),
      xlab=c("Time"), ylab=c("Proportion infected (i)"))
-lines(rep(0,300), type="l")
+lines(rep(0,150), type="l")
 
 for (index in 1:nrow(iswitch)){
   lines(rep(iswitch[index,3],length(times)) ~ times, type="l", lty="dashed")

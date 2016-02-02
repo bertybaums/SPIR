@@ -16,6 +16,7 @@ class Constant():
     DECISION = "decision"
     TIME_HORIZON = "time.horizon"
     METHOD = "method"
+    REPLICATION = "replication"
     TIME_STEPS = "time.steps"
     OUTPUT_FILE = "output.file"
     OUTPUT_HEADER = "output.header"
@@ -39,6 +40,7 @@ class Constant():
     D = "-D"
     H = "-H"
     M = "-M"
+    R = "-R"
     T = "-T"
     O = "-O"
     P = "-P"
@@ -50,15 +52,7 @@ class Constant():
     METHOD_NAIVE = 0
     METHOD_GILLESPIE = 1
     METHOD_MICRO = 2
-    
-    ##
-    ## Interactions
-    ##
-    INT_SP = 0  # Decision Susceptible to Prophylactic
-    INT_PS = 1  # Decision Prophylactic to Susceptible
-    INT_SI = 2  # Infection of a Susceptible
-    INT_PI = 3  # Infection of a Prophylactic
-    INT_IR = 4  # Recovery of an Infected
+    METHOD_GGILLESPIE = 3
     
     ##
     ## Output

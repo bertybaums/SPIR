@@ -11,7 +11,7 @@ from Agent import Agent
 from Constants import Constant
 from State import State
 
-class GillespieMethod(object):
+class GGillespieMethod(object):
     
     ##
     ## Constructor
