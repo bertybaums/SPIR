@@ -7,9 +7,9 @@ from random import uniform
 ##
 ## Our classes
 ##
-from Agent import Agent
-from Constants import Constant
-from State import State
+from SPIR.Agent import Agent
+from SPIR.Constants import Constant
+from SPIR.State import State
 
 class GillespieMethod(object):
     
@@ -25,19 +25,24 @@ class GillespieMethod(object):
     ##
     ## Constructor
     ##
-    def __init__(self, args, nAgents, payoffs, disease, decisionProb, timeHorizon, timeSteps):
+    def __init__(self, args, nAgents, payoffs, disease, fear, decision, timeHorizon, timeSteps):
         self.args = args
         self.nAgents = nAgents
         self.payoffs = payoffs
         self.disease = disease
-        self.decisionProb = decisionProb
+        
+        self.fear = fear
+        if (self.fear == 0):
+            self.fear = 1.0
+            
+        self.decision = decision
         self.timeHorizon = timeHorizon
         self.timeSteps = timeSteps
     
     ##
     ## Calculate i Switch
     ##
-    def calcISwitch(self, timeHorizon, disease):
+    def calcISwitch(self, timeHorizon, disease, payoffs):
         h = timeHorizon
         q = disease[Constant.GAMMA]
         
@@ -48,7 +53,7 @@ class GillespieMethod(object):
         i = step
         while (i <= 1.0):
             ## Calculate expected times of Susceptible
-            ps = i * self.disease[Constant.BETA_S]
+            ps = i * disease[Constant.BETA]
             Tss = (1 - ((1 - ps)**h)) / ps
             if (ps != q):
                 Tis = (1 / q) - (((ps * ((1 - q)**h)) / (q * (ps - q))) * (1 - (((1 - ps) / (1 - q))**h))) - (((1 - ps)**h) / q)
@@ -57,7 +62,7 @@ class GillespieMethod(object):
             Trs = h - Tss - Tis
             
             ## Calculate expected times of Prophylactic
-            pp = i * self.disease[Constant.BETA_P]
+            pp = i * disease[Constant.BETA] * disease[Constant.RHO]
             Tpp = (1 - ((1 - pp)**h)) / pp
             if (pp != q):
                 Tip = (1 / q) - (((pp * ((1 - q)**h)) / (q * (pp - q))) * (1 - (((1 - pp) / (1 - q))**h))) - (((1 - pp)**h) / q)
@@ -66,8 +71,8 @@ class GillespieMethod(object):
             Trp = h - Tpp - Tip
             
             ## Calculate Expected Utilities
-            US = (self.payoffs[State.S] * Tss) + (self.payoffs[State.I] * Tis) + (self.payoffs[State.R] * Trs)
-            UP = (self.payoffs[State.P] * Tpp) + (self.payoffs[State.I] * Tip) + (self.payoffs[State.R] * Trp)
+            US = (payoffs[State.S] * Tss) + (payoffs[State.I] * Tis) + (payoffs[State.R] * Trs)
+            UP = (payoffs[State.P] * Tpp) + (payoffs[State.I] * Tip) + (payoffs[State.R] * Trp)
             
             if (pUs == -1):
                 pUs = US
@@ -90,8 +95,8 @@ class GillespieMethod(object):
         ##
         ## Initialize agents
         ##
-        pDisease = {Constant.BETA_S: 1 - math.exp(-self.disease[Constant.BETA_S]),
-                    Constant.BETA_P: 1 - math.exp(-self.disease[Constant.BETA_P]),
+        pDisease = {Constant.BETA: 1 - math.exp(-self.disease[Constant.BETA]),
+                    Constant.RHO: self.disease[Constant.RHO],
                     Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
         
         agents = []
@@ -101,8 +106,8 @@ class GillespieMethod(object):
         R = []
         N = 0
         for state in self.nAgents:
-            for i in range(self.nAgents[state]):
-                agent = Agent(N, state, pDisease, self.timeHorizon, self.payoffs)
+            for x in range(self.nAgents[state]):
+                agent = Agent(N, state, pDisease, self.fear, self.timeHorizon, self.payoffs)
                 agents.append(agent)
                 
                 if (state == State.S):
@@ -129,13 +134,14 @@ class GillespieMethod(object):
         ##
         ## Run the simulation
         ##
-        i = self.nAgents[State.I] / float(N)
-        iSwitch = self.calcISwitch(self.timeHorizon, pDisease)
+        i = (self.nAgents[State.I] / float(N)) ** float(1 / float(self.fear))
         
-        c = {self.INT_SP: self.decisionProb / float(N),
-             self.INT_PS: self.decisionProb / float(N),
-             self.INT_SI: self.disease[Constant.BETA_S] / (float(N) * float(N)),
-             self.INT_PI: self.disease[Constant.BETA_P] / (float(N) * float(N)),
+        iSwitch = self.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
+        
+        c = {self.INT_SP: self.decision / float(N),
+             self.INT_PS: self.decision / float(N),
+             self.INT_SI: self.disease[Constant.BETA] / (float(N) * float(N)),
+             self.INT_PI: (self.disease[Constant.BETA] * self.disease[Constant.RHO]) / (float(N) * float(N)),
              self.INT_IR: self.disease[Constant.GAMMA] / float(N)}
         
         a = {self.INT_SP: c[self.INT_SP] * self.nAgents[State.S],
@@ -147,10 +153,7 @@ class GillespieMethod(object):
         A = a[self.INT_SP] + a[self.INT_PS] + a[self.INT_SI] + a[self.INT_PI] + a[self.INT_IR]
         
         t = math.log(1 / uniform(0.0, 1.0)) / A
-        while ((t < self.timeSteps) and (i > 0)):
-            if (self.args.verbose):
-                print 'Timestep:', str(t)
-            
+        while ((t < self.timeSteps) and (i > 0)):            
             cumA = uniform(0.0, 1.0) * A
             index = 0
             x = a[index]
@@ -230,7 +233,7 @@ class GillespieMethod(object):
             ##
             ## Update
             ##
-            i = self.nAgents[State.I] / float(N)
+            i = (self.nAgents[State.I] / float(N)) ** float(1 / float(self.fear))
             
             if (i > 0):
                 s = 0

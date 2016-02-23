@@ -57,7 +57,7 @@ calc_iswitch <- function(h, bs, rho, g, payoffs){
     }
     
     if (((Us >= Up) && (pUs < pUp)) || ((Up >= Us) && (pUp < pUs))) {
-      iswitch <- rbind(iswitch, cbind(h, bs, rho, g, pI, 1, iState, n))
+      iswitch <- rbind(iswitch, cbind(h, bs, rho, g, pI, i, iState, n))
       
       if ((Us >= Up) && (pUs < pUp)){
         # Susceptible
@@ -81,21 +81,21 @@ calc_iswitch <- function(h, bs, rho, g, payoffs){
 
 
 ##
-## Analyzing the iSwitch in relation to the time horizon for specific diseases
+## i Switch analysis of specific diseases
 ##
 
 ##
-## Input parameters
+## Seasonal Flu
 ##
 
 # Payoffs (S, P, I, R)
 payoffs <- c(1, 0.95, 0.60, 1.00)
 
 # Infection probability (Susceptible)
-bs <- 1 - exp(-1.5 / 4)
+bs <- 1 - exp(-1.25 / 4)
 
 # Prophylactic protection
-Rho <- seq(0.01, 1.00, 0.1)
+Rho <- seq(0.01, 1.00, 0.01)
 
 # Recover probability
 g <- 1 - exp(-1 / 4)
@@ -103,8 +103,127 @@ g <- 1 - exp(-1 / 4)
 # Range of Time Horizon to evaluate
 H <- seq(3, 365)
 
+# File name
+filename <- "fluseasonal.csv"
+
+
 ##
-## DO NOT FORGET TO EXCLUDE VALUES THAT RETURN NAN IN THE ISWITCH
+## Pandemic Flu 1918
+##
+
+# Payoffs (S, P, I, R)
+payoffs <- c(1, 0.90, 0.40, 1.00)
+
+# Infection probability (Susceptible)
+bs <- 1 - exp(-3.00 / 4)
+
+# Prophylactic protection
+Rho <- seq(0.01, 1.00, 0.01)
+
+# Recover probability
+g <- 1 - exp(-1 / 4)
+
+# Range of Time Horizon to evaluate
+H <- seq(3, 365)
+
+# File name
+filename <- "flu1918.csv"
+
+
+##
+## Avian Flu
+##
+
+# Payoffs (S, P, I, R)
+payoffs <- c(1, 0.95, 0.60, 1.00)
+
+# Infection probability (Susceptible)
+bs <- 1 - exp(-2.00 / 8)
+
+# Prophylactic protection
+Rho <- seq(0.01, 1.00, 0.01)
+
+# Recover probability
+g <- 1 - exp(-1 / 8)
+
+# Range of Time Horizon to evaluate
+H <- seq(3, 365)
+
+# File name
+filename <- "fluavian.csv"
+
+
+##
+## Avian Flu
+##
+
+# Payoffs (S, P, I, R)
+payoffs <- c(1, 0.95, 0.60, 0.95)
+
+# Infection probability (Susceptible)
+bs <- 1 - exp(-2.00 / 8)
+
+# Prophylactic protection
+Rho <- seq(0.01, 1.00, 0.01)
+
+# Recover probability
+g <- 1 - exp(-1 / 8)
+
+# Range of Time Horizon to evaluate
+H <- seq(3, 365)
+
+# File name
+filename <- "fluavian-95.csv"
+
+
+##
+## Ebola (3, 365)
+##
+
+# Payoffs (S, P, I, R)
+payoffs <- c(1, 0.95, 0.10, 0.95)
+
+# Infection probability (Susceptible)
+bs <- 1 - exp(-2 / 65)
+
+# Prophylactic protection
+Rho <- seq(0.01, 1.00, 0.01)
+
+# Recover probability
+g <- 1 - exp(-1 / 65)
+
+# Range of Time Horizon to evaluate
+H <- seq(3, 365)
+
+# File name
+filename <- "ebola.csv"
+
+
+##
+## Ebola (3, 1000)
+##
+
+# Payoffs (S, P, I, R)
+payoffs <- c(1, 0.95, 0.10, 0.95)
+
+# Infection probability (Susceptible)
+bs <- 1 - exp(-2 / 65)
+
+# Prophylactic protection
+Rho <- seq(0.01, 1.00, 0.01)
+
+# Recover probability
+g <- 1 - exp(-1 / 65)
+
+# Range of Time Horizon to evaluate
+H <- seq(3, 1000)
+
+# File name
+filename <- "ebola-1000.csv"
+
+
+##
+## Calculating i Switches
 ##
 iSwitch <- foreach(h=H, .combine=rbind) %:%
   foreach(rho=Rho, .combine=rbind) %dopar%
@@ -112,21 +231,24 @@ iSwitch <- foreach(h=H, .combine=rbind) %:%
 
 data <- data.table(iSwitch)
 colnames(data) <- c("h", "bs", "rho", "g", "pI", "i", "iState", "n")
-
-ggplot(na.omit(data), aes(h, rho), colour=i) +
-  stat_density2d(geom = "tile", contour = F, aes(fill = ..density..)) + 
-  scale_fill_gradient(low = "white", high = "black")
+write.table(data, file=filename, quote=FALSE, sep=";", col.names=TRUE)
 
 
-ggplot(data, aes(x=h, y=i, group=n, color=factor(n))) +
-  xlab("Time Horizon") +
-  ylab("Proportion Infected (i)") +
-  geom_line() +
-  geom_ribbon(data=subset(data,n==0 | n==2),
-              aes(x=h, ymax=i, ymin=pI), fill="black") +
-  geom_ribbon(data=subset(data,n==1),
-              aes(x=h, ymax=i, ymin=pI), fill="blue") +
-  scale_color_manual(values=c("black","blue", "black")) +
+##
+## Graphic
+##
+data <- data.table(read.table(paste0("/data/projects/current/cmci/project-3/sub-projects/spir/",
+                                     filename), sep=";"))
+
+maxrho <- 1
+pData <- data[which(((i < 1) & (iState == 0) | (iState == 2)))]
+
+ggplot(pData, aes(h, rho, fill=i)) +
+  geom_tile() +
+  xlab("H") + ylab("+ rho -") +
+  xlim(0,max(H)) + ylim(0, 1) +
+  scale_fill_gradientn(name = "Proportion\nof Infected", limits = c(0, 1),
+                       colours=rainbow(100, start=1, end=0.65)) +
   theme(axis.title.x = element_text(colour = 'black', size = 18, face = 'bold'),
         axis.title.y = element_text(colour = 'black', size = 18, face = 'bold'),
         axis.text.x = element_text(colour = 'black', size = 12, face = 'bold'),
@@ -135,4 +257,5 @@ ggplot(data, aes(x=h, y=i, group=n, color=factor(n))) +
         panel.background = element_rect(fill = "transparent",colour = NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
-        legend.position = "none")
+        legend.title = element_text(colour="black", size=14, face="bold"),
+        legend.text = element_text(colour="black", size=12, face="bold"))

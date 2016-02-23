@@ -84,16 +84,16 @@ calc_iswitch <- function(h, bs, rho, gamma, payoffs){
 SPIRmodel <- function(Time, State, Pars){
   with(as.list(c(State, Pars)),{
     
-    i <- I / (S+P+I+R)
+    i <- (I / (S+P+I+R))
     for (index in 1:nrow(iswitch)){
-      if ((i >= iswitch[index,2]) && (i <= iswitch[index,3])){
+      if (((i^(1/fear)) >= iswitch[index,2]) && ((i^(1/fear)) <= iswitch[index,3])){
         Switch <- iswitch[index,4]
         break
       }
     }
 
-    dS <- -Bs * i * S - Switch * delta * S + (1 - Switch) * delta * P
-    dP <- -Bs * rho * i * P + Switch * delta * S - (1 - Switch) * delta * P
+    dS <- -Bs * i * S - Switch * decision * S + (1 - Switch) * decision * P
+    dP <- -Bs * rho * i * P + Switch * decision * S - (1 - Switch) * decision * P
     dI <- Bs * i * S + Bs * rho * i * P - G * I
     dR <- G * I
     
@@ -112,31 +112,17 @@ pars <- list(
   G <- 1 / duration,
   Bs <- R0 / duration,
   bs <- 1 - exp(-Bs),
-  rho <- 1,
+  rho <- 0.25,
   gamma <- 1 - exp(-G),
-  delta <- 0.2,
-  h <- 20,
+  fear <- 0,
+  decision <- 1 / 365,
+  h <- 16,
   payoffs <- c(1.00, 0.95, 0.60, 1.00),
   iswitch <- calc_iswitch(h, bs, rho, gamma, payoffs)
 )
 
-## Test
-pars <- list(
-  R0 <- 3,
-  duration <- 20,
-  G <- 1 / duration,
-  Bs <- R0 / duration,
-  bs <- 1 - exp(-Bs),
-  rho <- 0.16,
-  gamma <- 1 - exp(-G),
-  delta <- 0.2,
-  h <- 20,
-  payoffs <- c(1.00, 0.99, 0, 1.00),
-  iswitch <- calc_iswitch(h, bs, rho, gamma, payoffs)
-)
-
 yinit <- c(S = 100000 - 100, P = 0, I = 100, R = 0)
-times <- seq(1, 300, 1)
+times <- seq(1, 365, 1)
 
 ##
 ## Solve the ODE
@@ -148,18 +134,16 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 ## The dashed line represents the i switching point(s)
 ##
 plot(I / (S+P+I+R) ~ time, out, type="l", col="red",
-     #ylim=c(0,0.025),
-     xlim=c(0,150),
+     #ylim=c(0,1),
      main=c("SPIR Behavioral Decision ODE Model"),
      xlab=c("Time"), ylab=c("Proportion infected (i)"))
-lines(rep(0,150), type="l")
 
 for (index in 1:nrow(iswitch)){
   lines(rep(iswitch[index,3],length(times)) ~ times, type="l", lty="dashed")
 }
 
 ##
-## Analyzing the generic iSwitch in relation to the time horizon
+## Generic iSwitch analysis of time horizon
 ##
 H <- seq(3, 2000, 1)
 
@@ -187,4 +171,3 @@ ggplot(data, aes(x=h, y=i, group=n, color=factor(n))) +
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
         legend.position = "none")
-

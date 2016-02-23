@@ -10,14 +10,16 @@ class Constant():
     PAYOFF_P = "payoff.P"
     PAYOFF_I = "payoff.I"
     PAYOFF_R = "payoff.R"
-    BETA_S = "beta.S"
-    BETA_P = "beta.P"
+    BETA = "beta"
+    RHO = "rho"
     GAMMA = "gamma"
+    FEAR = "fear"
     DECISION = "decision"
     TIME_HORIZON = "time.horizon"
     METHOD = "method"
     REPLICATION = "replication"
     TIME_STEPS = "time.steps"
+    OUTPUT_WINDOW = "output.window"
     OUTPUT_FILE = "output.file"
     OUTPUT_HEADER = "output.header"
     OUTPUT_SEP = "output.separator"
@@ -35,13 +37,15 @@ class Constant():
     PI = "-PI"
     PR = "-PR"
     BS = "-BS"
-    BP = "-BP"
+    RH = "-RH"
     G = "-G"
+    K = "-K"
     D = "-D"
     H = "-H"
     M = "-M"
     R = "-R"
     T = "-T"
+    W = "-W"
     O = "-O"
     P = "-P"
     S = "-S"
@@ -50,13 +54,13 @@ class Constant():
     ## Methods
     ##
     METHOD_NAIVE = 0
-    METHOD_GILLESPIE = 1
-    METHOD_MICRO = 2
-    METHOD_GGILLESPIE = 3
+    METHOD_MICRO = 1
+    METHOD_GILLESPIE = 2
     
     ##
     ## Output
     ##
+    O_X = "replication"
     O_T = "time"
     O_S = "susceptible"
     O_P = "prophylactic"
