@@ -1,3 +1,10 @@
+##
+## Calculate the first switching point and compare it with a
+## possible linear approximation
+##
+## Author......: Luis Gustavo Nardin
+## Last Change.: 03/19/2016
+##
 library(data.table)
 library(ggplot2)
 
@@ -23,7 +30,7 @@ g <- 0.05
 H <- seq(3,1000)
 
 # Range of Proportion of infected to evaluate
-I <- seq(0.0001,1.00,0.0001)
+I <- seq(0.001,1.00,0.001)
 
 
 rws <- length(H) * length(I)
@@ -113,7 +120,7 @@ error <- data.table(error)
 colnames(error) <- c("h","ioswitch","iaswitch","value")
 
 ggplot(na.omit(error), aes(x=h, y=value*100))+
-  xlab("Time Horizon (H)") +
+  xlab("Planning Horizon (H)") +
   ylab("Error (%)") +
   geom_line() +
   theme(axis.title.x = element_text(colour = 'black', size = 18, face = 'bold'),
@@ -134,7 +141,7 @@ colnames(data) <- c("h","i","oUS","oUP","aUS","aUP")
 mdata <- melt(data, id=c("h","i"))
 
 ggplot(mdata[h == inputH], aes(x=i, y=value, colour=variable)) +
-  xlab("Proportion infected (i)") +
+  xlab("Proportion of infected (i)") +
   ylab("Expected Utilities value") +
   geom_line() +
   scale_colour_discrete(name="Expected Utility",

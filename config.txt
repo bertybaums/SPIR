@@ -1,7 +1,7 @@
 ##
 ## Initial number of agents
 ##
-num.agents.S = 99900
+num.agents.S = 9900
 num.agents.P = 0
 num.agents.I = 100
 num.agents.R = 0
@@ -24,9 +24,9 @@ gamma = 0.015
 ##
 ## Decision information
 ##
-fear = 0
-decision = 0
-time.horizon = 1
+fear = 4
+decision = 0.033
+time.horizon = 20
 
 ##
 ## Simulation information
@@ -35,7 +35,7 @@ time.horizon = 1
 # 1 Micro
 # 2 Gillespie
 method = 2
-replication = 50
+replication = 10
 time.steps = 100000000
 
 ##

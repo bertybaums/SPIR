@@ -1,3 +1,10 @@
+##
+## Calculates and plot the planning horizon,
+## frequency of infected, and utilities
+##
+## Author......: Luis Gustavo Nardin
+## Last Change.: 03/25/2016
+##
 library(data.table)
 library(lattice)
 library(rgl)
@@ -63,8 +70,8 @@ colnames(data) <- c("h","i","US","UP")
 ## Wireframe 3D plot
 ##
 wireframe(US + UP ~ h * i, data,
-          xlab="Time Horizon \n (H)",
-          ylab="Frequency of Infectious \n (i)",
+          xlab="Planning Horizon \n (H)",
+          ylab="Frequency of Infected \n (i)",
           zlab="E(U)\n[S=Black]\n[P=Blue]",
           arrows=FALSE, scales=list(arrows=FALSE), aspect=c(1, 1),
           col=c("black","blue"))
