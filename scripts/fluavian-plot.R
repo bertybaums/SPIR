@@ -1,5 +1,5 @@
 ##
-## Ebola Plots
+## Avian Flu Plots
 ##
 ## Author......: Luis Gustavo Nardin
 ## Last Change.: 04/13/2016
@@ -14,7 +14,7 @@ library(gtable)
 setwd("/data/workspace/cmci/SPIR/scripts/")
 
 baseDir <- "/data/projects/current/cmci/project-3/sub-projects/spir/"
-inputEbolaDir <- paste0(baseDir, "ebola/")
+inputFluavianDir <- paste0(baseDir, "fluavian/")
 outputDir <- paste0(baseDir, "figures/")
 
 ###############
@@ -26,10 +26,10 @@ source("SPIRmodel.R")
 
 
 ###############
-## EBOLA INPUT PARAMETERS
+## AVIAN FLU INPUT PARAMETERS
 ###############
 # Disease duration
-duration <- 65
+duration <- 8
 
 # R0
 R0 <- 2
@@ -44,7 +44,7 @@ betaS <- R0 / duration
 bs <- 1 - exp(-betaS)
 
 # Prophylactic protection
-rho <- 0.10
+rho <- 0.01
 
 # Recover probability
 g <- 1 - exp(-gamma)
@@ -59,31 +59,28 @@ kappa <- 1
 delta <- 0
 
 # Planning horizon
-h <- 40
+h <- 30
 
 
 # Payoffs (S, P, I, R)
-payoffs <- c(1, 0.95, 0.10, 0.95)
+payoffs <- c(1, 0.95, 0.60, 1)
 
 # Initial values
 yinit <- c(S = 100000 - 1, P = 0, I = 1, R = 0)
 
 # Length of simulation
-times <- seq(1, 3500, 1)
+times <- seq(1, 250, 1)
 
 
 ###############
 ## HEAT MAP
 ###############
-filename <- "ebola-0.95"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "fluavian-1"
+data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
 pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
 
 pl <- ggplot(pData[which((n == 0) & (i < 1))],
              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
@@ -100,13 +97,11 @@ pl <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  geom_segment(aes(x = 360, y = 43, xend = 374, yend = 43),
+  geom_segment(aes(x = 40, y = 77, xend = 50, yend = 75),
                color="black", show.legend=FALSE) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  annotate("text", x=300, y=10, label="A", fontface="italic", size=6) +
-  annotate("text", x=150, y=65, label="B", fontface="italic", size=6) +
-  annotate("text", x=380, y=43, label="C", fontface="italic", size=6) +
+  annotate("text", x=150, y=50, label="A", fontface="italic", size=7) +
+  annotate("text", x=25, y=90, label="B", fontface="italic", size=7) +
+  annotate("text", x=55, y=75, label="C", fontface="italic", size=7) +
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
@@ -167,12 +162,10 @@ pu1 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                      limits=c(0, 110)) +
   scale_linetype_manual(name="",
                         values=c("solid", "dashed"),
-                        labels=c(expression(paste("Susceptible")),
-                                 expression(paste("Prophylactic")))) +
+                        labels=c("Susceptible", "Prophylactic")) +
   scale_color_manual(name="",
                      values=c("black", "black"),
-                     labels=c(expression(paste("Susceptible")),
-                              expression(paste("Prophylactic")))) +
+                     labels=c("Susceptible", "Prophylactic")) +
   theme(axis.title.x = element_text(colour = 'black', size = 12, face = 'bold',
                                     margin=margin(t=0.2, unit = "cm")),
         axis.title.y = element_text(colour = 'black', size = 16, face = 'bold',
@@ -205,7 +198,7 @@ gt1$layout$clip[gt1$layout$name == "panel"] <- "off"
 ## ONE SWITCHING POINT
 ###############
 rho <- 0.5
-h <- 100
+h <- 10
 
 data <- data.table(calc_utilities(h, bs, rho, g, lambda, kappa, payoffs))
 
@@ -218,19 +211,17 @@ pu2 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                                       group=state,
                                       color=state,
                                       linetype=state)) +
-  xlab(expression(paste("% Infected (i)"))) + ylab("") +
+  xlab(expression(paste("% Infected"))) + ylab("") +
   geom_line(size=0.9) +
   scale_x_continuous(breaks=c(0, 50, 100),
                      labels=c("0%", "50%", "100%"),
                      limits=c(0, 110)) +
   scale_linetype_manual(name="",
                         values=c("solid", "dashed"),
-                        labels=c(expression(paste("Susceptible")),
-                                 expression(paste("Prophylactic")))) +
+                        labels=c("Susceptible", "Prophylactic")) +
   scale_color_manual(name="",
                      values=c("black", "black"),
-                     labels=c(expression(paste("Susceptible")),
-                              expression(paste("Prophylactic")))) +
+                     labels=c("Susceptible", "Prophylactic")) +
   theme(axis.title.x = element_text(colour = 'black', size = 14, face = 'bold',
                                     margin=margin(t=0.2, unit = "cm")),
         axis.title.y = element_text(colour = 'black', size = 16, face = 'bold',
@@ -250,20 +241,19 @@ pu2 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
 pu2 <- pu2 + annotation_custom(
   grob = textGrob(label = "B", hjust = 0,
                   gp = gpar(cex = 1.3, fontface="bold")),
-  ymin = ymax+2.8,
-  ymax = ymax+2.8,
+  ymin = ymax+0.05,
+  ymax = ymax+0.05,
   xmin = -26,
   xmax = -26)
 
 gt2 <- ggplot_gtable(ggplot_build(pu2))
 gt2$layout$clip[gt2$layout$name == "panel"] <- "off"
 
-
 ###############
 ## TWO SWITCHING POINTS
 ###############
-rho <- 0.5
-h <- 364
+rho <- 0.25
+h <- 40
 
 data <- data.table(calc_utilities(h, bs, rho, g, lambda, kappa, payoffs))
 
@@ -308,8 +298,8 @@ pu3 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
 pu3 <- pu3 + annotation_custom(
   grob = textGrob(label = "C", hjust = 0,
                   gp = gpar(cex = 1.3, fontface="bold")),
-  ymin = ymax+6,
-  ymax = ymax+6,
+  ymin = ymax+0.1,
+  ymax = ymax+0.1,
   xmin = -26,
   xmax = -26)
 
@@ -317,25 +307,22 @@ gt3 <- ggplot_gtable(ggplot_build(pu3))
 gt3$layout$clip[gt3$layout$name == "panel"] <- "off"
 
 plot <- grid.arrange(gt1, gt2, gt3, gt, ncol=3, nrow=2,
-                     layout_matrix= rbind(c(1, 2, 3),
-                                          c(4, 4, 4)),
-                     heights=c(1.5, 3), widths=c(0.65, 0.65, 1))
+                     layout_matrix= rbind(c(1,2,3),
+                                          c(4,4,4)),
+                     heights=c(1.5,3), widths=c(0.65,0.65,1))
 
-ggsave(paste0(outputDir, "ebola-heat.pdf"), plot=plot)
+ggsave(paste0(outputDir, "fluavian-heat.pdf"), plot=plot)
 
 
 ###############
 ## CASE 1
 ###############
-filename <- "ebola-1"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "fluavian-1"
+data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
 pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
 
 pc1 <- ggplot(pData[which((n == 0) & (i < 1))],
               aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
@@ -352,8 +339,6 @@ pc1 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
@@ -393,15 +378,12 @@ gtc1$layout$clip[gtc1$layout$name == "panel"] <- "off"
 ###############
 ## CASE 2
 ###############
-filename <- "ebola-0.97"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "fluavian-0.97"
+data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
 pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
 
 pc2 <- ggplot(pData[which((n == 0) & (i < 1))],
               aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
@@ -418,8 +400,6 @@ pc2 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
@@ -459,15 +439,12 @@ gtc2$layout$clip[gtc2$layout$name == "panel"] <- "off"
 ###############
 ## CASE 3
 ###############
-filename <- "ebola-0.95"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "fluavian-0.95"
+data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
 pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
 
 pc3 <- ggplot(pData[which((n == 0) & (i < 1))],
               aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
@@ -484,8 +461,6 @@ pc3 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
@@ -525,15 +500,12 @@ gtc3$layout$clip[gtc3$layout$name == "panel"] <- "off"
 ###############
 ## CASE 4
 ###############
-filename <- "ebola-0.9"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "fluavian-0.9"
+data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
 pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
 
 pc4 <- ggplot(pData[which((n == 0) & (i < 1))],
               aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
@@ -550,8 +522,6 @@ pc4 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
@@ -589,20 +559,20 @@ gtc4$layout$clip[gtc4$layout$name == "panel"] <- "off"
 
 plot <- grid.arrange(gtc1, gtc2, gtc3, gtc4, ncol=4, nrow=1,
                      layout_matrix= rbind(c(1, 2, 3, 4)),
-                     heights=c(0.25), widths=c(0.25, 0.25, 0.25, 0.25),
+                     heights=c(0.25), widths=c(0.25,0.25,0.25,0.25),
                      bottom=textGrob(expression(paste("Planning Horizon (H)")),
                                      gp=gpar(fontsize=34,
                                              fontface="bold")))
 
-ggsave(paste0(outputDir,"ebola-cases.pdf"), plot=plot,
+ggsave(paste0(outputDir,"fluavian-cases.pdf"), plot=plot,
        width=80, height=15, units="cm")
 
 
 ###############
 ## DYNAMICS PLANNING HORIZON
 ###############
-times <- seq(1, 2100, 1)
-rho <-0.10
+times <- seq(1, 250, 1)
+rho <-0.1
 h <- 3
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
@@ -610,7 +580,7 @@ pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 
-h <- 30
+h <- 15
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -618,7 +588,7 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(H=h, i=iswitch[iswitch[,8] != 1,8])
 
-h <- 90
+h <- 30
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -629,7 +599,7 @@ isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
 pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(H),
                        size=as.factor(H))) +
-  xlab("") + ylab(expression(paste("% Infected (i)"))) +
+  xlab("") + ylab("") +
   geom_line() +
   scale_colour_manual(name=expression(paste("Planning\nHorizon (H)")),
                       values=c("grey60", "blue", "red")) +
@@ -638,7 +608,7 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
   scale_y_continuous(limits=c(0, 17),
                      breaks=c(0, 5, 10, 15),
                      labels=c("0%", "5%", "10%", "15%")) +
-  guides(colour = guide_legend(override.aes=list(size=2))) +
+  guides(colour=guide_legend(override.aes=list(size=2))) +
   theme(axis.title.x = element_text(colour='black', size=12, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
         axis.title.y = element_text(colour='black', size=48, face='bold',
@@ -662,25 +632,33 @@ if(nrow(isp) > 0){
 }
 
 pl <- pl + annotation_custom(
-  grob = textGrob(label = "A", hjust = 0,
+  grob = textGrob(label = "B", hjust = 0,
                   gp = gpar(cex = 4, fontface="bold")),
   ymin = 18,
   ymax = 18,
-  xmin = -380,
-  xmax = -380)
+  xmin = -47,
+  xmax = -47)
 
-gth1 <- ggplot_gtable(ggplot_build(pl))
-gth1$layout$clip[gth1$layout$name == "panel"] <- "off"
+gth2 <- ggplot_gtable(ggplot_build(pl))
+gth2$layout$clip[gth2$layout$name == "panel"] <- "off"
 
-#ggsave(paste0(outputDir,"ebola-horizon.pdf"), plot=gth1)
+plot <- grid.arrange(gth1, gth2, ncol=2, nrow=1,
+                    layout_matrix= rbind(c(1, 2)),
+                    heights=c(1), widths=c(0.5, 0.5),
+                    bottom=textGrob(expression(paste("Time (t)")),
+                                    gp=gpar(fontsize=48,
+                                            fontface="bold")))
+
+ggsave(paste0(outputDir,"planning-horizon.pdf"), plot=plot,
+       width=80, height=25, units="cm")
 
 
 ###############
 ## DYNAMICS DECISION
 ###############
-times <- seq(1, 2100, 1)
-rho <- 0.10
-h <- 100
+times <- seq(1, 250, 1)
+rho <- 0.1
+h <- 30
 delta <- 0
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -688,7 +666,7 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 100
+h <- 30
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -696,18 +674,19 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 100
-delta <- 0.02
+h <- 30
+delta <- 0.10
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
 
+
 pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(D),
                        size=as.factor(D))) +
-  xlab("") + ylab(expression(paste("% Infected (i)"))) +
+  xlab("") + ylab("") +
   geom_line() +
   scale_colour_manual(name=expression(paste("Decision\nFrequency (d)")),
                       values=c("grey60", "blue", "red"),
@@ -742,34 +721,41 @@ if(nrow(isp) > 0){
 }
 
 pl <- pl + annotation_custom(
-  grob = textGrob(label = "A", hjust = 0,
+  grob = textGrob(label = "B", hjust = 0,
                   gp = gpar(cex = 4, fontface="bold")),
   ymin = 18,
   ymax = 18,
-  xmin = -380,
-  xmax = -380)
+  xmin = -47,
+  xmax = -47)
 
-gtd1 <- ggplot_gtable(ggplot_build(pl))
-gtd1$layout$clip[gtd1$layout$name == "panel"] <- "off"
+gtd2 <- ggplot_gtable(ggplot_build(pl))
+gtd2$layout$clip[gtd2$layout$name == "panel"] <- "off"
 
-#ggsave(paste0(outputDir,"ebola-decision.pdf"), plot=gt)
+#ggsave(paste0(outputDir,"fluavian-decision.pdf"), plot=gt)
+
+plot <- grid.arrange(gtd1, gtd2, ncol=2, nrow=1,
+                     layout_matrix= rbind(c(1, 2)),
+                     heights=c(1), widths=c(0.5, 0.5),
+                     bottom=textGrob(expression(paste("Time (t)")),
+                                     gp=gpar(fontsize=48,
+                                             fontface="bold")))
+
+ggsave(paste0(outputDir,"decision.pdf"), plot=plot,
+       width=80, height=25, units="cm")
 
 
 ###############
 ## FEAR
 ###############
-filename <- "ebola-0.95"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "fluavian-1"
+data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
 pData <- data[which((h <= maxh))]
 
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
-
 pf1 <- ggplot(pData[which((n == 0) & (i < 1))],
-             aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
+              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   xlab("") +
   ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
   xlim(0, maxh + 60) +
@@ -783,10 +769,7 @@ pf1 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=410, y=ymin * 100, label="30%", fontface="bold", size=4) +
-  annotate("text", x=410, y=ymax * 100, label="90%", fontface="bold", size=4) +
-  annotate("text", x=190, y=65, label="kappa == 1.0", fontface="bold", size=7,
-           parse=TRUE) +
+  annotate("text", x=190, y=65, label="kappa == 1.0", fontface="bold", size=7, parse=TRUE) +
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
@@ -823,18 +806,15 @@ gtf1 <- ggplot_gtable(ggplot_build(pf1))
 gtf1$layout$clip[gtf1$layout$name == "panel"] <- "off"
 
 
-filename <- "ebola-k1.5"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "fluavian-k1.5"
+data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
 pData <- data[which((h <= maxh))]
 
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
-
 pf2 <- ggplot(pData[which((n == 0) & (i < 1))],
-             aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
+              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   xlab("") +
   ylab("") +
   xlim(0, maxh + 60) +
@@ -848,10 +828,7 @@ pf2 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=410, y=ymin * 100, label="30%", fontface="bold", size=4) +
-  annotate("text", x=410, y=ymax * 100, label="90%", fontface="bold", size=4) +
-  annotate("text", x=190, y=65, label="kappa == 1.5", fontface="bold", size=7,
-           parse=TRUE) +
+  annotate("text", x=190, y=65, label="kappa == 1.5", fontface="bold", size=7, parse=TRUE) +
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
@@ -887,7 +864,6 @@ pf2 <- pf2 + annotation_custom(
 gtf2 <- ggplot_gtable(ggplot_build(pf2))
 gtf2$layout$clip[gtf2$layout$name == "panel"] <- "off"
 
-
 gtf <- grid.arrange(gtf1, gtf2, ncol=2, nrow=1,
                     layout_matrix= rbind(c(1, 2)),
                     heights=c(1), widths=c(0.75, 1),
@@ -895,8 +871,8 @@ gtf <- grid.arrange(gtf1, gtf2, ncol=2, nrow=1,
                                     gp=gpar(fontsize=12,
                                             fontface="bold")))
 
-rho <- 0.10
-h <- 100
+rho <- 0.1
+h <- 30
 delta <- 0.01
 kappa <- 1
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
@@ -905,8 +881,8 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 100
-delta <- 0.01
+h <- 30
+delta <- 0.1
 kappa <- 1.2
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -914,14 +890,15 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
 
-h <- 100
-delta <- 0.01
+h <- 30
+delta <- 0.1
 kappa <- 1.5
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
+
 
 pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(K),
@@ -935,9 +912,9 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
   scale_size_manual(name=expression(paste("Distorted\nPerception (",kappa,")")),
                     values=c(3, 1.5, 0.75),
                     labels=c("1.0", "1.2", "1.5")) +
-  scale_y_continuous(limits=c(0, 9),
-                     breaks=c(0, 2.5, 5, 7.5),
-                     labels=c("0%", "2.5%", "5%", "7.5%")) +
+  scale_y_continuous(limits=c(0, 17),
+                     breaks=c(0, 5, 10, 15),
+                     labels=c("0%", "5%", "10%", "15%")) +
   guides(colour = guide_legend(override.aes = list(size=1))) +
   theme(axis.title.x = element_text(colour='black', size=12, face='bold',
                                     margin=margin(t=0.2, unit = "cm")),
@@ -957,23 +934,22 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
 
 if(nrow(isp) > 0){
   pl <- pl + geom_hline(data=isp, aes(yintercept=i*100),
-                        linetype="dashed", color=c("grey60", "blue", "red"),
-                        size=c(1, 1, 1))
+                        linetype="dashed", color=c("grey60", "blue", "red"), size=c(1,1,1))
 }
 
 pl <- pl + annotation_custom(
   grob = textGrob(label = "C", hjust = 0,
                   gp = gpar(cex = 1.3, fontface="bold")),
-  ymin = 10,
-  ymax = 10,
-  xmin = -470,
-  xmax = -470)
+  ymin = 19,
+  ymax = 19,
+  xmin = -31,
+  xmax = -31)
 
 gt <- ggplot_gtable(ggplot_build(pl))
 gt$layout$clip[gt$layout$name == "panel"] <- "off"
 
 plot <- grid.arrange(gtf, gt, ncol=1, nrow=2,
-                     layout_matrix= rbind(c(1),c(2)),
-                     heights=c(1,1), widths=c(1))
+                    layout_matrix= rbind(c(1),c(2)),
+                    heights=c(1,1), widths=c(1))
 
-ggsave(paste0(outputDir,"ebola-fear.pdf"), plot=plot)
+ggsave(paste0(outputDir,"fluavian-fear.pdf"), plot=plot)
