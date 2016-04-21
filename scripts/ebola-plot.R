@@ -2,7 +2,7 @@
 ## Ebola Plots
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 04/13/2016
+## Last Change.: 04/20/2016
 ##
 library(data.table)
 library(deSolve)
@@ -60,7 +60,6 @@ delta <- 0
 
 # Planning horizon
 h <- 40
-
 
 # Payoffs (S, P, I, R)
 payoffs <- c(1, 0.95, 0.10, 0.95)

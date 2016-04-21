@@ -4,9 +4,6 @@
 ## Author......: Luis Gustavo Nardin
 ## Last Change.: 04/05/2016
 ##
-##############
-## Calculates i switch for the perceived i
-##############
 calc_iswitch <- function(h, bs, rho, g, l, k, payoffs){
   
   iswitch <- NULL
