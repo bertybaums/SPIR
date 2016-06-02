@@ -6,6 +6,8 @@
 ##
 library(data.table)
 library(ggplot2)
+library(grid)
+library(gridExtra)
 library(doParallel)
 registerDoParallel(cores=2)
 
@@ -45,8 +47,8 @@ df <- data.table(df)
 names(df) <- c("inormal", "fear", "value")
 
 pl <- ggplot(df, aes(x=inormal*100, y=value*100, group=fear)) +
-  xlab(expression(paste("% Infected (i)"))) +
-  ylab(expression(paste("Distortion % Infected ("*i^{1 / kappa}*")"))) +
+  xlab(expression(paste("Real % Infective (i)"))) +
+  ylab(expression(paste("Perceived % Infective ("*i^{1 / kappa}*")"))) +
   geom_line(size=1) +
   geom_text(data=df[which(inormal == 0.30)], aes(label=paste0("k = ", fear)),
             size=6, fontface='bold',vjust=-0.5, hjust=0, angle=40) +
@@ -110,7 +112,7 @@ kappa <- 1
 payoffs <- c(1, 0.95, 0.10, 0.95)
 
 # Disease's prevalence
-i <- 0.1
+i <- 0.5
 
 # Planning Horizon
 H <- seq(1, 365)
@@ -144,8 +146,9 @@ plS <- ggplot(dataS[which(type != "U")], aes(x=as.numeric(as.character(h)),
                                              color=as.factor(type),
                                              group=as.factor(type))) +
   geom_area(position="stack") +
-  xlab(expression(paste("Planning Horizon (H)"))) +
-  ylab(expression(paste("Expected Time Contributions"))) +
+  #xlab(expression(paste("Planning Horizon (H)"))) +
+  ylab(expression("Expected % of H")) +
+  xlab("") +
   scale_y_continuous(breaks=c(0, 0.25, 0.5, 0.75, 1),
                      labels=c("0%", "25%", "50%", "75%", "100%"),
                      limits=c(-0.001, 1.001)) +
@@ -153,22 +156,38 @@ plS <- ggplot(dataS[which(type != "U")], aes(x=as.numeric(as.character(h)),
                      values=c("S" = "black", "I" = "red2", "R" = "gold1")) +
   scale_fill_manual(name="",
                     values=c("S" = "black", "I" = "red2", "R" = "gold1")) +
-  theme(axis.title.x = element_text(colour = 'black', size = 24, face = 'bold',
+  annotate("text", x=50, y=0.3, label="S", fontface="bold", size=10, color="white") +
+  annotate("text", x=160, y=0.5, label="I", fontface="bold", size=10, color="white") +
+  annotate("text", x=270, y=0.75, label="R", fontface="bold", size=10, color="white") +
+  theme(axis.title.x = element_text(colour = 'black', size = 20, face = 'bold',
                                     margin=margin(t=0.2, unit = "cm")),
-        axis.title.y = element_text(colour = 'black', size = 24, face = 'bold',
-                                    margin=margin(r=0.4, unit = "cm")),
-        axis.text.x = element_text(colour = 'black', size = 12, face = 'bold'),
-        axis.text.y = element_text(colour = 'black', size = 12, face = 'bold'),
+        axis.title.y = element_text(colour = 'black', size = 20, face = 'bold',
+                                    margin=margin(r=0.2, unit = "cm")),
+        axis.text.x = element_text(colour = 'black', size = 18, face = 'bold'),
+        axis.text.y = element_text(colour = 'black', size = 18, face = 'bold'),
         axis.line = element_line(colour = 'black', size = 1.5, linetype = 'solid'),
         panel.background = element_rect(fill = "transparent", colour = NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
-        plot.margin = unit(c(0.5, 0, 0.5, 0), "cm"),
-        #legend.position = "none",
+        plot.margin = unit(c(1.0, 0, 0.0, 0.0), "cm"),
+        legend.position = "none",
         legend.title = element_text(colour="black", size=14, face="bold"),
         legend.text = element_text(colour="black", size=12, face="bold"),
         legend.background = element_rect(fill="white"),
         legend.key = element_rect(fill = "white"))
+
+#ggsave(paste0(outputDir,"s-contribution.png"), plot=plS)
+
+plS <- plS + annotation_custom(
+  grob = textGrob(label = "A", hjust = 0,
+                  gp = gpar(cex = 2, fontface="bold")),
+  ymin = 1.15,
+  ymax = 1.15,
+  xmin = -130,
+  xmax = -130)
+
+pl1 <- ggplot_gtable(ggplot_build(plS))
+pl1$layout$clip[pl1$layout$name == "panel"] <- "off"
 
 
 plP <- ggplot(dataP[which(type != "U")], aes(x=as.numeric(as.character(h)),
@@ -177,8 +196,9 @@ plP <- ggplot(dataP[which(type != "U")], aes(x=as.numeric(as.character(h)),
                                              color=as.factor(type),
                                              group=as.factor(type))) +
   geom_area(position="stack") +
-  xlab(expression(paste("Planning Horizon (H)"))) +
-  ylab(expression(paste("Expected Time Contributions"))) +
+  #ylab(expression("Expected % of H")) +
+  ylab("") +
+  xlab("") +
   scale_y_continuous(breaks=c(0, 0.25, 0.5, 0.75, 1),
                      labels=c("0%", "25%", "50%", "75%", "100%"),
                      limits=c(-0.001, 1.001)) +
@@ -186,19 +206,45 @@ plP <- ggplot(dataP[which(type != "U")], aes(x=as.numeric(as.character(h)),
                      values=c("P" = "blue3", "I" = "red2", "R" = "gold1")) +
   scale_fill_manual(name="",
                     values=c("P" = "blue3", "I" = "red2", "R" = "gold1")) +
-  theme(axis.title.x = element_text(colour = 'black', size = 24, face = 'bold',
+  annotate("text", x=100, y=0.4, label="P", fontface="bold", size=10, color="white") +
+  annotate("text", x=175, y=0.66, label="I", fontface="bold", size=10, color="white") +
+  annotate("text", x=280, y=0.85, label="R", fontface="bold", size=10, color="white") +
+  theme(axis.title.x = element_text(colour = 'black', size = 20, face = 'bold',
                                     margin=margin(t=0.2, unit = "cm")),
-        axis.title.y = element_text(colour = 'black', size = 24, face = 'bold',
-                                    margin=margin(r=0.4, unit = "cm")),
-        axis.text.x = element_text(colour = 'black', size = 12, face = 'bold'),
-        axis.text.y = element_text(colour = 'black', size = 12, face = 'bold'),
+        axis.title.y = element_text(colour = 'black', size = 20, face = 'bold',
+                                    margin=margin(r=0.2,l=1.5, unit = "cm")),
+        axis.text.x = element_text(colour = 'black', size = 18, face = 'bold'),
+        axis.text.y = element_text(colour = 'black', size = 18, face = 'bold'),
         axis.line = element_line(colour = 'black', size = 1.5, linetype = 'solid'),
         panel.background = element_rect(fill = "transparent", colour = NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
-        plot.margin = unit(c(0.5, 0, 0.5, 0), "cm"),
-        #legend.position = "none",
+        plot.margin = unit(c(1.0, 0, 0.0, 0), "cm"),
+        legend.position = "none",
         legend.title = element_text(colour="black", size=14, face="bold"),
         legend.text = element_text(colour="black", size=12, face="bold"),
         legend.background = element_rect(fill="white"),
         legend.key = element_rect(fill = "white"))
+
+#ggsave(paste0(outputDir,"p-contribution.png"), plot=plP)
+
+plP <- plP + annotation_custom(
+  grob = textGrob(label = "B", hjust = 0,
+                  gp = gpar(cex = 2, fontface="bold")),
+  ymin = 1.15,
+  ymax = 1.15,
+  xmin = -130,
+  xmax = -130)
+
+pl2 <- ggplot_gtable(ggplot_build(plP))
+pl2$layout$clip[pl2$layout$name == "panel"] <- "off"
+
+
+pl <- grid.arrange(pl1, pl2, ncol=2, nrow=1,
+                   layout_matrix= rbind(c(1, 2)),
+                   heights=c(1), widths=c(0.9, 1),
+                   bottom=textGrob(expression(paste("Planning Horizon (H)")),
+                                   gp=gpar(fontsize=24,
+                                           fontface="bold")))
+
+ggsave(paste0(outputDir,"contributions.pdf"), height=4, plot=pl)

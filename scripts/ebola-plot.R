@@ -109,7 +109,7 @@ pl <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infected (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colours = c("red", "yellow", "green", "blue"),
@@ -217,7 +217,7 @@ pu2 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                                       group=state,
                                       color=state,
                                       linetype=state)) +
-  xlab(expression(paste("% Infected (i)"))) + ylab("") +
+  xlab(expression(paste("% Infective (i)"))) + ylab("") +
   geom_line(size=0.9) +
   scale_x_continuous(breaks=c(0, 50, 100),
                      labels=c("0%", "50%", "100%"),
@@ -266,7 +266,7 @@ h <- 364
 
 data <- data.table(calc_utilities(h, bs, rho, g, lambda, kappa, payoffs))
 
-data$state <- factor(data$state, levels=rev(levels(as.factor(data$state))))
+data$state <- factor(data$state, levels=c("S", "P"))
 
 ymax <- max(as.numeric(as.character(data[which(i > 0)]$U)))
 
@@ -281,7 +281,7 @@ pu3 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                      labels=c("0%", "50%", "100%"),
                      limits=c(0, 110)) +
   scale_linetype_manual(name="",
-                        values=c("dashed", "solid"),
+                        values=c("solid", "dashed"),
                         labels=c(expression(paste("Susceptible")),
                                  expression(paste("Prophylactic")))) +
   scale_color_manual(name="",
@@ -356,7 +356,7 @@ pc1 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infected (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colours = c("red", "yellow", "green", "blue"),
@@ -422,7 +422,7 @@ pc2 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infected (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colours = c("red", "yellow", "green", "blue"),
@@ -488,7 +488,7 @@ pc3 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infected (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colours = c("red", "yellow", "green", "blue"),
@@ -554,7 +554,7 @@ pc4 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infected (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colours = c("red", "yellow", "green", "blue"),
@@ -601,7 +601,7 @@ ggsave(paste0(outputDir,"ebola-cases.pdf"), plot=plot,
 ## DYNAMICS PLANNING HORIZON
 ###############
 times <- seq(1, 2100, 1)
-rho <-0.10
+rho <-0.1
 h <- 3
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
@@ -609,13 +609,21 @@ pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 
-h <- 30
+h <- 15
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(H=h, i=iswitch[iswitch[,8] != 1,8])
+
+h <- 30
+delta <- 0.01
+iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
+pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
+data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
+isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
 
 h <- 90
 delta <- 0.01
@@ -628,13 +636,13 @@ isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
 pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(H),
                        size=as.factor(H))) +
-  xlab("") + ylab(expression(paste("% Infected (i)"))) +
+  xlab("") + ylab(expression(paste("% Infective (i)"))) +
   geom_line() +
   scale_colour_manual(name=expression(paste("Planning\nHorizon (H)")),
-                      values=c("grey60", "blue", "red")) +
+                      values=c("grey60", "blue", "red", "green")) +
   scale_size_manual(name=expression(paste("Planning\nHorizon (H)")),
-                    values=c(10, 5, 2)) +
-  scale_y_continuous(limits=c(0, 17),
+                    values=c(15, 10, 5, 2)) +
+  scale_y_continuous(limits=c(0, 35),
                      breaks=c(0, 5, 10, 15),
                      labels=c("0%", "5%", "10%", "15%")) +
   guides(colour = guide_legend(override.aes=list(size=2))) +
@@ -657,14 +665,14 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
 
 if(nrow(isp) > 0){
   pl <- pl + geom_hline(data=isp, aes(yintercept=i*100),
-                        linetype="dashed", color=c("blue","red"), size=1)
+                        linetype="dashed", color=c("blue","red", "green"), size=1)
 }
 
 pl <- pl + annotation_custom(
   grob = textGrob(label = "A", hjust = 0,
                   gp = gpar(cex = 4, fontface="bold")),
-  ymin = 18,
-  ymax = 18,
+  ymin = 35,
+  ymax = 35,
   xmin = -380,
   xmax = -380)
 
@@ -679,7 +687,7 @@ gth1$layout$clip[gth1$layout$name == "panel"] <- "off"
 ###############
 times <- seq(1, 2100, 1)
 rho <- 0.10
-h <- 100
+h <- 90
 delta <- 0
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -687,7 +695,7 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 100
+h <- 90
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -695,7 +703,7 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 100
+h <- 90
 delta <- 0.02
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -706,13 +714,13 @@ isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
 pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(D),
                        size=as.factor(D))) +
-  xlab("") + ylab(expression(paste("% Infected (i)"))) +
+  xlab("") + ylab(expression(paste("% Infective (i)"))) +
   geom_line() +
   scale_colour_manual(name=expression(paste("Decision\nFrequency (d)")),
                       values=c("grey60", "blue", "red"),
                       labels=c("0.00", "0.01", "0.02")) +
   scale_size_manual(name=expression(paste("Decision\nFrequency (d)")),
-                    values=c(10, 5, 2),
+                    values=c(15, 10, 5),
                     labels=c("0.00", "0.01", "0.02")) +
   scale_y_continuous(limits=c(0, 17),
                      breaks=c(0, 5, 10, 15),
@@ -789,7 +797,7 @@ pf1 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infected (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colours = c("red", "yellow", "green", "blue"),
@@ -854,7 +862,7 @@ pf2 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits=c(0, 100),
                      breaks=c(0, 25, 50, 75, 100),
                      labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infected (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colours = c("red", "yellow", "green", "blue"),
@@ -926,7 +934,7 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(K),
                        size=as.factor(K))) +
   xlab(expression(paste("Time (t)"))) +
-  ylab(expression(paste("% Infected (i)"))) +
+  ylab(expression(paste("% Infective (i)"))) +
   geom_line() +
   scale_colour_manual(name=expression(paste("Distorted\nPerception (",kappa,")")),
                       values=c("grey60", "blue", "red"),
