@@ -47,8 +47,8 @@ df <- data.table(df)
 names(df) <- c("inormal", "fear", "value")
 
 pl <- ggplot(df, aes(x=inormal*100, y=value*100, group=fear)) +
-  xlab(expression(paste("Real % Infective (i)"))) +
-  ylab(expression(paste("Perceived % Infective ("*i^{1 / kappa}*")"))) +
+  xlab(expression(paste("Real % Infectious (i)"))) +
+  ylab(expression(paste("Perceived % Infectious ("*i^{1 / kappa}*")"))) +
   geom_line(size=1) +
   geom_text(data=df[which(inormal == 0.30)], aes(label=paste0("k = ", fear)),
             size=6, fontface='bold',vjust=-0.5, hjust=0, angle=40) +

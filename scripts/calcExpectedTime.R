@@ -7,11 +7,11 @@
 calc_expectedTime <- function(h, i, bs, rho, g, l, k, payoffs){
   
   p <- i^(1/k) * bs
-  Tss <- (1 - ((1 - p)^h)) / p
+  Tss <- ((1 / p) - 1) * (1 - (1 - p)^h)
   if (p != g){
-    Tis <- (1 / g) - (((p * ((1 - g)^h)) / (g * (p - g))) * (1 - (((1 - p) / (1 - g))^h))) - (((1 - p)^h) / g)
+    Tis <- ((1 - g) / g) * (1 - (1 - p)^h - (((p * (1 - g)) / (p - g)) * ((1 - g)^h - (1 - p)^h)))
   } else {
-    Tis <- (1 / g) - ((p * h * ((1 - g)^(h-1))) / g) - (((1 - p)^h) / g)
+    Tis <- Tss - (h * (1 - p)^(h + 1))
   }
   Trs <- h - Tss - Tis
   
@@ -31,11 +31,11 @@ calc_expectedTime <- function(h, i, bs, rho, g, l, k, payoffs){
   }
   
   p <- i^(1/k) * bs * rho
-  Tpp <- (1 - ((1 - p)^h)) / p
+  Tpp <- ((1 / p) - 1) * (1 - (1 - p)^h)
   if (p != g){
-    Tip <- (1 / g) - (((p * ((1 - g)^h)) / (g * (p - g))) * (1 - (((1 - p) / (1 - g))^h))) - (((1 - p)^h) / g)
+    Tip <- ((1 - g) / g) * (1 - (1 - p)^h - (((p * (1 - g)) / (p - g)) * ((1 - g)^h - (1 - p)^h)))
   } else {
-    Tip <- (1 / g) - ((p * h * ((1 - g)^(h-1))) / g) - (((1 - p)^h) / g)
+    Tip <- Tpp - (h * (1 - p)^(h + 1))
   }
   Trp <- h - Tpp - Tip
   

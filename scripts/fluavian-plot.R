@@ -914,10 +914,10 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
   xlab(expression(paste("Time (t)"))) +
   ylab(expression(paste("% Infective (i)"))) +
   geom_line() +
-  scale_colour_manual(name=expression(paste("Distorted\nPerception (",kappa,")")),
+  scale_colour_manual(name=expression(paste("Distortion of\nPerception (",kappa,")")),
                       values=c("grey60", "blue", "red"),
                       labels=c("1.0", "1.2", "1.5")) +
-  scale_size_manual(name=expression(paste("Distorted\nPerception (",kappa,")")),
+  scale_size_manual(name=expression(paste("Distortion of\nPerception (",kappa,")")),
                     values=c(3, 1.5, 0.75),
                     labels=c("1.0", "1.2", "1.5")) +
   scale_y_continuous(limits=c(0, 17),
