@@ -222,10 +222,9 @@ if (args.output):
         f.write(header)
     
     for rep in range(replication):
-        for rows in num[rep]:
-            for row in rows:
-                line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[3]) + outputSep + str(row[4]) + "\n"
-                f.write(line)
+        for row in num[rep]:
+            line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[3]) + outputSep + str(row[4]) + "\n"
+            f.write(line)
     f.close()
 
 ##
