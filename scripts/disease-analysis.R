@@ -3,7 +3,7 @@
 ## of some specific diseases
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 03/31/2016
+## Last Change.: 07/13/2016
 ##
 library(data.table)
 library(foreach)
@@ -12,12 +12,13 @@ library(grid)
 library(gridExtra)
 library(scales)
 library(doParallel)
-registerDoParallel(cores=2)
+registerDoParallel(cores=3)
 
 
 setwd("/data/workspace/cmci/SPIR/scripts/")
 
-baseDir <- "/data/projects/current/cmci/project-3/sub-projects/spir/"
+baseDir <- "/data/projects/current/cmci/socialepi/sub-projects/spir/"
+outputDir <- "/data/projects/current/cmci/socialepi/sub-projects/spir/figures"
 
 ###############
 ## FUNCTIONS
@@ -118,7 +119,7 @@ filename <- "fluavian.csv"
 
 
 ##
-## Ebola (3, 365)
+## Ebola (1, 500)
 ##
 
 # Payoffs (S, P, I, R)
@@ -137,13 +138,13 @@ g <- 1 - exp(-1 / 65)
 l <- 0
 
 # Fear factor (1 = No fear)
-k <- 1
+k <- 1.5
 
 # Range of Time Horizon to evaluate
-H <- seq(3, 365)
+H <- seq(1, 500)
 
 # File name
-filename <- "ebola.csv"
+filename <- "ebola-k1.5.csv"
 
 
 ##############
@@ -155,7 +156,8 @@ iSwitch <- foreach(h=H, .combine=rbind) %:%
 
 data <- data.table(iSwitch)
 colnames(data) <- c("h", "bs", "rho", "g", "lambda", "kappa", "pI", "i", "iState", "n")
-write.table(data, file=filename, quote=FALSE, sep=";", col.names=TRUE)
+write.table(data, file=paste0(outputDir, "/", filename),
+            quote=FALSE, sep=";", col.names=TRUE)
 
 
 ##############
@@ -166,8 +168,8 @@ plots <- list()
 saveG <- FALSE
 for(purs in values){
   filename <- "fluavian-"
-  data <- data.table(read.table(paste0("/data/projects/current/cmci/project-3/sub-projects/spir/fluavian/",
-                                       filename,purs,".csv"), sep=";", header=TRUE))
+  data <- data.table(read.table(paste0(baseDir, "/fluavian/", filename, purs, ".csv"),
+                                quote=FALSE, sep=";", header=TRUE))
   
   maxh <- max(H)
   pData <- data[which((h <= maxh))]
@@ -207,8 +209,8 @@ for(purs in values){
           legend.text = element_text(colour="black", size=12, face="bold"))
   
   if (saveG){
-    ggsave(paste0("/data/projects/current/cmci/project-3/sub-projects/spir/fluavian/",
-                  filename,purs,".png"), plot=pl, dpi=600)
+    ggsave(paste0(baseDir, "/fluavian/", filename, purs, ".png"),
+           plot=pl, dpi=600)
   }
   
   plots[[length(plots)+1]] <- pl
@@ -226,14 +228,14 @@ pl <- grid.arrange(plots[[1]], plots[[2]], plots[[3]],
                    plots[[28]], plots[[29]], plots[[30]],
                    plots[[31]], plots[[32]], plots[[33]], ncol=6, nrow=6)
 
-ggsave("/data/projects/current/cmci/project-3/sub-projects/spir/fluavian/fluavian-all.png",
+ggsave(paste0(baseDir, "/fluavian/fluavian-all.png"),
        plot=pl, width=50, height=30, units="cm")
 
 
 ## Single plot
 filename <- "fluavian-d0.1"
-data <- data.table(read.table(paste0("/data/projects/current/cmci/project-3/sub-projects/spir/fluavian/",
-                                     filename,".csv"), sep=";", header=TRUE))
+data <- data.table(read.table(paste0(baseDir, "/fluavian/", filename,".csv"),
+                              quote=FALSE, sep=";", header=TRUE))
 
 maxh <- max(H)
 pData <- data[which((h <= maxh))]
@@ -275,8 +277,8 @@ plots <- list()
 saveG <- FALSE
 for(purs in values){
   filename <- "ebola-"
-  data <- data.table(read.table(paste0("/data/projects/current/cmci/project-3/sub-projects/spir/ebola/",
-                                       filename,purs,".csv"), sep=";", header=TRUE))
+  data <- data.table(read.table(paste0(baseDir, "/ebola/", filename, purs, ".csv"),
+                                quote=FALSE, sep=";", header=TRUE))
   
   maxh <- max(H)
   pData <- data[which((h <= maxh))]
@@ -316,8 +318,8 @@ for(purs in values){
           legend.text = element_text(colour="black", size=12, face="bold"))
   
   if (saveG){
-    ggsave(paste0("/data/projects/current/cmci/project-3/sub-projects/spir/ebola/",
-                  filename,purs,".png"), plot=pl, dpi=600)
+    ggsave(paste0(baseDir, "/ebola/", filename, purs, ".png"),
+           plot=pl, dpi=600)
   }
   
   plots[[length(plots)+1]] <- pl
@@ -335,14 +337,14 @@ pl <- grid.arrange(plots[[1]], plots[[2]], plots[[3]],
                    plots[[28]], plots[[29]], plots[[30]],
                    plots[[31]], plots[[32]], plots[[33]], ncol=6, nrow=6)
 
-ggsave("/data/projects/current/cmci/project-3/sub-projects/spir/ebola/ebola-all.png",
+ggsave(paste0(baseDir, "/ebola/ebola-all.png"),
        plot=pl, width=50, height=30, units="cm")
 
 
 ## Single plot
 filename <- "ebola-d0.1"
-data <- data.table(read.table(paste0("/data/projects/current/cmci/project-3/sub-projects/spir/ebola/",
-                                     filename,".csv"), sep=";", header=TRUE))
+data <- data.table(read.table(paste0(baseDir, "/ebola/", filename,".csv"),
+                              quote=FALSE, sep=";", header=TRUE))
 
 maxh <- max(H)
 pData <- data[which((h <= maxh))]
@@ -448,5 +450,4 @@ pl <- ggplot(df, aes(x=inormal, y=value, group=fear)) +
         legend.title = element_text(colour="black", size=14, face="bold"),
         legend.text = element_text(colour="black", size=12, face="bold"))
 
-ggsave("/data/projects/current/cmci/project-3/sub-projects/spir/fear.pdf",
-       plot=pl)
+ggsave(paste0(baseDir, "/fear.pdf"), plot=pl)

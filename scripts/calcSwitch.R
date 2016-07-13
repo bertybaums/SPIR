@@ -2,7 +2,7 @@
 ## Calculate Switch Region
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 04/05/2016
+## Last Change.: 06/23/2016
 ##
 calc_iswitch <- function(h, bs, rho, g, l, k, payoffs){
   

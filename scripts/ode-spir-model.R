@@ -2,7 +2,7 @@
 ## ODE SPIR model
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 04/05/2016
+## Last Change.: 07/08/2016
 ##
 library(data.table)
 library(deSolve)
@@ -11,6 +11,7 @@ library(ggplot2)
 library(doParallel)
 registerDoParallel(cores=2)
 
+setwd("/data/workspace/cmci/SPIR/scripts")
 
 source("calcSwitch.R")
 source("SPIRmodel.R")
@@ -21,17 +22,17 @@ source("SPIRmodel.R")
 pars <- list(
   R0 <- 2,
   duration <- 8,
-  gamma <- 1 / duration,
+  G <- 1 / duration,
   Bs <- R0 / duration,
-  bs <- 1 - exp(-Bs),
+  betaS <- 1 - exp(-Bs),
   rho <- 0.01,
-  G <- 1 - exp(-G),
+  gamma <- 1 - exp(-G),
   lambda <- 0,
   kappa <- 2,
   delta <- 0.1,
   h <- 40,
   payoffs <- c(1.00, 0.95, 0.60, 1.00),
-  iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
+  iswitch <- calc_iswitch(h, betaS, rho, gamma, lambda, kappa, payoffs)
 )
 
 yinit <- c(S = 100000 - 1, P = 0, I = 1, R = 0)

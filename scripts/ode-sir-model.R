@@ -1,3 +1,9 @@
+##
+## ODE SIR model
+##
+## Author......: Luis Gustavo Nardin
+## Last Change.: 07/08/2016
+##
 library(deSolve)
 
 ##
@@ -6,7 +12,7 @@ library(deSolve)
 SIR <- function(Time, State, Pars){
   with(as.list(c(State,Pars)),{
     
-    i <- I / N
+    i <- I / (S + I + R)
     
     dS <- -1*b*i*S
     dI <- b*i*S - g*I
@@ -32,7 +38,7 @@ pars <- list(
 )
 
 yinit <- c(S = 100000 - 1, I = 1, R = 0)
-times <- seq(0, 1000, 1)
+times <- seq(0, 10000, 1)
 
 ##
 ## Solve the ODE

@@ -2,7 +2,7 @@
 ## Ebola Plots
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 04/20/2016
+## Last Change.: 07/12/2016
 ##
 library(data.table)
 library(deSolve)
@@ -13,7 +13,7 @@ library(gtable)
 
 setwd("/data/workspace/cmci/SPIR/scripts/")
 
-baseDir <- "/data/projects/current/cmci/project-3/sub-projects/spir/"
+baseDir <- "/data/projects/current/cmci/socialepi/sub-projects/spir/"
 inputEbolaDir <- paste0(baseDir, "ebola/")
 outputDir <- paste0(baseDir, "figures/")
 
@@ -44,7 +44,7 @@ betaS <- R0 / duration
 bs <- 1 - exp(-betaS)
 
 # Prophylactic protection
-rho <- 0.10
+rho <- 0.1
 
 # Recover probability
 g <- 1 - exp(-gamma)
@@ -59,7 +59,7 @@ kappa <- 1
 delta <- 0
 
 # Planning horizon
-h <- 40
+h <- 90
 
 # Payoffs (S, P, I, R)
 payoffs <- c(1, 0.95, 0.10, 0.95)
@@ -212,12 +212,16 @@ data$state <- factor(data$state, levels=rev(levels(as.factor(data$state))))
 
 ymax <- max(as.numeric(as.character(data[which(i > 0)]$U)))
 
+xint <- data.table(calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs))
+
 pu2 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                                       y=as.numeric(as.character(U)),
                                       group=state,
                                       color=state,
                                       linetype=state)) +
   xlab(expression(paste("% Infective (i)"))) + ylab("") +
+  geom_vline(xintercept=xint[which(n == 1)]$pI * 100,
+             linetype="dotted", size=1) +
   geom_line(size=0.9) +
   scale_x_continuous(breaks=c(0, 50, 100),
                      labels=c("0%", "50%", "100%"),
@@ -270,12 +274,18 @@ data$state <- factor(data$state, levels=c("S", "P"))
 
 ymax <- max(as.numeric(as.character(data[which(i > 0)]$U)))
 
+xint <- data.table(calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs))
+
 pu3 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                                       y=as.numeric(as.character(U)),
                                       group=state,
                                       color=state,
                                       linetype=state)) +
   xlab("") + ylab("") +
+  geom_vline(xintercept=xint[which(n == 1)]$pI * 100,
+             linetype="dotted", size=1) +
+  geom_vline(xintercept=xint[which(n == 2)]$pI * 100,
+             linetype="dotted", size=1) +
   geom_line(size=0.9) +
   scale_x_continuous(breaks=c(0, 50, 100),
                      labels=c("0%", "50%", "100%"),
@@ -324,301 +334,25 @@ ggsave(paste0(outputDir, "ebola-heat.pdf"), plot=plot)
 
 
 ###############
-## CASE 1
-###############
-filename <- "ebola-1"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
-                              sep=";", header=TRUE))
-
-maxh <- 365
-pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
-
-pc1 <- ggplot(pData[which((n == 0) & (i < 1))],
-              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
-  xlab(expression(paste("u"[S]*" = u"[R]*" > u"[P]))) +
-  ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
-  xlim(0, maxh + 30) +
-  geom_raster(interpolate=TRUE, stat="identity") +
-  geom_contour(data=pData[which(n == 2)],
-               aes(x=h, y=(1 - rho) * 100, z=pI),
-               breaks=c(0.3, 0.5, 0.7, 0.9),
-               color="black",
-               linetype="solid",
-               size=0.5) +
-  geom_line(data=pData[which(n == 2)],
-            alpha=0.05,
-            size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
-                       limits = c(0, 100),
-                       values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
-                       labels = c("0%", "25%", "50%", "75%", "100%")) +
-  theme(axis.title.x = element_text(colour='black', size=38, face='bold',
-                                    margin=margin(t=0.5, unit = "cm")),
-        axis.title.y = element_text(colour='black', size=28, face='bold',
-                                    margin=margin(r=1.2, unit = "cm")),
-        axis.text.x = element_text(colour='black', size=16, face='bold'),
-        axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
-        panel.background = element_rect(fill="transparent", colour=NA),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_blank(),
-        plot.margin = unit(c(1, 0, 0, 0), "cm"),
-        legend.position = "none",
-        legend.title = element_text(colour="black", size=14, face="bold"),
-        legend.text = element_text(colour="black", size=12, face="bold"),
-        legend.key = element_rect(fill = "white"))
-
-pc1 <- pc1 + annotation_custom(
-  grob = textGrob(label = "A", hjust = 0,
-                  gp = gpar(cex = 3.5, fontface="bold")),
-  ymin = 107,
-  ymax = 107,
-  xmin = -120,
-  xmax = -120)
-
-gtc1 <- ggplot_gtable(ggplot_build(pc1))
-gtc1$layout$clip[gtc1$layout$name == "panel"] <- "off"
-
-
-###############
-## CASE 2
-###############
-filename <- "ebola-0.97"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
-                              sep=";", header=TRUE))
-
-maxh <- 365
-pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
-
-pc2 <- ggplot(pData[which((n == 0) & (i < 1))],
-              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
-  xlab(expression(paste("u"[S]*" > u"[R]*" > u"[P]))) +
-  ylab("") +
-  xlim(0, maxh + 30) +
-  geom_raster(interpolate=TRUE, stat="identity") +
-  geom_contour(data=pData[which(n == 2)],
-               aes(x=h, y=(1 - rho) * 100, z=pI),
-               breaks=c(0.3, 0.5, 0.7, 0.9),
-               color="black",
-               linetype="solid",
-               size=0.5) +
-  geom_line(data=pData[which(n == 2)],
-            alpha=0.05,
-            size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
-                       limits = c(0, 100),
-                       values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
-                       labels = c("0%", "25%", "50%", "75%", "100%")) +
-  theme(axis.title.x = element_text(colour='black', size=38, face='bold',
-                                    margin=margin(t=0.5, unit = "cm")),
-        axis.title.y = element_text(colour='black', size=28, face='bold',
-                                    margin=margin(r=1.2, unit = "cm")),
-        axis.text.x = element_text(colour='black', size=16, face='bold'),
-        axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
-        panel.background = element_rect(fill="transparent", colour=NA),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_blank(),
-        plot.margin = unit(c(1, 0, 0, 0), "cm"),
-        legend.position = "none",
-        legend.title = element_text(colour="black", size=14, face="bold"),
-        legend.text = element_text(colour="black", size=12, face="bold"),
-        legend.key = element_rect(fill = "white"))
-
-pc2 <- pc2 + annotation_custom(
-  grob = textGrob(label = "B", hjust = 0,
-                  gp = gpar(cex = 3.5, fontface="bold")),
-  ymin = 107,
-  ymax = 107,
-  xmin = -120,
-  xmax = -120)
-
-gtc2 <- ggplot_gtable(ggplot_build(pc2))
-gtc2$layout$clip[gtc2$layout$name == "panel"] <- "off"
-
-
-###############
-## CASE 3
-###############
-filename <- "ebola-0.95"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
-                              sep=";", header=TRUE))
-
-maxh <- 365
-pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
-
-pc3 <- ggplot(pData[which((n == 0) & (i < 1))],
-              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
-  xlab(expression(paste("u"[S]*" > u"[R]*" = u"[P]))) +
-  ylab("") +
-  xlim(0, maxh + 30) +
-  geom_raster(interpolate=TRUE, stat="identity") +
-  geom_contour(data=pData[which(n == 2)],
-               aes(x=h, y=(1 - rho) * 100, z=pI),
-               breaks=c(0.3, 0.5, 0.7, 0.9),
-               color="black",
-               linetype="solid",
-               size=0.5) +
-  geom_line(data=pData[which(n == 2)],
-            alpha=0.05,
-            size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
-                       limits = c(0, 100),
-                       values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
-                       labels = c("0%", "25%", "50%", "75%", "100%")) +
-  theme(axis.title.x = element_text(colour='black', size=38, face='bold',
-                                    margin=margin(t=0.5, unit = "cm")),
-        axis.title.y = element_text(colour='black', size=28, face='bold',
-                                    margin=margin(r=1.2, unit = "cm")),
-        axis.text.x = element_text(colour='black', size=16, face='bold'),
-        axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
-        panel.background = element_rect(fill="transparent", colour=NA),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_blank(),
-        plot.margin = unit(c(1, 0, 0, 0), "cm"),
-        legend.position = "none",
-        legend.title = element_text(colour="black", size=14, face="bold"),
-        legend.text = element_text(colour="black", size=12, face="bold"),
-        legend.key = element_rect(fill = "white"))
-
-pc3 <- pc3 + annotation_custom(
-  grob = textGrob(label = "C", hjust = 0,
-                  gp = gpar(cex = 3.5, fontface="bold")),
-  ymin = 107,
-  ymax = 107,
-  xmin = -120,
-  xmax = -120)
-
-gtc3 <- ggplot_gtable(ggplot_build(pc3))
-gtc3$layout$clip[gtc3$layout$name == "panel"] <- "off"
-
-
-###############
-## CASE 4
-###############
-filename <- "ebola-0.9"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
-                              sep=";", header=TRUE))
-
-maxh <- 365
-pData <- data[which((h <= maxh))]
-
-ymin <- 1 - max(pData[which(n == 2 & h == 365 & pI >= 0.3)]$rho)
-ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
-
-pc4 <- ggplot(pData[which((n == 0) & (i < 1))],
-              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
-  xlab(expression(paste("u"[S]*" > u"[P]*" > u"[R]))) +
-  ylab("") +
-  xlim(0, maxh + 30) +
-  geom_raster(interpolate=TRUE, stat="identity") +
-  geom_contour(data=pData[which(n == 2)],
-               aes(x=h, y=(1 - rho) * 100, z=pI),
-               breaks=c(0.3, 0.5, 0.7, 0.9),
-               color="black",
-               linetype="solid",
-               size=0.5) +
-  geom_line(data=pData[which(n == 2)],
-            alpha=0.05,
-            size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
-                       limits = c(0, 100),
-                       values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
-                       labels = c("0%", "25%", "50%", "75%", "100%")) +
-  theme(axis.title.x = element_text(colour='black', size=38, face='bold',
-                                    margin=margin(t=0.5, unit = "cm")),
-        axis.title.y = element_text(colour='black', size=28, face='bold',
-                                    margin=margin(r=1.2, unit = "cm")),
-        axis.text.x = element_text(colour='black', size=16, face='bold'),
-        axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
-        panel.background = element_rect(fill="transparent", colour=NA),
-        panel.grid.minor = element_blank(),
-        panel.grid.major = element_blank(),
-        plot.margin = unit(c(1, 0, 0, 0), "cm"),
-        legend.position = "none",
-        legend.title = element_text(colour="black", size=14, face="bold"),
-        legend.text = element_text(colour="black", size=12, face="bold"),
-        legend.key = element_rect(fill = "white"))
-
-pc4 <- pc4 + annotation_custom(
-  grob = textGrob(label = "D", hjust = 0,
-                  gp = gpar(cex = 3.5, fontface="bold")),
-  ymin = 107,
-  ymax = 107,
-  xmin = -120,
-  xmax = -120)
-
-gtc4 <- ggplot_gtable(ggplot_build(pc4))
-gtc4$layout$clip[gtc4$layout$name == "panel"] <- "off"
-
-plot <- grid.arrange(gtc1, gtc2, gtc3, gtc4, ncol=4, nrow=1,
-                     layout_matrix= rbind(c(1, 2, 3, 4)),
-                     heights=c(0.25), widths=c(0.25, 0.25, 0.25, 0.25),
-                     bottom=textGrob(expression(paste("Planning Horizon (H)")),
-                                     gp=gpar(fontsize=34,
-                                             fontface="bold")))
-
-ggsave(paste0(outputDir,"ebola-cases.pdf"), plot=plot,
-       width=80, height=15, units="cm")
-
-
-###############
 ## DYNAMICS PLANNING HORIZON
 ###############
 times <- seq(1, 2100, 1)
-rho <-0.1
-h <- 3
+rho <- 0.1
+h <- 1
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 
-h <- 15
-delta <- 0.01
+h <- 30
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(H=h, i=iswitch[iswitch[,8] != 1,8])
 
-h <- 30
-delta <- 0.01
+h <- 45
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
@@ -626,7 +360,6 @@ data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=
 isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
 
 h <- 90
-delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
@@ -636,15 +369,16 @@ isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
 pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(H),
                        size=as.factor(H))) +
-  xlab("") + ylab(expression(paste("% Infective (i)"))) +
+  xlab("") +
+  ylab(expression(paste("% Infective (i)"))) +
   geom_line() +
   scale_colour_manual(name=expression(paste("Planning\nHorizon (H)")),
                       values=c("grey60", "blue", "red", "green")) +
   scale_size_manual(name=expression(paste("Planning\nHorizon (H)")),
                     values=c(15, 10, 5, 2)) +
-  scale_y_continuous(limits=c(0, 35),
-                     breaks=c(0, 5, 10, 15),
-                     labels=c("0%", "5%", "10%", "15%")) +
+  scale_y_continuous(limits=c(0, 20),
+                     breaks=c(0, 5, 10, 15, 20),
+                     labels=c("0%", "5%", "10%", "15%", "20%")) +
   guides(colour = guide_legend(override.aes=list(size=2))) +
   theme(axis.title.x = element_text(colour='black', size=12, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -671,8 +405,8 @@ if(nrow(isp) > 0){
 pl <- pl + annotation_custom(
   grob = textGrob(label = "A", hjust = 0,
                   gp = gpar(cex = 4, fontface="bold")),
-  ymin = 35,
-  ymax = 35,
+  ymin = 21,
+  ymax = 21,
   xmin = -380,
   xmax = -380)
 
@@ -686,7 +420,7 @@ gth1$layout$clip[gth1$layout$name == "panel"] <- "off"
 ## DYNAMICS DECISION
 ###############
 times <- seq(1, 2100, 1)
-rho <- 0.10
+rho <- 0.1
 h <- 90
 delta <- 0
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
@@ -695,7 +429,6 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 90
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -703,7 +436,6 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 90
 delta <- 0.02
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -902,8 +634,8 @@ gtf <- grid.arrange(gtf1, gtf2, ncol=2, nrow=1,
                                     gp=gpar(fontsize=12,
                                             fontface="bold")))
 
-rho <- 0.10
-h <- 100
+rho <- 0.1
+h <- 90
 delta <- 0.01
 kappa <- 1
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
@@ -912,8 +644,7 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
-h <- 100
-delta <- 0.01
+h <- 90
 kappa <- 1.2
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
@@ -921,8 +652,7 @@ out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
 
-h <- 100
-delta <- 0.01
+h <- 90
 kappa <- 1.5
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
