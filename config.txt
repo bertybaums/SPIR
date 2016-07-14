@@ -24,7 +24,7 @@ gamma = 0.015
 ##
 ## Decision information
 ##
-fear = 4
+fear = 1
 decision = 0.033
 time.horizon = 20
 
@@ -36,8 +36,8 @@ time.horizon = 20
 # 1 Micro
 # 2 Gillespie
 method = 2
-replication = 1
-time.steps = 1000000
+replication = 10
+time.steps = 100
 
 ##
 ## Output information
@@ -46,7 +46,7 @@ time.steps = 1000000
 # 0 Standard
 # 1 Galapagos
 output.format = 1
-output.window = 1
+output.window = 100
 output.file = ../output.csv
 output.header = True
 output.separator = ,

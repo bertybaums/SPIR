@@ -128,8 +128,13 @@ class GillespieMethod(object):
         num.append([0,
                     self.nAgents[State.S],
                     self.nAgents[State.P],
+                    0,
                     self.nAgents[State.I],
-                    self.nAgents[State.R]])
+                    0,
+                    0,
+                    self.nAgents[State.R],
+                    0,
+                    0])
         
         ##
         ## Run the simulation
@@ -227,8 +232,13 @@ class GillespieMethod(object):
             num.append([t,
                     self.nAgents[State.S],
                     self.nAgents[State.P],
+                    0,
                     self.nAgents[State.I],
-                    self.nAgents[State.R]])
+                    0,
+                    0,
+                    self.nAgents[State.R],
+                    0,
+                    0])
             
             ##
             ## Update

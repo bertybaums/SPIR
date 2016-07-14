@@ -140,8 +140,13 @@ class MicroMethod(object):
                 num.append([cycle,
                             totagents[State.S] / float(N),
                             totagents[State.P] / float(N),
+                            0,
                             totagents[State.I] / float(N),
-                            totagents[State.R] / float(N)])
+                            0,
+                            0,
+                            totagents[State.R] / float(N),
+                            0,
+                            0])
                 totagents = [0, 0, 0, 0]
                 cycle += 1
                 elapsed = 0
@@ -153,8 +158,13 @@ class MicroMethod(object):
             num.append([cycle,
                             totagents[State.S] / float(elapsed),
                             totagents[State.P] / float(elapsed),
+                            0,
                             totagents[State.I] / float(elapsed),
-                            totagents[State.R] / float(elapsed)])
+                            0,
+                            0,
+                            totagents[State.R] / float(elapsed),
+                            0,
+                            0])
         
         return num
     

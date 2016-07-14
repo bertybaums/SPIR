@@ -54,7 +54,7 @@ l <- 0
 k <- 1
 
 # Range of Time Horizon to evaluate
-H <- seq(3, 365)
+H <- seq(1, 500)
 
 # File name
 filename <- "fluseasonal.csv"
@@ -83,7 +83,7 @@ l <- 0
 k <- 1
 
 # Range of Time Horizon to evaluate
-H <- seq(3, 365)
+H <- seq(1, 500)
 
 # File name
 filename <- "flu1918.csv"
@@ -112,7 +112,7 @@ l <- 0
 k <- 1
 
 # Range of Time Horizon to evaluate
-H <- seq(3, 365)
+H <- seq(1, 500)
 
 # File name
 filename <- "fluavian.csv"
@@ -342,9 +342,9 @@ ggsave(paste0(baseDir, "/ebola/ebola-all.png"),
 
 
 ## Single plot
-filename <- "ebola-d0.1"
-data <- data.table(read.table(paste0(baseDir, "/ebola/", filename,".csv"),
-                              quote=FALSE, sep=";", header=TRUE))
+filename <- "ebola-k1.5"
+data <- data.table(read.table(paste0(baseDir, "ebola/", filename,".csv"),
+                              sep=";", header=TRUE))
 
 maxh <- max(H)
 pData <- data[which((h <= maxh))]

@@ -85,16 +85,16 @@ args = parser.parse_args()
 ##
 ## Input Variables - Default Values
 ##
-nAgents = {State.S: 9999, State.P: 0, State.I: 10, State.R: 0}
-payoffs = {State.S: 1, State.P: 0.9, State.I: 0, State.R: 1}
-disease = {Constant.BETA: 0.2, Constant.RHO: 0.5, Constant.GAMMA: 0.05}
+nAgents = {State.S: 9999, State.P: 0, State.I: 1, State.R: 0}
+payoffs = {State.S: 1, State.P: 0.95, State.I: 0.6, State.R: 1}
+disease = {Constant.BETA: 0.031, Constant.RHO: 0.25, Constant.GAMMA: 0.015}
 fear = 1.0
-decision = 0.1
+decision = 0.01
 timeHorizon = 20
 method = Constant.METHOD_GILLESPIE
 replication = 1
 timeSteps = 1000
-window = 0.5
+window = 1
 outputFormat = Constant.O_STANDARD
 outputFile = "output.csv"
 outputHeader = True
@@ -188,10 +188,17 @@ else:
 if (args.verbose):
     start = clock()
 
+##
+## Total number of agents
+##
+N = 0
+for i in nAgents:
+    N += nAgents[i]
+
 num = []
 for rep in range(replication):
-    #if (args.verbose):
-    print('Replication:', rep)
+    if (args.verbose):
+        print('Replication:', rep)
     
     agents = {State.S: nAgents[State.S], State.P: nAgents[State.P],
               State.I: nAgents[State.I], State.R: nAgents[State.R]}
@@ -199,11 +206,11 @@ for rep in range(replication):
     ## Simulation method
     ##
     if (method == Constant.METHOD_NAIVE):
-        m = NaiveMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps)
+        m = NaiveMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
     elif (method == Constant.METHOD_MICRO):
-        m = MicroMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps)
+        m = MicroMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
     elif (method == Constant.METHOD_GILLESPIE):
-        m = GillespieMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps)
+        m = GillespieMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
     
     ##
     ## Execute simulation
@@ -230,21 +237,86 @@ if (args.output):
         
         for rep in range(replication):
             for row in num[rep]:
-                line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[3]) + outputSep + str(row[4]) + "\n"
+                line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[4]) + outputSep + str(row[7]) + "\n"
                 f.write(line)
         f.close()
+        
     elif (outputFormat == Constant.O_GALAPAGOS):
-        header = "simulator_time" + outputSep + "household_location_admin4" + outputSep + "infection_state" + outputSep + "count" + "\n"
+        header = "simulator_time" + outputSep + "infection_state" + outputSep + "control_measure_status" + outputSep + "count" + "\n"
         f.write(header)
         
-        for row in num[0]:
-            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_S + outputSep + str(row[1]) + "\n"
+        size = 0
+        for vector in num:
+            aux = vector[len(vector) - 1][0]
+            if (aux > size):
+                size = aux
+        
+        size = int((size / float(window)) + 1)
+        
+        x = [0 for y in range(size)]
+        s = [0 for y in range(size)]
+        p = [0 for y in range(size)]
+        i = [0 for y in range(size)]
+        r = [0 for y in range(size)]
+        for rep in range(replication):
+            t = window
+            pos = 0
+            index = 0
+            nSize = len(num[rep])
+            pv = [nAgents[State.S] / float(N), nAgents[State.P] / float(N),
+                  nAgents[State.I] / float(N), nAgents[State.R] / float(N),
+                  nAgents[State.I] / float(N)]
+            while (pos < size):
+                v = [0, 0, 0, 0]
+                n = 0
+                while ((index < nSize) and (num[rep][index][0] <= t)):
+                    v[0] += num[rep][index][1]
+                    v[1] += num[rep][index][2]
+                    v[2] += num[rep][index][4]
+                    v[3] += num[rep][index][7]
+                    index += 1
+                    n += 1
+                
+                if (n > 0):
+                    pv[0] = v[0] / float(n)
+                    pv[1] = v[1] / float(n)
+                    pv[2] = v[2] / float(n)
+                    pv[3] = v[3] / float(n)
+                    
+                s[pos] += pv[0]
+                p[pos] += pv[1]
+                i[pos] += pv[2]
+                r[pos] += pv[3]
+                
+                pos += 1
+                t += window
+        
+        for pos in range(size):
+            x[pos] = (pos * window) / float(N)
+            s[pos] /= replication
+            p[pos] /= replication
+            i[pos] /= replication
+            r[pos] /= replication
+                
+            
+        for y in range(size):
+            line = str(x[y]) + outputSep + Constant.O_S + outputSep + "noControlMeasureAdopted" + outputSep + str(s[y]) + "\n"
             f.write(line)
-            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_P + outputSep + str(row[2]) + "\n"
+            line = str(x[y]) + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + str(p[y]) + "\n"
             f.write(line)
-            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_I + outputSep + str(row[3]) + "\n"
+            line = str(x[y]) + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
             f.write(line)
-            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_R + outputSep + str(row[4]) + "\n"
+            line = str(x[y]) + outputSep + Constant.O_I + outputSep + "noControlMeasureAdopted" + outputSep + str(i[y]) + "\n"
+            f.write(line)
+            line = str(x[y]) + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
+            f.write(line)
+            line = str(x[y]) + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
+            f.write(line)
+            line = str(x[y]) + outputSep + Constant.O_R + outputSep + "noControlMeasureAdopted" + outputSep + str(r[y]) + "\n"
+            f.write(line)
+            line = str(x[y]) + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
+            f.write(line)
+            line = str(x[y]) + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
             f.write(line)
         f.close()
 
@@ -252,9 +324,6 @@ if (args.output):
 ## Graphical visualization
 ##
 if (args.graphic):
-    N = 0
-    for i in nAgents:
-        N += nAgents[i]
     size = 0
     for vector in num:
         aux = vector[len(vector) - 1][0]
@@ -325,12 +394,6 @@ if (args.graphic):
     pyplot.xlabel('Time')
     pyplot.ylabel('Number')
     p1.legend((lineS, lineP, lineI, lineR), ('S', 'P', 'I', 'R'), title='Legend')
-    #p1.annotate('Area.S: ' + str(total[State.S]),
-    #            xy=(int(timeSteps / float(2)), int(N / float(2))))
-    #p1.annotate('Area.P: ' + str(total[State.P]),
-    #            xy=(int(timeSteps / float(2)), int((N / float(2)) * 0.9)))
-    #p1.annotate('Area.I: ' + str(total[State.I]),
-    #            xy=(int(timeSteps / float(2)), int((N / float(2)) * 0.8)))
     
     ##
     ## Frequency

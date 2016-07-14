@@ -60,8 +60,13 @@ class NaiveMethod(object):
         num.append([0,
                     self.nAgents[State.S],
                     self.nAgents[State.P],
+                    0,
                     self.nAgents[State.I],
-                    self.nAgents[State.R]])
+                    0,
+                    0,
+                    self.nAgents[State.R],
+                    0,
+                    0])
         
         ##
         ## Run the simulation
@@ -125,8 +130,13 @@ class NaiveMethod(object):
             num.append([t,
                     numagents[State.S],
                     numagents[State.P],
+                    0,
                     numagents[State.I],
-                    numagents[State.R]])
+                    0,
+                    0,
+                    numagents[State.R],
+                    0,
+                    0])
             
             i = numagents[State.I] / float(N)
             t += 1
