@@ -31,7 +31,7 @@ parser.add_argument("-g", "--graphic", action="store_true")
 sb = parser.add_subparsers()
 
 configFile = sb.add_parser("configFile")
-configFile.add_argument(Constant.F,
+configFile.add_argument(Constant.FILE,
                         help="Configuration file name")
 
 configCmd = sb.add_parser("params")
@@ -71,6 +71,8 @@ configCmd.add_argument(Constant.T, nargs=1, required=True,
                        help="Time steps")
 configCmd.add_argument(Constant.W, nargs=1, required=True,
                        help="Smooth window")
+configCmd.add_argument(Constant.F, nargs=1, required=True,
+                       help="Output format")
 configCmd.add_argument(Constant.O, nargs=1, required=True,
                        help="Output file name")
 configCmd.add_argument(Constant.P, nargs=1, required=True,
@@ -89,16 +91,17 @@ disease = {Constant.BETA: 0.2, Constant.RHO: 0.5, Constant.GAMMA: 0.05}
 fear = 1.0
 decision = 0.1
 timeHorizon = 20
-method = 2
+method = Constant.METHOD_GILLESPIE
 replication = 1
 timeSteps = 1000
 window = 0.5
+outputFormat = Constant.O_STANDARD
 outputFile = "output.csv"
 outputHeader = True
 outputSep = ";"
     
-if (args.__contains__(Constant.F)):
-        
+if (args.__contains__(Constant.FILE)):
+    
     if (not isfile(str(args.filename))):
         print("Configuration file does not exist")
         exit()
@@ -144,6 +147,8 @@ if (args.__contains__(Constant.F)):
             replication = int(param[1])
         elif (param[0] == Constant.TIME_STEPS):
             timeSteps = int(param[1])
+        elif (param[0] == Constant.OUTPUT_FORMAT):
+            outputFormat = int(param[1])
         elif (param[0] == Constant.OUTPUT_WINDOW):
             window = float(param[1])
         elif (param[0] == Constant.OUTPUT_FILE):
@@ -172,6 +177,7 @@ else:
     replication = int(args.R[0])
     timeSteps = int(args.T[0])
     window = float(args.W[0])
+    outputFormat = int(args.F[0])
     outputFile = args.O[0]
     outputHeader = bool(args.P[0])
     outputSep = args.S[0]
@@ -216,16 +222,32 @@ if (args.verbose):
 ##
 if (args.output):
     f = open(outputFile, "w")
-
-    if (outputHeader):
-        header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + "\n"
-        f.write(header)
     
-    for rep in range(replication):
-        for row in num[rep]:
-            line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[3]) + outputSep + str(row[4]) + "\n"
+    if (outputFormat == Constant.O_STANDARD):
+        if (outputHeader):
+            header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + "\n"
+            f.write(header)
+        
+        for rep in range(replication):
+            for row in num[rep]:
+                line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[3]) + outputSep + str(row[4]) + "\n"
+                f.write(line)
+        f.close()
+    elif (outputFormat == Constant.O_APOLLO):
+        outputSep = ","
+        header = "simulator_time" + outputSep + "household_location_admin4" + outputSep + "infection_state" + outputSep + "count" + "\n"
+        f.write(header)
+        
+        for row in num[0]:
+            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_S + outputSep + str(row[1]) + "\n"
             f.write(line)
-    f.close()
+            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_P + outputSep + str(row[2]) + "\n"
+            f.write(line)
+            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_I + outputSep + str(row[3]) + "\n"
+            f.write(line)
+            line = str(row[0]) + outputSep + "0" + outputSep + Constant.O_R + outputSep + str(row[4]) + "\n"
+            f.write(line)
+        f.close()
 
 ##
 ## Graphical visualization

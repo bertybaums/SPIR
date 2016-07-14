@@ -31,16 +31,21 @@ time.horizon = 20
 ##
 ## Simulation information
 ##
+# Method
 # 0 Naive
 # 1 Micro
 # 2 Gillespie
 method = 2
-replication = 10
-time.steps = 100000000
+replication = 1
+time.steps = 1000000
 
 ##
 ## Output information
 ##
+# Format
+# 0 Standard
+# 1 Apolo
+output.format = 1
 output.window = 0.5
 output.file = ../output.csv
 output.header = True

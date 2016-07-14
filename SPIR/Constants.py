@@ -19,6 +19,7 @@ class Constant():
     METHOD = "method"
     REPLICATION = "replication"
     TIME_STEPS = "time.steps"
+    OUTPUT_FORMAT = "output.format"
     OUTPUT_WINDOW = "output.window"
     OUTPUT_FILE = "output.file"
     OUTPUT_HEADER = "output.header"
@@ -27,7 +28,7 @@ class Constant():
     ##
     ## Command line parameters
     ##
-    F = "filename"
+    FILE = "filename"
     NS = "-NS"
     NP = "-NP"
     NI = "-NI"
@@ -46,6 +47,7 @@ class Constant():
     R = "-R"
     T = "-T"
     W = "-W"
+    F = "-F"
     O = "-O"
     P = "-P"
     S = "-S"
@@ -56,6 +58,12 @@ class Constant():
     METHOD_NAIVE = 0
     METHOD_MICRO = 1
     METHOD_GILLESPIE = 2
+    
+    ##
+    ## Output format
+    ##
+    O_STANDARD = 0
+    O_APOLLO = 1
     
     ##
     ## Output
