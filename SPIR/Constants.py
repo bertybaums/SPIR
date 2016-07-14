@@ -63,7 +63,7 @@ class Constant():
     ## Output format
     ##
     O_STANDARD = 0
-    O_APOLLO = 1
+    O_GALAPAGOS = 1
     
     ##
     ## Output

@@ -233,8 +233,7 @@ if (args.output):
                 line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[3]) + outputSep + str(row[4]) + "\n"
                 f.write(line)
         f.close()
-    elif (outputFormat == Constant.O_APOLLO):
-        outputSep = ","
+    elif (outputFormat == Constant.O_GALAPAGOS):
         header = "simulator_time" + outputSep + "household_location_admin4" + outputSep + "infection_state" + outputSep + "count" + "\n"
         f.write(header)
         
