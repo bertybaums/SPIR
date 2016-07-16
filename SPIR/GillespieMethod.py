@@ -54,20 +54,20 @@ class GillespieMethod(object):
         while (i <= 1.0):
             ## Calculate expected times of Susceptible
             ps = i * disease[Constant.BETA]
-            Tss = (1 - ((1 - ps)**h)) / ps
+            Tss = ((1 / float(ps)) - 1) * (1 - ((1 - ps)**h))
             if (ps != q):
-                Tis = (1 / q) - (((ps * ((1 - q)**h)) / (q * (ps - q))) * (1 - (((1 - ps) / (1 - q))**h))) - (((1 - ps)**h) / q)
+                Tis = ((1 / float(q)) - 1) * (((((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (((1 / float(ps)) - 1) * (1 - ((1 - ps)**h)))) / ((((1 / float(q)) - 1)) - ((1 / float(ps)) - 1)))
             else:
-                Tis = (1 / q) - ((ps * h * ((1 - q)**(h-1))) / q) - (((1 - ps)**h) / q)
+                Tis = (((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (h * ((1 - q)**(h + 1)))
             Trs = h - Tss - Tis
             
             ## Calculate expected times of Prophylactic
             pp = i * disease[Constant.BETA] * disease[Constant.RHO]
-            Tpp = (1 - ((1 - pp)**h)) / pp
+            Tpp = ((1 / float(pp)) - 1) * (1 - ((1 - pp)**h))
             if (pp != q):
-                Tip = (1 / q) - (((pp * ((1 - q)**h)) / (q * (pp - q))) * (1 - (((1 - pp) / (1 - q))**h))) - (((1 - pp)**h) / q)
+                Tip = ((1 / float(q)) - 1) * (((((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (((1 / float(pp)) - 1) * (1 - ((1 - pp)**h)))) / ((((1 / float(q)) - 1)) - ((1 / float(pp)) - 1)))
             else:
-                Tip = (1 / q) - ((pp * h * ((1 - q)**(h-1))) / q) - (((1 - pp)**h) / q)
+                Tip = (((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (h * ((1 - q)**(h + 1)))
             Trp = h - Tpp - Tip
             
             ## Calculate Expected Utilities

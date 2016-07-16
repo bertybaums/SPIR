@@ -2,7 +2,7 @@
 ## Ebola Plots
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 07/12/2016
+## Last Change.: 07/15/2016
 ##
 library(data.table)
 library(deSolve)
@@ -55,7 +55,7 @@ lambda <- 0
 # Fear factor (1 = No fear)
 kappa <- 1
 
-# Decision frequency
+# Decision frequency probability
 delta <- 0
 
 # Planning horizon
@@ -340,6 +340,7 @@ times <- seq(1, 2100, 1)
 rho <- 0.1
 h <- 1
 delta <- 0.01
+
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
 pars <- list(R0, duration, gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))

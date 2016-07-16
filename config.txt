@@ -17,16 +17,16 @@ payoff.R = 0.95
 ##
 ## Disease Information
 ##
-beta = 0.031
-rho = 0.25
-gamma = 0.015
+beta = 0.0303
+rho = 0.1
+gamma = 0.0152
 
 ##
 ## Decision information
 ##
 fear = 1
-decision = 0.033
-time.horizon = 20
+decision = 0.0099
+time.horizon = 90
 
 ##
 ## Simulation information
@@ -37,7 +37,7 @@ time.horizon = 20
 # 2 Gillespie
 method = 2
 replication = 10
-time.steps = 100
+time.steps = 2100
 
 ##
 ## Output information
@@ -45,8 +45,8 @@ time.steps = 100
 # Format
 # 0 Standard
 # 1 Galapagos
-output.format = 1
+output.format = 0
 output.window = 100
 output.file = ../output.csv
 output.header = True
-output.separator = ,
+output.separator = ;

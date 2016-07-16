@@ -352,9 +352,9 @@ if (args.graphic):
             while ((index < nSize) and (num[rep][index][0] <= t)):
                 v[0] += num[rep][index][1]
                 v[1] += num[rep][index][2]
-                v[2] += num[rep][index][3]
-                v[3] += num[rep][index][4]
-                v[4] += num[rep][index][3] / float(N)
+                v[2] += num[rep][index][4]
+                v[3] += num[rep][index][7]
+                v[4] += num[rep][index][4] / float(N)
                 index += 1
                 n += 1
             
