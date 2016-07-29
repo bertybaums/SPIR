@@ -73,9 +73,11 @@ configCmd.add_argument(Constant.W, nargs=1, required=True,
                        help="Smooth window")
 configCmd.add_argument(Constant.F, nargs=1, required=True,
                        help="Output format")
-configCmd.add_argument(Constant.O, nargs=1, required=True,
-                       help="Output file name")
 configCmd.add_argument(Constant.P, nargs=1, required=True,
+                       help="Output file path")
+configCmd.add_argument(Constant.N, nargs=1, required=True,
+                       help="Output file name")
+configCmd.add_argument(Constant.O, nargs=1, required=True,
                        help="Include header row in the output file")
 configCmd.add_argument(Constant.S, nargs=1, required=True,
                        help="Separator character for the output file")
@@ -96,7 +98,8 @@ replication = 1
 timeSteps = 1000
 window = 1
 outputFormat = Constant.O_STANDARD
-outputFile = "output.csv"
+outputPath = ""
+outputFilename = "output"
 outputHeader = True
 outputSep = ";"
     
@@ -151,6 +154,8 @@ if (args.__contains__(Constant.FILE)):
             outputFormat = int(param[1])
         elif (param[0] == Constant.OUTPUT_WINDOW):
             window = float(param[1])
+        elif (param[0] == Constant.OUTPUT_PATH):
+            outputPath = param[1]
         elif (param[0] == Constant.OUTPUT_FILE):
             outputFile = param[1]
         elif (param[0] == Constant.OUTPUT_HEADER):
@@ -178,8 +183,9 @@ else:
     timeSteps = int(args.T[0])
     window = float(args.W[0])
     outputFormat = int(args.F[0])
-    outputFile = args.O[0]
-    outputHeader = bool(args.P[0])
+    outputPath = args.P[0]
+    outputFile = args.N[0]
+    outputHeader = bool(args.O[0])
     outputSep = args.S[0]
     
 ##
@@ -228,9 +234,11 @@ if (args.verbose):
 ## Output
 ##
 if (args.output):
-    f = open(outputFile, "w")
     
     if (outputFormat == Constant.O_STANDARD):
+        fname = outputPath + "/" + outputFile + ".csv"
+        f = open(fname, "w")
+        
         if (outputHeader):
             header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + "\n"
             f.write(header)
@@ -243,82 +251,34 @@ if (args.output):
         
     elif (outputFormat == Constant.O_GALAPAGOS):
         header = "simulator_time" + outputSep + "infection_state" + outputSep + "control_measure_status" + outputSep + "count" + "\n"
-        f.write(header)
-        
-        size = 0
-        for vector in num:
-            aux = vector[len(vector) - 1][0]
-            if (aux > size):
-                size = aux
-        
-        size = int((size / float(window)) + 1)
-        
-        x = [0 for y in range(size)]
-        s = [0 for y in range(size)]
-        p = [0 for y in range(size)]
-        i = [0 for y in range(size)]
-        r = [0 for y in range(size)]
+                
         for rep in range(replication):
-            t = window
-            pos = 0
-            index = 0
-            nSize = len(num[rep])
-            pv = [nAgents[State.S] / float(N), nAgents[State.P] / float(N),
-                  nAgents[State.I] / float(N), nAgents[State.R] / float(N),
-                  nAgents[State.I] / float(N)]
-            while (pos < size):
-                v = [0, 0, 0, 0]
-                n = 0
-                while ((index < nSize) and (num[rep][index][0] <= t)):
-                    v[0] += num[rep][index][1]
-                    v[1] += num[rep][index][2]
-                    v[2] += num[rep][index][4]
-                    v[3] += num[rep][index][7]
-                    index += 1
-                    n += 1
-                
-                if (n > 0):
-                    pv[0] = v[0] / float(n)
-                    pv[1] = v[1] / float(n)
-                    pv[2] = v[2] / float(n)
-                    pv[3] = v[3] / float(n)
-                    
-                s[pos] += pv[0]
-                p[pos] += pv[1]
-                i[pos] += pv[2]
-                r[pos] += pv[3]
-                
-                pos += 1
-                t += window
-        
-        for pos in range(size):
-            x[pos] = (pos * window) / float(N)
-            s[pos] /= replication
-            p[pos] /= replication
-            i[pos] /= replication
-            r[pos] /= replication
-                
+            fname = outputPath + "/" + outputFile + str(rep) + ".csv"
+            f = open(fname, "w")
             
-        for y in range(size):
-            line = str(x[y]) + outputSep + Constant.O_S + outputSep + "noControlMeasureAdopted" + outputSep + str(s[y]) + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + str(p[y]) + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_I + outputSep + "noControlMeasureAdopted" + outputSep + str(i[y]) + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_R + outputSep + "noControlMeasureAdopted" + outputSep + str(r[y]) + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
-            f.write(line)
-            line = str(x[y]) + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
-            f.write(line)
-        f.close()
+            f.write(header)
+            
+            for row in num[rep]:
+                timestep = str(row[0])
+                line = timestep + outputSep + Constant.O_S + outputSep + "noControlMeasureAdopted" + outputSep + str(row[1]) + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + str(row[2]) + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_I + outputSep + "noControlMeasureAdopted" + outputSep + str(row[4]) + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_R + outputSep + "noControlMeasureAdopted" + outputSep + str(row[7]) + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
+                f.write(line)
+                line = timestep + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
+                f.write(line)
+            f.close()
 
 ##
 ## Graphical visualization

@@ -37,6 +37,14 @@ nosetests.xml
 .project
 .pydevproject
 
-*.csv
+# R
 .Rhistory
+
+# Python
 __*
+
+# Jupyter
+.ipynb_checkpoints
+
+# Data files
+data

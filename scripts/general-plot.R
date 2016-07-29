@@ -2,8 +2,9 @@
 ## General Plots
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 07/12/2016
+## Last Change.: 07/27/2016
 ##
+library(colorRamps)
 library(data.table)
 library(ggplot2)
 library(grid)
@@ -14,8 +15,8 @@ registerDoParallel(cores=2)
 setwd("/data/workspace/cmci/SPIR/scripts/")
 
 baseDir <- "/data/projects/current/cmci/socialepi/sub-projects/spir/"
-inputEbolaDir <- paste0(baseDir, "ebola/")
-inputFluavianDir <- paste0(baseDir, "fluavian/")
+inputDisease1Dir <- paste0(baseDir, "disease1/")
+inputDisease2Dir <- paste0(baseDir, "disease2/")
 outputDir <- paste0(baseDir, "figures/")
 
 ###############
@@ -34,10 +35,10 @@ ymn <- 115
 ymx <- 115
 
 ###############
-## CASE 1 - EBOLA
+## CASE 1 - DISEASE 1
 ###############
-filename <- "ebola-1"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "disease1-1"
+data <- data.table(read.table(paste0(inputDisease1Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -63,15 +64,13 @@ pce1 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -79,7 +78,8 @@ pce1 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -103,10 +103,10 @@ gtce1$layout$clip[gtce1$layout$name == "panel"] <- "off"
 
 
 ###############
-## CASE 2 - EBOLA
+## CASE 2 - DISEASE 1
 ###############
-filename <- "ebola-0.97"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "disease1-0.97"
+data <- data.table(read.table(paste0(inputDisease1Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -131,15 +131,13 @@ pce2 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -147,7 +145,8 @@ pce2 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -171,10 +170,10 @@ gtce2$layout$clip[gtce2$layout$name == "panel"] <- "off"
 
 
 ###############
-## CASE 3 - EBOLA
+## CASE 3 - DISEASE 1
 ###############
-filename <- "ebola-0.95"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "disease1-0.95"
+data <- data.table(read.table(paste0(inputDisease1Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -199,15 +198,13 @@ pce3 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -215,7 +212,8 @@ pce3 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -239,10 +237,10 @@ gtce3$layout$clip[gtce3$layout$name == "panel"] <- "off"
 
 
 ###############
-## CASE 4 - EBOLA
+## CASE 4 - DISEASE 1
 ###############
-filename <- "ebola-0.9"
-data <- data.table(read.table(paste0(inputEbolaDir, filename,".csv"),
+filename <- "disease1-0.9"
+data <- data.table(read.table(paste0(inputDisease1Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -267,15 +265,13 @@ pce4 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  annotate("text", x=380, y=ymin * 100, label="30%", fontface="bold", size=5) +
-  annotate("text", x=380, y=ymax * 100, label="90%", fontface="bold", size=5) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -283,7 +279,8 @@ pce4 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -307,10 +304,10 @@ gtce4$layout$clip[gtce4$layout$name == "panel"] <- "off"
 
 
 ###############
-## CASE 1 - FLUAVIAN
+## CASE 1 - DISEASE 2
 ###############
-filename <- "fluavian-1"
-data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
+filename <- "disease2-1"
+data <- data.table(read.table(paste0(inputDisease2Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -332,13 +329,13 @@ pcf1 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -346,7 +343,8 @@ pcf1 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -370,10 +368,10 @@ gtcf1$layout$clip[gtcf1$layout$name == "panel"] <- "off"
 
 
 ###############
-## CASE 2 - FLUAVIAN
+## CASE 2 - DISEASE 2
 ###############
-filename <- "fluavian-0.97"
-data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
+filename <- "disease2-0.97"
+data <- data.table(read.table(paste0(inputDisease2Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -395,13 +393,13 @@ pcf2 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -409,7 +407,8 @@ pcf2 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -433,10 +432,10 @@ gtcf2$layout$clip[gtcf2$layout$name == "panel"] <- "off"
 
 
 ###############
-## CASE 3 - FLUAVIAN
+## CASE 3 - DISEASE 2
 ###############
-filename <- "fluavian-0.95"
-data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
+filename <- "disease2-0.95"
+data <- data.table(read.table(paste0(inputDisease2Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -458,13 +457,13 @@ pcf3 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -472,7 +471,8 @@ pcf3 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -496,10 +496,10 @@ gtcf3$layout$clip[gtcf3$layout$name == "panel"] <- "off"
 
 
 ###############
-## CASE 4 - FLUAVIAN
+## CASE 4 - DISEASE 2
 ###############
-filename <- "fluavian-0.9"
-data <- data.table(read.table(paste0(inputFluavianDir, filename,".csv"),
+filename <- "disease2-0.9"
+data <- data.table(read.table(paste0(inputDisease2Dir, filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -521,13 +521,13 @@ pcf4 <- ggplot(pData[which((n == 0) & (i < 1))],
   geom_line(data=pData[which(n == 2)],
             alpha=0.05,
             size=1) +
-  scale_y_continuous(limits=c(0, 100),
-                     breaks=c(0, 25, 50, 75, 100),
-                     labels=c("0%", "25%", "50%", "75%", "100%")) +
+  scale_y_continuous(limits = c(0, 100),
+                     breaks = c(0, 25, 50, 75, 100),
+                     labels = c("0%", "25%", "50%", "75%", "100%")) +
   scale_fill_gradientn(name = expression(paste("% Infective (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
-                       colours = c("red", "yellow", "green", "blue"),
+                       colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
   theme(axis.title.x = element_text(colour='black', size=34, face='bold',
                                     margin=margin(t=0.5, unit = "cm")),
@@ -535,7 +535,8 @@ pcf4 <- ggplot(pData[which((n == 0) & (i < 1))],
                                     margin=margin(r=0.2, unit = "cm")),
         axis.text.x = element_text(colour='black', size=16, face='bold'),
         axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
+        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
         panel.background = element_rect(fill="transparent", colour=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
@@ -565,7 +566,7 @@ plot <- grid.arrange(gtce1, gtce2, gtce3, gtce4,
                      bottom=textGrob(expression(paste("Planning Horizon (H)")),
                                      gp=gpar(fontsize=34,
                                              fontface="bold")),
-                     left=textGrob(expression(paste("Avian Influenza                Ebola")),
+                     left=textGrob(expression(paste("Disease 2                         Disease 1")),
                                    rot=90,
                                    gp=gpar(fontfamily="sans",
                                            fontsize=38,
@@ -631,7 +632,7 @@ ggsave(paste0(outputDir, "fear.pdf"), plot=pl,
 ## Calculating the Expected Times
 ##
 ###############
-## EBOLA INPUT PARAMETERS
+## DISEASE 1 INPUT PARAMETERS
 ###############
 # Disease duration
 duration <- 65

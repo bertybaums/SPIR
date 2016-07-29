@@ -21,6 +21,7 @@ class Constant():
     TIME_STEPS = "time.steps"
     OUTPUT_FORMAT = "output.format"
     OUTPUT_WINDOW = "output.window"
+    OUTPUT_PATH = "output.path"
     OUTPUT_FILE = "output.file"
     OUTPUT_HEADER = "output.header"
     OUTPUT_SEP = "output.separator"
@@ -48,8 +49,9 @@ class Constant():
     T = "-T"
     W = "-W"
     F = "-F"
-    O = "-O"
     P = "-P"
+    N = "-N"
+    O = "-O"
     S = "-S"
     
     ##

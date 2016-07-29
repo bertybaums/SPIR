@@ -45,8 +45,9 @@ time.steps = 2100
 # Format
 # 0 Standard
 # 1 Galapagos
-output.format = 0
+output.format = 1
 output.window = 100
-output.file = ../output.csv
+output.path = ..
+output.file = output
 output.header = True
 output.separator = ;
