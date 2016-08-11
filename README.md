@@ -89,4 +89,4 @@ v.1.13**, **doParallel v.1.0.10**, **ggplot2 v.2.1**, **grid v.3.3.1**, and **gr
 
 To execute the scripts from Linux terminal:
 *  Navigate to the _scripts_ directory
-* Execute: **Rscript <Script Filename> --no-save**, where **<Script Filename>** is the script filename.
+* Execute: **Rscript \<Script Filename\> --no-save**, where **\<Script Filename\>** is the script filename.
