@@ -4,7 +4,16 @@
 ## Author......: Luis Gustavo Nardin
 ## Last Change.: 04/06/2016
 ##
-
+## Parameters
+##      Time  - Times at which explicit estimates of the ODE are desired
+##      State - Number of agents in each state
+##      Pars  - List of parameters used to calculate the ODE
+##                betaS   - Probability of being infected
+##                rho     - Efficacy of the prophylactic behavior
+##                gamma   - Probability of recover
+##                delta   - Frequency of decision
+##                iswitch - Payoff per time step per state
+##
 SPIRmodel <- function(Time, State, Pars){
   with(as.list(c(State, Pars)),{
     

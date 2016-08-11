@@ -251,28 +251,72 @@ if (args.output):
         
     elif (outputFormat == Constant.O_GALAPAGOS):
         header = "simulator_time" + outputSep + "infection_state" + outputSep + "control_measure_status" + outputSep + "count" + "\n"
-                
+        
+        size = 0
+        for vector in num:
+            aux = vector[len(vector) - 1][0]
+            if (aux > size):
+                size = aux
+    
+        size = int((size / float(window)) + 1)
+    
+        x = [0 for y in range(size)]
+        s = [0 for y in range(size)]
+        p = [0 for y in range(size)]
+        i = [0 for y in range(size)]
+        r = [0 for y in range(size)]
         for rep in range(replication):
+            t = window
+            pos = 0
+            index = 0
+            nSize = len(num[rep])
+            pv = [nAgents[State.S] / float(N), nAgents[State.P] / float(N),
+                  nAgents[State.I] / float(N), nAgents[State.R] / float(N)]
+            while (pos < size):
+                v = [0, 0, 0, 0]
+                n = 0
+                while ((index < nSize) and (num[rep][index][0] <= t)):
+                    v[0] += num[rep][index][1]
+                    v[1] += num[rep][index][2]
+                    v[2] += num[rep][index][4]
+                    v[3] += num[rep][index][7]
+                    index += 1
+                    n += 1
+                
+                if (n > 0):
+                    pv[0] = v[0] / float(n)
+                    pv[1] = v[1] / float(n)
+                    pv[2] = v[2] / float(n)
+                    pv[3] = v[3] / float(n)
+                    
+                s[pos] = pv[0]
+                p[pos] = pv[1]
+                i[pos] = pv[2]
+                r[pos] = pv[3]
+                
+                pos += 1
+                t += window
+                
             fname = outputPath + "/" + outputFile + str(rep) + ".csv"
             f = open(fname, "w")
             
             f.write(header)
             
-            for row in num[rep]:
-                timestep = str(row[0])
-                line = timestep + outputSep + Constant.O_S + outputSep + "noControlMeasureAdopted" + outputSep + str(row[1]) + "\n"
+            for index in range(0, pos):
+                timestep = str(index + 1)
+                line = timestep + outputSep + Constant.O_S + outputSep + "noControlMeasureAdopted" + outputSep + str(s[index]) + "\n"
                 f.write(line)
-                line = timestep + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + str(row[2]) + "\n"
+                line = timestep + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + str(p[index]) + "\n"
                 f.write(line)
                 line = timestep + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
                 f.write(line)
-                line = timestep + outputSep + Constant.O_I + outputSep + "noControlMeasureAdopted" + outputSep + str(row[4]) + "\n"
+                line = timestep + outputSep + Constant.O_I + outputSep + "noControlMeasureAdopted" + outputSep + str(i[index]) + "\n"
                 f.write(line)
                 line = timestep + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
                 f.write(line)
                 line = timestep + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
                 f.write(line)
-                line = timestep + outputSep + Constant.O_R + outputSep + "noControlMeasureAdopted" + outputSep + str(row[7]) + "\n"
+                line = timestep + outputSep + Constant.O_R + outputSep + "noControlMeasureAdopted" + outputSep + str(r[index]) + "\n"
                 f.write(line)
                 line = timestep + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
                 f.write(line)

@@ -4,6 +4,16 @@
 ## Author......: Luis Gustavo Nardin
 ## Last Change.: 04/20/2016
 ##
+## Parameters
+##      h       - Planning horizon
+##      i       - Proportion of infectious agents in the population
+##      bs      - Probability of being infected
+##      rho     - Efficacy of the prophylactic behavior
+##      g       - Probability of recover
+##      l       - Discount function
+##      k       - Distortion factor
+##      payoffs - Payoff per time step per state
+##
 calc_expectedTime <- function(h, i, bs, rho, g, l, k, payoffs){
   
   p <- i^(1/k) * bs

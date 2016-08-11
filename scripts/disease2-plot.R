@@ -2,7 +2,7 @@
 ## Disease 2 Plots
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 07/27/2016
+## Last Change.: 08/05/2016
 ##
 library(colorRamps)
 library(data.table)
@@ -12,18 +12,22 @@ library(grid)
 library(gridExtra)
 library(gtable)
 
-setwd("/data/workspace/cmci/SPIR/scripts/")
 
-baseDir <- "/data/workspace/cmci/SPIR/data/"
-inputDisease2Dir <- paste0(baseDir, "disease2/")
-outputDir <- paste0(baseDir, "figures/")
+###############
+## PATHS
+###############
+baseDir <- "/data/workspace/cmci/SPIR"
+scriptDir <- paste0(baseDir, "/scripts")
+inputDisease2Dir <- paste0(baseDir, "/data/disease2")
+outputDir <- paste0(baseDir, "/figures")
+
 
 ###############
 ## FUNCTIONS
 ###############
-source("calcSwitch.R")
-source("calcUtilities.R")
-source("SPIRmodel.R")
+source(paste0(scriptDir, "/calcSwitch.R"))
+source(paste0(scriptDir, "/calcUtilities.R"))
+source(paste0(scriptDir, "/SPIRmodel.R"))
 
 
 ###############
@@ -86,7 +90,7 @@ pData <- data[which((h <= maxh))]
 pl <- ggplot(pData[which((n == 0) & (i < 1))],
              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   xlab(expression(paste("Planning Horizon (H)"))) +
-  ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
+  ylab(expression(paste("% Protection"))) +
   xlim(0, maxh + 20) +
   geom_raster(interpolate=TRUE, stat="identity") +
   geom_contour(data=pData[which(n == 2)],
@@ -111,30 +115,30 @@ pl <- ggplot(pData[which((n == 0) & (i < 1))],
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colors = blue2green2red(50),
                        labels = c("0%", "25%", "50%", "75%", "100%")) +
-  theme(axis.title.x = element_text(colour='black', size=14, face='bold',
+  theme(axis.title.x = element_text(color='black', size=14, face='bold',
                                     margin=margin(t=0.2, unit = "cm")),
-        axis.title.y = element_text(colour='black', size=16, face='bold',
+        axis.title.y = element_text(color='black', size=16, face='bold',
                                     margin=margin(r=0.5, unit = "cm")),
-        axis.text.x = element_text(colour='black', size=16, face='bold'),
-        axis.text.y = element_text(colour='black', size=16, face='bold'),
-        axis.line.x = element_line(colour='black', size=1, linetype='solid'),
-        axis.line.y = element_line(colour='black', size=1, linetype='solid'),
-        panel.background = element_rect(fill="transparent", colour=NA),
+        axis.text.x = element_text(color='black', size=16, face='bold'),
+        axis.text.y = element_text(color='black', size=16, face='bold'),
+        axis.line.x = element_line(color='black', size=1, linetype='solid'),
+        axis.line.y = element_line(color='black', size=1, linetype='solid'),
+        panel.background = element_rect(fill="transparent", color=NA),
         panel.grid.minor = element_blank(),
         panel.grid.major = element_blank(),
         plot.margin = unit(c(0.5, 0, 0.5, 0), "cm"),
         #legend.position = "none",
-        legend.title = element_text(colour="black", size=14, face="bold"),
-        legend.text = element_text(colour="black", size=12, face="bold"),
+        legend.title = element_text(color="black", size=14, face="bold"),
+        legend.text = element_text(color="black", size=12, face="bold"),
         legend.key = element_rect(fill = "white"))
 
 pl <- pl + annotation_custom(
   grob = textGrob(label = "D", hjust = 0,
                   gp = gpar(cex = 1.3, fontface="bold")),
-  ymin = 108,
-  ymax = 108,
-  xmin = -65,
-  xmax = -65)
+  ymin = 110,
+  ymax = 110,
+  xmin = -93,
+  xmax = -93)
 
 gt <- ggplot_gtable(ggplot_build(pl))
 gt$layout$clip[gt$layout$name == "panel"] <- "off"
@@ -144,7 +148,7 @@ gt$layout$clip[gt$layout$name == "panel"] <- "off"
 ## NO SWITCHING
 ###############
 rho <- 0.5
-h <- 3
+h <- 1
 
 data <- data.table(calc_utilities(h, bs, rho, g, lambda, kappa, payoffs))
 
@@ -188,10 +192,10 @@ pu1 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
 pu1 <- pu1 + annotation_custom(
   grob = textGrob(label = "A", hjust = 0,
                   gp = gpar(cex = 1.3, fontface="bold")),
-  ymin = ymax+0.02,
-  ymax = ymax+0.02,
-  xmin = -20,
-  xmax = -20)
+  ymin = ymax + 0.01,
+  ymax = ymax + 0.01,
+  xmin = -28,
+  xmax = -28)
 
 gt1 <- ggplot_gtable(ggplot_build(pu1))
 gt1$layout$clip[gt1$layout$name == "panel"] <- "off"
@@ -249,10 +253,10 @@ pu2 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
 pu2 <- pu2 + annotation_custom(
   grob = textGrob(label = "B", hjust = 0,
                   gp = gpar(cex = 1.3, fontface="bold")),
-  ymin = ymax+0.05,
-  ymax = ymax+0.05,
-  xmin = -20,
-  xmax = -20)
+  ymin = ymax + 0.15,
+  ymax = ymax + 0.15,
+  xmin = -28,
+  xmax = -28)
 
 gt2 <- ggplot_gtable(ggplot_build(pu2))
 gt2$layout$clip[gt2$layout$name == "panel"] <- "off"
@@ -260,8 +264,8 @@ gt2$layout$clip[gt2$layout$name == "panel"] <- "off"
 ###############
 ## TWO SWITCHING POINTS
 ###############
-rho <- 0.25
-h <- 40
+rho <- 0.20
+h <- 37
 
 data <- data.table(calc_utilities(h, bs, rho, g, lambda, kappa, payoffs))
 
@@ -287,7 +291,7 @@ pu3 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                      labels = c("0%", "50%", "100%"),
                      limits = c(0, 110)) +
   scale_linetype_manual(name = "",
-                        values = c("dashed", "solid"),
+                        values = c("solid", "dashed"),
                         labels = c(expression(paste("Susceptible")),
                                    expression(paste("Prophylactic")))) +
   scale_color_manual(name = "",
@@ -314,10 +318,10 @@ pu3 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
 pu3 <- pu3 + annotation_custom(
   grob = textGrob(label = "C", hjust = 0,
                   gp = gpar(cex = 1.3, fontface="bold")),
-  ymin = ymax+0.1,
-  ymax = ymax+0.1,
-  xmin = -20,
-  xmax = -20)
+  ymin = ymax+0.15,
+  ymax = ymax+0.15,
+  xmin = -28,
+  xmax = -28)
 
 gt3 <- ggplot_gtable(ggplot_build(pu3))
 gt3$layout$clip[gt3$layout$name == "panel"] <- "off"
@@ -338,27 +342,27 @@ rho <- 0.01
 h <- 1
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 
 h <- 30
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(H=h, i=iswitch[iswitch[,8] != 1,8])
 
 h <- 45
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
 
 h <- 90
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 
@@ -429,7 +433,7 @@ rho <- 0.01
 h <- 30
 delta <- 0
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
@@ -437,7 +441,7 @@ isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 h <- 30
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
@@ -445,7 +449,7 @@ isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 h <- 30
 delta <- 0.02
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
@@ -526,7 +530,7 @@ pData <- data[which((h <= maxh))]
 pf1 <- ggplot(pData[which((n == 0) & (i < 1))],
               aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   xlab("") +
-  ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
+  ylab(expression(paste("% Protection"))) +
   xlim(0, maxh + 60) +
   geom_raster(interpolate=TRUE, stat="identity") +
   geom_contour(data=pData[which(n == 2)],
@@ -647,7 +651,7 @@ h <- 30
 delta <- 0.01
 kappa <- 1
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
@@ -656,7 +660,7 @@ h <- 30
 delta <- 0.1
 kappa <- 1.2
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
@@ -665,7 +669,7 @@ h <- 30
 delta <- 0.1
 kappa <- 1.5
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
@@ -714,8 +718,8 @@ pl <- pl + annotation_custom(
                   gp = gpar(cex = 1.3, fontface="bold")),
   ymin = 19,
   ymax = 19,
-  xmin = -20,
-  xmax = -20)
+  xmin = -28,
+  xmax = -28)
 
 gt <- ggplot_gtable(ggplot_build(pl))
 gt$layout$clip[gt$layout$name == "panel"] <- "off"

@@ -51,7 +51,7 @@ pce1 <- ggplot(pData[which((n == 0) & (i < 1))],
                aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   ggtitle(expression(paste("u"[S]*" = u"[R]*" > u"[P]))) +
   xlab("") +
-  ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
+  ylab(expression(paste("% Protection"))) +
   #ylab("") +
   xlim(0, maxh + 30) +
   geom_raster(interpolate=TRUE, stat="identity") +
@@ -317,7 +317,7 @@ pcf1 <- ggplot(pData[which((n == 0) & (i < 1))],
                aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   ggtitle(expression(paste("u"[S]*" = u"[R]*" > u"[P]))) +
   xlab("") +
-  ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
+  ylab(expression(paste("% Protection"))) +
   xlim(0, maxh + 30) +
   geom_raster(interpolate=TRUE, stat="identity") +
   geom_contour(data=pData[which(n == 2)],

@@ -2,7 +2,7 @@
 ## Disease 1 Plots
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 07/27/2016
+## Last Change.: 08/05/2016
 ##
 library(colorRamps)
 library(data.table)
@@ -12,18 +12,22 @@ library(grid)
 library(gridExtra)
 library(gtable)
 
-setwd("/data/workspace/cmci/SPIR/scripts/")
 
-baseDir <- "/data/projects/current/cmci/socialepi/sub-projects/spir/"
-inputDisease1Dir <- paste0(baseDir, "disease1/")
-outputDir <- paste0(baseDir, "figures/")
+###############
+## PATHS
+###############
+baseDir <- "/data/workspace/cmci/SPIR"
+scriptDir <- paste0(baseDir, "/scripts")
+inputDisease1Dir <- paste0(baseDir, "/data/disease1")
+outputDir <- paste0(baseDir, "/figures")
+
 
 ###############
 ## FUNCTIONS
 ###############
-source("calcSwitch.R")
-source("calcUtilities.R")
-source("SPIRmodel.R")
+source(paste0(scriptDir, "/calcSwitch.R"))
+source(paste0(scriptDir, "/calcUtilities.R"))
+source(paste0(scriptDir, "/SPIRmodel.R"))
 
 
 ###############
@@ -76,7 +80,7 @@ times <- seq(1, 3500, 1)
 ## HEAT MAP
 ###############
 filename <- "disease1-0.95"
-data <- fread(paste0(inputDisease1Dir, filename,".csv"),
+data <- fread(paste0(inputDisease1Dir, "/", filename,".csv"),
               sep=";", header=TRUE)
 
 maxh <- 365
@@ -88,7 +92,7 @@ ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
 pl <- ggplot(pData[which((n == 0) & (i < 1))],
              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   xlab(expression(paste("Planning Horizon (H)"))) +
-  ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
+  ylab(expression(paste("% Protection"))) +
   xlim(0, maxh + 20) +
   geom_raster(interpolate=TRUE, stat="identity") +
   geom_contour(data=pData[which(n == 2)],
@@ -335,7 +339,7 @@ plot <- grid.arrange(gt1, gt2, gt3, gt, ncol=3, nrow=2,
                                           c(4, 4, 4)),
                      heights=c(1.5, 3), widths=c(0.65, 0.65, 1))
 
-ggsave(paste0(outputDir, "disease1-heat.pdf"), plot=plot)
+ggsave(paste0(outputDir, "/disease1-heat.pdf"), plot=plot)
 
 
 ###############
@@ -347,27 +351,27 @@ h <- 1
 delta <- 0.01
 
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 
 h <- 30
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(H=h, i=iswitch[iswitch[,8] != 1,8])
 
 h <- 45
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
 
 h <- 90
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(H=h, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(H=h, i=iswitch[iswitch[,8] != 1,8]))
@@ -420,7 +424,7 @@ pl <- pl + annotation_custom(
 gth1 <- ggplot_gtable(ggplot_build(pl))
 gth1$layout$clip[gth1$layout$name == "panel"] <- "off"
 
-#ggsave(paste0(outputDir,"disease1-horizon.pdf"), plot=gth1)
+#ggsave(paste0(outputDir, "/disease1-horizon.pdf"), plot=gth1)
 
 
 ###############
@@ -431,21 +435,21 @@ rho <- 0.1
 h <- 90
 delta <- 0
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
 delta <- 0.01
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 
 delta <- 0.02
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(D=delta, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
@@ -499,14 +503,14 @@ pl <- pl + annotation_custom(
 gtd1 <- ggplot_gtable(ggplot_build(pl))
 gtd1$layout$clip[gtd1$layout$name == "panel"] <- "off"
 
-#ggsave(paste0(outputDir,"disease1-decision.pdf"), plot=gt)
+#ggsave(paste0(outputDir, "/disease1-decision.pdf"), plot=gt)
 
 
 ###############
 ## FEAR
 ###############
 filename <- "disease1-0.95"
-data <- data.table(read.table(paste0(inputDisease1Dir, filename,".csv"),
+data <- data.table(read.table(paste0(inputDisease1Dir, "/", filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -518,7 +522,7 @@ ymax <- 1 - min(pData[which(n == 2 & h == 365 & pI >= 0.9)]$rho)
 pf1 <- ggplot(pData[which((n == 0) & (i < 1))],
              aes(x=h, y=(1 - rho) * 100, fill=(i * 100))) +
   xlab("") +
-  ylab(expression(paste("% Protection (1 - ", rho, ")"))) +
+  ylab(expression(paste("% Protection"))) +
   xlim(0, maxh + 60) +
   geom_raster(interpolate=TRUE, stat="identity") +
   geom_contour(data=pData[which(n == 2)],
@@ -572,7 +576,7 @@ gtf1$layout$clip[gtf1$layout$name == "panel"] <- "off"
 
 
 filename <- "disease1-k1.5"
-data <- data.table(read.table(paste0(inputDisease1Dir, filename,".csv"),
+data <- data.table(read.table(paste0(inputDisease1Dir, "/", filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -649,7 +653,7 @@ h <- 90
 delta <- 0.01
 kappa <- 1
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R)
 isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
@@ -657,7 +661,7 @@ isp <- data.table(i=iswitch[iswitch[,8] != 1,8])
 h <- 90
 kappa <- 1.2
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
@@ -665,7 +669,7 @@ isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
 h <- 90
 kappa <- 1.5
 iswitch <- calc_iswitch(h, bs, rho, g, lambda, kappa, payoffs)
-pars <- list(R0, duration, gamma, betaS, delta, iswitch)
+pars <- list(gamma, betaS, delta, iswitch)
 out <- as.data.frame(lsoda(yinit, times, SPIRmodel, pars, rtol=1e-3, atol=1e-3))
 data <- rbind(data, data.table(K=kappa, time=out$time, S=out$S, P=out$P, I=out$I, R=out$R))
 isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
@@ -724,4 +728,4 @@ plot <- grid.arrange(gtf, gt, ncol=1, nrow=2,
                      layout_matrix= rbind(c(1),c(2)),
                      heights=c(1,1), widths=c(1))
 
-ggsave(paste0(outputDir,"disease1-fear.pdf"), plot=plot)
+ggsave(paste0(outputDir, "/disease1-fear.pdf"), plot=plot)

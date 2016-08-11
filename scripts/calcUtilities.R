@@ -1,6 +1,18 @@
-##############
-## Calculates utilities
-##############
+##
+## Calculate Utilities
+##
+## Author......: Luis Gustavo Nardin
+## Last Change.: 06/23/2016
+##
+## Parameters
+##      h       - Planning horizon
+##      bs      - Probability of being infected
+##      rho     - Efficacy of the prophylactic behavior
+##      g       - Probability of recover
+##      l       - Discount function
+##      k       - Distortion factor
+##      payoffs - Payoff per time step per state
+##
 calc_utilities <- function(h, bs, rho, g, l, k, payoffs){
   
   size <- length(seq(0.0001,1,0.0001))
