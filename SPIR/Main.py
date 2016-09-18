@@ -10,11 +10,10 @@ from time import clock
 ##
 ## Our classes
 ##
-from SPIR.Constants import Constant
-from SPIR.GillespieMethod import GillespieMethod
-from SPIR.MicroMethod import MicroMethod
-from SPIR.NaiveMethod import NaiveMethod
-from SPIR.State import State
+from Constants import Constant
+from GillespieMethod import GillespieMethod
+from MicroMethod import MicroMethod
+from State import State
 
 if __name__ == '__main__':
     pass
@@ -211,10 +210,8 @@ for rep in range(replication):
     ##
     ## Simulation method
     ##
-    if (method == Constant.METHOD_NAIVE):
-        m = NaiveMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
-    elif (method == Constant.METHOD_MICRO):
-        m = MicroMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
+    if (method == Constant.METHOD_MICRO):
+        m = MicroMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps)
     elif (method == Constant.METHOD_GILLESPIE):
         m = GillespieMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
     
@@ -240,12 +237,12 @@ if (args.output):
         f = open(fname, "w")
         
         if (outputHeader):
-            header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + "\n"
+            header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + outputSep + Constant.O_PS + outputSep + Constant.O_PP + outputSep + Constant.O_PI + outputSep + Constant.O_PR + "\n"
             f.write(header)
         
         for rep in range(replication):
             for row in num[rep]:
-                line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[4]) + outputSep + str(row[7]) + "\n"
+                line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[4]) + outputSep + str(row[7]) + outputSep + str(row[10]) + outputSep + str(row[11]) + outputSep + str(row[12]) + outputSep + str(row[13]) + "\n"
                 f.write(line)
         f.close()
         
@@ -379,7 +376,10 @@ if (args.graphic):
             t += window
     
     for pos in range(size):
-        x[pos] = (pos * window) / float(N)
+        if(method == Constant.METHOD_MICRO):
+            x[pos] = (pos * window)
+        elif (method == Constant.METHOD_GILLESPIE):
+            x[pos] = (pos * window) / float(N)
         s[pos] /= replication
         p[pos] /= replication
         i[pos] /= replication

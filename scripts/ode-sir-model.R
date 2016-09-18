@@ -2,15 +2,16 @@
 ## ODE SIR model
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 07/08/2016
+## Last Change.: 09/17/2016
 ##
 library(deSolve)
+library(ggplot2)
 
 ##
 ## SIR ODE Model
 ##
 SIR <- function(Time, State, Pars){
-  with(as.list(c(State,Pars)),{
+  with(as.list(c(State, Pars)),{
     
     i <- I / (S + I + R)
     
@@ -33,8 +34,8 @@ eventFn <- function(Time, State, Pars) State
 ## Input parameters
 ##
 pars <- list(
-  b <- 0.02,
-  g <- 0.01
+  b = 0.02,
+  g = 0.01
 )
 
 yinit <- c(S = 100000 - 1, I = 1, R = 0)
@@ -46,10 +47,12 @@ times <- seq(0, 10000, 1)
 out <- as.data.frame(lsoda(yinit, times, SIR, pars,
                            rtol=1e-3, atol=1e-3,
                            rootfunc = rootFn,
-                           events = list(root = TRUE, terminalroot = 1)))
+                           events = list(func=eventFn, root=TRUE, terminalroot=1)))
 
 ##
 ## Plot the proportion of infected over time.
 ##
-plot(I / (S+I+R) ~ time, out, type="l", col="red",
-     xlab="Time", ylab="Proportion infected (i)")
+ggplot(out, aes(x=time, y=(I / (S + I + R)) * 100)) +
+		geom_line(size=0.9, color="red") +
+		xlab("Time") +
+		ylab("Proportion infected (i)")

@@ -2,7 +2,7 @@
 ## Calculate Switch Points
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 06/23/2016
+## Last Change.: 08/30/2016
 ##
 ## Parameters
 ##      h       - Planning horizon

@@ -2,17 +2,16 @@
 ## Python libraries
 ##
 import math
-from random import uniform
+from random import shuffle, uniform
 
 ##
 ## Our classes
 ##
-from SPIR.Agent import Agent
-from SPIR.Constants import Constant
-from SPIR.State import State
+from Agent import Agent
+from Constants import Constant
+from State import State
 
 class MicroMethod(object):
-    
     ##
     ## Constructor
     ##
@@ -25,7 +24,7 @@ class MicroMethod(object):
         self.fear = fear
         if (self.fear == 0):
             self.fear = 1.0
-            
+        
         self.decision = decision
         self.timeHorizon = timeHorizon
         self.timeSteps = timeSteps
@@ -33,7 +32,7 @@ class MicroMethod(object):
     ##
     ## Execute the simulation
     ##
-    def execute(self):
+    def execute(self):        
         ##
         ## Initialize agents
         ##
@@ -42,29 +41,19 @@ class MicroMethod(object):
                     Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
         
         self.decision = 1 - math.exp(-self.decision)
-        
-        agents = []
-        S = []
-        P = []
-        I = []
-        R = []
+                
         N = 0
-        for state in self.nAgents:
+        agents = []
+        infected = []
+        for state in self.nAgents:            
             for x in range(self.nAgents[state]):
                 agent = Agent(N, state, pDisease, self.fear, self.timeHorizon, self.payoffs)
                 agents.append(agent)
                 
-                if (state == State.S):
-                    S.append(agent)
-                elif (state == State.P):
-                    P.append(agent)
-                elif (state == State.I):
-                    I.append(agent)
-                elif (state == State.R):
-                    R.append(agent)
-                    
+                if (state == State.I):
+                    infected.append(agent)
+                
                 N += 1
-        
         ##
         ## Output variables
         ##
@@ -72,99 +61,93 @@ class MicroMethod(object):
         num.append([0,
                     self.nAgents[State.S],
                     self.nAgents[State.P],
+                    0,
                     self.nAgents[State.I],
-                    self.nAgents[State.R]])
-        
-        numagents = [self.nAgents[State.S],
-                    self.nAgents[State.P],
-                    self.nAgents[State.I],
-                    self.nAgents[State.R]]
-        
-        totagents = [self.nAgents[State.S],
-                    self.nAgents[State.P],
-                    self.nAgents[State.I],
-                    self.nAgents[State.R]]
+                    0,
+                    0,
+                    self.nAgents[State.R],
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0])
         
         ##
         ## Run the simulation
         ##
-        cycle = 1
-        elapsed = 1
         t = 1
         i = self.nAgents[State.I] / float(N)
+        
         while ((t < self.timeSteps) and (i > 0)):
-            n = 4
-            target = [0, 0, 0, 0]
-            while (n > 0):
-                agent = int(uniform(0, len(agents) - 1))
-                if (agent not in target):
-                    target[n - 1] = agent
-                    n -= 1
+            numagents = [0, 0, 0, 0]
             
             ##
             ## Interaction
             ##
-            agent = agents[target[0]]
-            numagents[agent.getState()] -= 1
-                        
-            state = agent.interact(agents[target[1]].getState())
-            numagents[state] += 1
+            shuffle(agents)
+            
+            n = N
+            infected = []
+            while(n > 1):
+                a1 = agents[n - 1]
+                a2 = agents[n - 2]
+                
+                a1State = a1.getState()
+                a2State = a2.getState()
+                
+                a1S = a1State
+                a2S = a2State
+                
+                if (a1State == State.I):
+                    infected.append(a1)
+                    a2S = a2.interact(a1State)
+                    
+                if (a2State == State.I):
+                    infected.append(a2)
+                    a1S = a1.interact(a2State)
+                
+                numagents[a1S] += 1
+                numagents[a2S] += 1
+                
+                n = n - 2
             
             ##
             ## Decision
             ##
-            agent = agents[target[2]]
-            
-            if (uniform(0.0, 1.0) < self.decision):
-                numagents[agent.getState()] -= 1
-                
-                state = agent.decide(i)
-                numagents[state] += 1
+            for agent in agents:
+                if (uniform(0.0, 1.0) < self.decision):
+                    
+                    state = agent.getState()
+                    numagents[state] -= 1
+                    
+                    state = agent.decide(i)
+                    numagents[state] += 1
             
             ##
             ## Recover
             ##
-            agent = agents[target[3]]
-            numagents[agent.getState()] -= 1
+            for agent in infected:
+                if (agent.recover() == State.R):
+                    numagents[State.I] -= 1
+                    numagents[State.R] += 1
             
-            state = agent.recover()
-            numagents[state] += 1
-            
-            if (elapsed < N):
-                totagents = [totagents[State.S] + numagents[State.S],
-                             totagents[State.P] + numagents[State.P],
-                             totagents[State.I] + numagents[State.I],
-                             totagents[State.R] + numagents[State.R]]
-                elapsed += 1
-            else:
-                num.append([cycle,
-                            totagents[State.S] / float(N),
-                            totagents[State.P] / float(N),
-                            0,
-                            totagents[State.I] / float(N),
-                            0,
-                            0,
-                            totagents[State.R] / float(N),
-                            0,
-                            0])
-                totagents = [0, 0, 0, 0]
-                cycle += 1
-                elapsed = 0
+            num.append([t,
+                        numagents[State.S],
+                        numagents[State.P],
+                        0,
+                        numagents[State.I],
+                        0,
+                        0,
+                        numagents[State.R],
+                        0,
+                        0,
+                        numagents[State.S] * self.payoffs[State.S],
+                        numagents[State.P] * self.payoffs[State.P],
+                        numagents[State.I] * self.payoffs[State.I],
+                        numagents[State.R] * self.payoffs[State.R]])
             
             i = numagents[State.I] / float(N)
             t += 1
-            
-        if (elapsed < N):
-            num.append([cycle,
-                            totagents[State.S] / float(elapsed),
-                            totagents[State.P] / float(elapsed),
-                            0,
-                            totagents[State.I] / float(elapsed),
-                            0,
-                            0,
-                            totagents[State.R] / float(elapsed),
-                            0,
-                            0])
         
         return num
-    

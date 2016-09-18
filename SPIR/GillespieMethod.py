@@ -7,12 +7,11 @@ from random import uniform
 ##
 ## Our classes
 ##
-from SPIR.Agent import Agent
-from SPIR.Constants import Constant
-from SPIR.State import State
+from Agent import Agent
+from Constants import Constant
+from State import State
 
 class GillespieMethod(object):
-    
     ##
     ## Interactions
     ##
@@ -75,9 +74,11 @@ class GillespieMethod(object):
             UP = (payoffs[State.P] * Tpp) + (payoffs[State.I] * Tip) + (payoffs[State.R] * Trp)
             
             if (pUs == -1):
+                iswitch = i
                 pUs = US
             
             if (pUp == -1):
+                iswitch = i
                 pUp = UP
                             
             if (((US >= UP) and (pUs < pUp)) or ((UP >= US) and (pUp < pUs))):
@@ -124,6 +125,21 @@ class GillespieMethod(object):
         ##
         ## Output variables
         ##
+        ## 01 - Time step
+        ## 02 - Susceptible no control measure adopted
+        ## 03 - Susceptible control measure adopted successfully
+        ## 04 - Susceptible control measure adopted unsuccessfully
+        ## 05 - Infectious no control measure adopted
+        ## 06 - Infectious control measure adopted successfully
+        ## 07 - Infectious control measure adopted unsuccessfully
+        ## 08 - Recovered no control measure adopted
+        ## 09 - Recovered control measure adopted successfully
+        ## 10 - Recovered control measure adopted unsuccessfully
+        ## 11 - Accumulated Susceptible payoff
+        ## 12 - Accumulated Prophylactic payoff
+        ## 13 - Accumulated Infectious payoff
+        ## 14 - Accumulated Recovered payoff
+        ##
         num = []
         num.append([0,
                     self.nAgents[State.S],
@@ -133,6 +149,10 @@ class GillespieMethod(object):
                     0,
                     0,
                     self.nAgents[State.R],
+                    0,
+                    0,
+                    0,
+                    0,
                     0,
                     0])
         
@@ -157,7 +177,8 @@ class GillespieMethod(object):
                 
         A = a[self.INT_SP] + a[self.INT_PS] + a[self.INT_SI] + a[self.INT_PI] + a[self.INT_IR]
         
-        t = math.log(1 / uniform(0.0, 1.0)) / A
+        prevT = 0
+        t = math.log(1 / uniform(0.0, 1.0)) / float(A)
         while ((t < self.timeSteps) and (i > 0)):            
             cumA = uniform(0.0, 1.0) * A
             index = 0
@@ -225,7 +246,7 @@ class GillespieMethod(object):
                 
                 R.append(agent)
                 self.nAgents[State.R] += 1
-                
+            
             ##
             ## Update output
             ##
@@ -238,11 +259,16 @@ class GillespieMethod(object):
                     0,
                     self.nAgents[State.R],
                     0,
-                    0])
+                    0,
+                    (t - prevT) * self.nAgents[State.S] * self.payoffs[State.S],
+                    (t - prevT) * self.nAgents[State.P] * self.payoffs[State.P],
+                    (t - prevT) * self.nAgents[State.I] * self.payoffs[State.I],
+                    (t - prevT) * self.nAgents[State.R] * self.payoffs[State.R]])
             
             ##
             ## Update
             ##
+            prevT = t
             i = (self.nAgents[State.I] / float(N)) ** float(1 / float(self.fear))
             
             if (i > 0):
@@ -258,6 +284,6 @@ class GillespieMethod(object):
                 
                 A = a[self.INT_SP] + a[self.INT_PS] + a[self.INT_SI] + a[self.INT_PI] + a[self.INT_IR]
                 
-                t = t + (math.log(1 / uniform(0.0, 1.0)) / A)
+                t = t + (math.log(1 / uniform(0.0, 1.0)) / float(A))
                 
         return num

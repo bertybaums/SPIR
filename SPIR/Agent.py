@@ -6,8 +6,8 @@ from random import uniform
 ##
 ## Our classes
 ##
-from SPIR.Constants import Constant
-from SPIR.State import State
+from Constants import Constant
+from State import State
 
 class Agent(object):
         
@@ -139,7 +139,6 @@ class Agent(object):
     ## Decide between Susceptible and Prophylactic
     ##
     def decide(self, i):
-        
         if (self.fear != 0):
             adjustedI = i ** float(1 / float(self.fear))
         

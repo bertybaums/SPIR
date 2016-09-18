@@ -57,9 +57,8 @@ class Constant():
     ##
     ## Methods
     ##
-    METHOD_NAIVE = 0
-    METHOD_MICRO = 1
-    METHOD_GILLESPIE = 2
+    METHOD_MICRO = 0
+    METHOD_GILLESPIE = 1
     
     ##
     ## Output format
@@ -76,4 +75,7 @@ class Constant():
     O_P = "prophylactic"
     O_I = "infected"
     O_R = "recovered"
-    
+    O_PS = "payoff_susceptible"
+    O_PP = "payoff_prophylactic"
+    O_PI = "payoff_infectious"
+    O_PR = "payoff_recovered"
