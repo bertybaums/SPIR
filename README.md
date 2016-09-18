@@ -33,7 +33,7 @@ You can configure the SPIR simulations by changing the values of the parameters 
 | fear             | -K               | Distortion of the perceived proportion of Infectious agents in the population (i.e. _distortion factor_) |
 | decision         | -D               | Probability an agent in the Susceptible or Prophylactic state decides which behavior to engage in |
 | time.horizon     | -H               | The time in the future over which agents calculate their utilities to make a behavioral decision |
-| method           | -M               | Method of executing the simulation (0 - Naive, 1 - Micro, 2 - Gillespie) |
+| method           | -M               | Method of executing the simulation (0 - Micro, 1 - Gillespie) |
 | replication      | -R               | Number of replications to run the scenario using different random seeds |
 | time.steps       | -T               | Length of the simulation in steps |
 | output.format    | -F               | Format of the output file (0 - Standard or 1 - Galapagos) |
