@@ -75,7 +75,6 @@ There are several R Statistics scripts available in the directory _scripts_. The
 | calcSwitch.R                  | Implements the _calc\_iswitch(h, bs, rho, g, l, k, payoffs)_ function that calculates the switch points given a set of conditions. |
 | calcUtilitties.R              | Implements the _calc\_utilities(h, bs, rho, g, l, k, payoffs)_ function that calculates the utilities given a set of conditions. |
 | SPIRmodel.R                   | Implements the SPIR ODE model. |
-| decision-landscape-analysis.R | Generate a 3D plot of the Planning Horizon, Frequency of Infectious, and Utilities. |
 | ode-sir-model.R               | Runs a ODE SIR model. |
 | ode-spir-model.R              | Runs a ODE SPIR model. |
 | disease1-parallel.R           | Generates the data of a hypothetical Disease 1. |
