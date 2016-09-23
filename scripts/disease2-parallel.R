@@ -1,29 +1,30 @@
 ##
-## Calculate Switchs in parallel for INL
+## Calculate Switch Points
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 07/27/2016
+## Last Change.: 09/21/2016
 ##
 library(parallel)
 
 scriptPath <- "/data/workspace/cmci/SPIR/scripts"
+outputPath <- "/data/downloads"
 
-source(paste0(scriptPath,"/","calcSwitch.R"))
-
-calcSwitch <- function(x, H, bs, Rho, g, l, k, payoffs, scriptPath){
-  setwd(scriptPath)
-  source("calcSwitch.R")
-  
-  payoffs[4] <- x
-  
-  data <- NULL
-  for(h in H){
-    for(rho in Rho){
-      data <- rbind(data, calc_iswitch(h, bs, rho, g, l, k, payoffs))
-    }
-  }
-  
-  return(data)
+calcSwitch <- function(x, H, bs, Rho, g, l, k, payoffs, scriptPath, outputPath, name){
+	source(paste0(scriptPath,"/calcSwitch.R"))
+	
+	payoffs[4] <- x
+	
+	data <- NULL
+	for(h in H){
+		for(rho in Rho){
+			data <- rbind(data, calc_iswitch(h, bs, rho, g, l, k, payoffs))
+		}
+	}
+	
+	write.table(data.frame(data), paste0(outputPath, "/", name, "-R", x, "-K", k, ".csv"),
+			quote=FALSE, sep=";", row.names=FALSE)
+	
+	return(data)
 }
 
 
@@ -51,7 +52,6 @@ bs <- 1 - exp(-betaS)
 
 # Prophylactic protection
 rho <- 0.01
-Rho <- seq(0.1, 0.1, 0.1)
 
 # Recover probability
 g <- 1 - exp(-gamma)
@@ -67,16 +67,10 @@ h <- 30
 H <- seq(1, 400)
 
 # Payoffs (S, P, I, R)
-payoffs <- c(1, 0.95, 0.60, 1)
+payoffs <- c(1.00, 0.95, 0.60, 1.00)
 uR <- seq(0, 1, 0.01)
 
-
-data <- clusterApply(cl, uR, calcSwitch, H, bs, Rho, g, lambda, kappa, payoffs, scriptPath)
-
-
-for(i in 1:length(uR)){
-  write.table(data[[i]], paste0(scriptPath,"/",name,"-",uR[i],".csv"),
-              quote=FALSE, sep=";", row.names=FALSE)
-}
+clusterApply(cl, uR, calcSwitch, H, bs, Rho, g, lambda, kappa, payoffs,
+		scriptPath, outputPath, name)
 
 stopCluster(cl)

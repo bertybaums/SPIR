@@ -67,7 +67,7 @@ delta <- 0
 h <- 90
 
 # Payoffs (S, P, I, R)
-payoffs <- c(1, 0.95, 0.10, 0.95)
+payoffs <- c(1.00, 0.95, 0.10, 0.95)
 
 # Initial values
 yinit <- c(S = 100000 - 1, P = 0, I = 1, R = 0)

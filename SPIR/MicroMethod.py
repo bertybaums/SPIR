@@ -68,10 +68,10 @@ class MicroMethod(object):
                     self.nAgents[State.R],
                     0,
                     0,
-                    0,
-                    0,
-                    0,
-                    0])
+                    self.nAgents[State.S] * self.payoffs[State.S],
+                    self.nAgents[State.P] * self.payoffs[State.P],
+                    self.nAgents[State.I] * self.payoffs[State.I],
+                    self.nAgents[State.R] * self.payoffs[State.R]])
         
         ##
         ## Run the simulation

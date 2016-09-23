@@ -1,8 +1,8 @@
 ##
-## Calculate Switchs in parallel for INL
+## Calculate Switch Points
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 07/27/2016
+## Last Change.: 09/21/2016
 ##
 library(parallel)
 
@@ -21,8 +21,8 @@ calcSwitch <- function(x, H, bs, Rho, g, l, k, payoffs, scriptPath, outputPath, 
     }
   }
   
-  write.table(data.frame(data), paste0(outputPath,"/",name,"-",x,".csv"),
-              quote=FALSE, sep=";", row.names=FALSE)
+  write.table(data.frame(data), paste0(outputPath, "/", name, "-R", x, "-K", k, ".csv"),
+			quote=FALSE, sep=";", row.names=FALSE)
 
   return(data)
 }
@@ -52,7 +52,6 @@ bs <- 1 - exp(-betaS)
 
 # Prophylactic protection
 rho <- 0.01
-Rho <- seq(0.01, 0.1, 0.01)
 
 # Recover probability
 g <- 1 - exp(-gamma)
@@ -65,13 +64,13 @@ kappa <- 1
 
 # Planning horizon
 h <- 30
-H <- seq(1, 365)
+H <- seq(1, 400)
 
 # Payoffs (S, P, I, R)
-payoffs <- c(1, 0.95, 0.10, 0.95)
+payoffs <- c(1.00, 0.95, 0.10, 0.95)
 uR <- seq(0, 1, 0.01)
 
 clusterApply(cl, uR, calcSwitch, H, bs, Rho, g, lambda, kappa, payoffs,
-             scriptPath, outputPath, name)
-
+		scriptPath, outputPath, name)
+				 
 stopCluster(cl)

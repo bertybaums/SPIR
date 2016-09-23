@@ -66,9 +66,8 @@ delta <- 0
 # Planning horizon
 h <- 30
 
-
 # Payoffs (S, P, I, R)
-payoffs <- c(1, 0.95, 0.60, 1)
+payoffs <- c(1.00, 0.95, 0.60, 1.00)
 
 # Initial values
 yinit <- c(S = 100000 - 1, P = 0, I = 1, R = 0)
