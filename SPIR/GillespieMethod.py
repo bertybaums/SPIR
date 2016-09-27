@@ -165,8 +165,6 @@ class GillespieMethod(object):
         
         iSwitch = self.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
         
-        print(iSwitch)
-        
         c = {self.INT_SP: self.decision / float(N),
              self.INT_PS: self.decision / float(N),
              self.INT_SI: self.disease[Constant.BETA] / (float(N) * float(N)),
