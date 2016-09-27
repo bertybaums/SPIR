@@ -18,8 +18,8 @@ library(gtable)
 ###############
 baseDir <- "/data/workspace/cmci/SPIR"
 scriptDir <- paste0(baseDir, "/scripts")
-inputDisease2Dir <- paste0(baseDir, "/data/disease2")
-outputDir <- paste0(baseDir, "/figures")
+inputDisease2Dir <- paste0(baseDir, "/data/raw/disease2/R")
+outputDir <- paste0(baseDir, "/data/figures")
 
 
 ###############
@@ -79,8 +79,8 @@ times <- seq(1, 250, 1)
 ###############
 ## HEAT MAP
 ###############
-filename <- "disease2-1"
-data <- data.table(read.table(paste0(inputDisease2Dir, filename,".csv"),
+filename <- "disease2-R1-K1"
+data <- data.table(read.table(paste0(inputDisease2Dir, "/", filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -109,7 +109,7 @@ pl <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits = c(0, 100),
                      breaks = c(0, 25, 50, 75, 100),
                      labels = c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infectious (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colors = blue2green2red(50),
@@ -219,7 +219,7 @@ pu2 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                                       group=state,
                                       color=state,
                                       linetype=state)) +
-  xlab(expression(paste("% Infective"))) + ylab("") +
+  xlab(expression(paste("% Infectious"))) + ylab("") +
   geom_vline(xintercept=xint[which(n == 1)]$pI * 100,
              linetype="dotted", size=1) +
   geom_line(size=0.9) +
@@ -330,7 +330,8 @@ plot <- grid.arrange(gt1, gt2, gt3, gt, ncol=3, nrow=2,
                                           c(4,4,4)),
                      heights=c(1.5,3), widths=c(0.65,0.65,1))
 
-ggsave(paste0(outputDir, "disease2-heat.pdf"), plot=plot)
+ggsave(paste0(outputDir, "/disease2-heat.pdf"),
+       plot=plot, height=5.2, width=8.45)
 
 
 ###############
@@ -420,7 +421,7 @@ plot <- grid.arrange(gth1, gth2, ncol=2, nrow=1,
                                     gp=gpar(fontsize=48,
                                             fontface="bold")))
 
-ggsave(paste0(outputDir,"planning-horizon.pdf"), plot=plot,
+ggsave(paste0(outputDir,"/planning-horizon.pdf"), plot=plot,
        width=80, height=25, units="cm")
 
 
@@ -459,10 +460,10 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        size=as.factor(D))) +
   xlab("") + ylab("") +
   geom_line() +
-  scale_colour_manual(name = expression(paste("Decision\nFrequency (d)")),
+  scale_colour_manual(name = expression(paste("Decision\nFrequency (", delta, ")")),
                       values = c("grey60", "blue", "red"),
                       labels = c("0.00", "0.01", "0.02")) +
-  scale_size_manual(name = expression(paste("Decision\nFrequency (d)")),
+  scale_size_manual(name = expression(paste("Decision\nFrequency (", delta, ")")),
                     values = c(15, 10, 5),
                     labels = c("0.00", "0.01", "0.02")) +
   scale_y_continuous(limits = c(0, 17),
@@ -512,15 +513,15 @@ plot <- grid.arrange(gtd1, gtd2, ncol=2, nrow=1,
                                      gp=gpar(fontsize=48,
                                              fontface="bold")))
 
-ggsave(paste0(outputDir,"decision.pdf"), plot=plot,
+ggsave(paste0(outputDir,"/decision.pdf"), plot=plot,
        width=80, height=25, units="cm")
 
 
 ###############
 ## FEAR
 ###############
-filename <- "disease2-1"
-data <- data.table(read.table(paste0(inputDisease2Dir, filename,".csv"),
+filename <- "disease2-R1-K1"
+data <- data.table(read.table(paste0(inputDisease2Dir, "/", filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -545,7 +546,7 @@ pf1 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits = c(0, 100),
                      breaks = c(0, 25, 50, 75, 100),
                      labels = c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infectious (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colors = blue2green2red(50),
@@ -579,8 +580,8 @@ gtf1 <- ggplot_gtable(ggplot_build(pf1))
 gtf1$layout$clip[gtf1$layout$name == "panel"] <- "off"
 
 
-filename <- "disease2-k1.5"
-data <- data.table(read.table(paste0(inputDisease2Dir, filename,".csv"),
+filename <- "disease2-R1-K1.5"
+data <- data.table(read.table(paste0(inputDisease2Dir, "/", filename,".csv"),
                               sep=";", header=TRUE))
 
 maxh <- 365
@@ -605,7 +606,7 @@ pf2 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits = c(0, 100),
                      breaks = c(0, 25, 50, 75, 100),
                      labels = c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infectious (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colors = blue2green2red(50),
@@ -678,7 +679,7 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        colour=as.factor(K),
                        size=as.factor(K))) +
   xlab(expression(paste("Time (t)"))) +
-  ylab(expression(paste("% Infective (i)"))) +
+  ylab(expression(paste("% Infectious (i)"))) +
   geom_line() +
   scale_colour_manual(name = expression(paste("Distortion of\nPerception (",kappa,")")),
                       values = c("grey60", "blue", "red"),
@@ -727,4 +728,5 @@ plot <- grid.arrange(gtf, gt, ncol=1, nrow=2,
                     layout_matrix= rbind(c(1),c(2)),
                     heights=c(1,1), widths=c(1))
 
-ggsave(paste0(outputDir,"disease2-fear.pdf"), plot=plot)
+ggsave(paste0(outputDir,"/disease2-fear.pdf"),
+       plot=plot, height=5.2, width=8.45)

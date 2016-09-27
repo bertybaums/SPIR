@@ -35,7 +35,7 @@ time.horizon = 90
 # 0 Microsimulation
 # 1 Gillespie
 method = 1
-replication = 1
+replication = 5
 time.steps = 250
 
 ##

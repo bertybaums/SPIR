@@ -2,7 +2,7 @@
 ## Disease 1 Plots
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 08/05/2016
+## Last Change.: 09/25/2016
 ##
 library(colorRamps)
 library(data.table)
@@ -18,8 +18,8 @@ library(gtable)
 ###############
 baseDir <- "/data/workspace/cmci/SPIR"
 scriptDir <- paste0(baseDir, "/scripts")
-inputDisease1Dir <- paste0(baseDir, "/data/disease1")
-outputDir <- paste0(baseDir, "/figures")
+inputDisease1Dir <- paste0(baseDir, "/data/raw/disease1/R")
+outputDir <- paste0(baseDir, "/data/figures")
 
 
 ###############
@@ -79,7 +79,7 @@ times <- seq(1, 3500, 1)
 ###############
 ## HEAT MAP
 ###############
-filename <- "disease1-0.95"
+filename <- "disease1-R0.95-K1"
 data <- fread(paste0(inputDisease1Dir, "/", filename,".csv"),
               sep=";", header=TRUE)
 
@@ -114,7 +114,7 @@ pl <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits = c(0, 100),
                      breaks = c(0, 25, 50, 75, 100),
                      labels = c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infectious (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colors = blue2green2red(50),
@@ -226,7 +226,7 @@ pu2 <- ggplot(data[which(i > 0)], aes(x=as.numeric(as.character(i)) * 100,
                                       group=state,
                                       color=state,
                                       linetype=state)) +
-  xlab(expression(paste("% Infective (i)"))) + ylab("") +
+  xlab(expression(paste("% Infectious (i)"))) + ylab("") +
   geom_vline(xintercept=xint[which(n == 1)]$pI * 100,
              linetype="dotted", size=1) +
   geom_line(size=0.9) +
@@ -339,7 +339,8 @@ plot <- grid.arrange(gt1, gt2, gt3, gt, ncol=3, nrow=2,
                                           c(4, 4, 4)),
                      heights=c(1.5, 3), widths=c(0.65, 0.65, 1))
 
-ggsave(paste0(outputDir, "/disease1-heat.pdf"), plot=plot)
+ggsave(paste0(outputDir, "/disease1-heat.pdf"),
+       plot=plot, height=5.2, width=8.45)
 
 
 ###############
@@ -380,7 +381,7 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        color=as.factor(H),
                        size=as.factor(H))) +
   xlab("") +
-  ylab(expression(paste("% Infective (i)"))) +
+  ylab(expression(paste("% Infectious (i)"))) +
   geom_line() +
   scale_color_manual(name = expression(paste("Planning\nHorizon (H)")),
                      values = c("grey60", "blue", "red", "green")) +
@@ -457,12 +458,12 @@ isp <- rbind(isp, data.table(i=iswitch[iswitch[,8] != 1,8]))
 pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        color=as.factor(D),
                        size=as.factor(D))) +
-  xlab("") + ylab(expression(paste("% Infective (i)"))) +
+  xlab("") + ylab(expression(paste("% Infectious (i)"))) +
   geom_line() +
-  scale_color_manual(name = expression(paste("Decision\nFrequency (d)")),
+  scale_color_manual(name = expression(paste("Decision\nFrequency (", delta, ")")),
                       values = c("grey60", "blue", "red"),
                       labels = c("0.00", "0.01", "0.02")) +
-  scale_size_manual(name = expression(paste("Decision\nFrequency (d)")),
+  scale_size_manual(name = expression(paste("Decision\nFrequency (", delta, ")")),
                     values = c(15, 10, 5),
                     labels = c("0.00", "0.01", "0.02")) +
   scale_y_continuous(limits = c(0, 17),
@@ -509,7 +510,7 @@ gtd1$layout$clip[gtd1$layout$name == "panel"] <- "off"
 ###############
 ## FEAR
 ###############
-filename <- "disease1-0.95"
+filename <- "disease1-R0.95-K1"
 data <- data.table(read.table(paste0(inputDisease1Dir, "/", filename,".csv"),
                               sep=";", header=TRUE))
 
@@ -541,7 +542,7 @@ pf1 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits = c(0, 100),
                      breaks = c(0, 25, 50, 75, 100),
                      labels = c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infectious (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colors = blue2green2red(50),
@@ -575,7 +576,7 @@ gtf1 <- ggplot_gtable(ggplot_build(pf1))
 gtf1$layout$clip[gtf1$layout$name == "panel"] <- "off"
 
 
-filename <- "disease1-k1.5"
+filename <- "disease1-R0.95-K1.5"
 data <- data.table(read.table(paste0(inputDisease1Dir, "/", filename,".csv"),
                               sep=";", header=TRUE))
 
@@ -607,7 +608,7 @@ pf2 <- ggplot(pData[which((n == 0) & (i < 1))],
   scale_y_continuous(limits = c(0, 100),
                      breaks = c(0, 25, 50, 75, 100),
                      labels = c("0%", "25%", "50%", "75%", "100%")) +
-  scale_fill_gradientn(name = expression(paste("% Infective (i)")),
+  scale_fill_gradientn(name = expression(paste("% Infectious (i)")),
                        limits = c(0, 100),
                        values = c(0.0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.7, 1.0),
                        colors = blue2green2red(50),
@@ -678,7 +679,7 @@ pl <- ggplot(data, aes(x=time, y=((I / (S+P+I+R)) * 100),
                        color=as.factor(K),
                        size=as.factor(K))) +
   xlab(expression(paste("Time (t)"))) +
-  ylab(expression(paste("% Infective (i)"))) +
+  ylab(expression(paste("% Infectious (i)"))) +
   geom_line() +
   scale_color_manual(name = expression(paste("Distortion of\nPerception (",kappa,")")),
                      values = c("grey60", "blue", "red"),

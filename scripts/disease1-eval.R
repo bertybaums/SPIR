@@ -234,6 +234,7 @@ gAvgPayoff <- ggplot(data, aes(x=protection * 100,
 ggsave(file=paste0(figureDir, "/protectionAvgPayoff.png"),
 		plot=gAvgPayoff, width=10, height=6.5)
 
+
 ###############
 ## INCREASE OF PROTECTION - RATE
 ###############
@@ -607,7 +608,7 @@ for(i in 1:length(H)){
 						parallelType=2),
 				peakSizeR=peakSizeR)
 		
-		if((result$optim$bestval > error) & (r < maxR)){
+		if((result$optim$bestval > error) | (r > maxR)){
 			hasP <- FALSE
 		} else {
 			outputPR_PS <- data.table(cbind(H[i], r, result$optim$bestmem))

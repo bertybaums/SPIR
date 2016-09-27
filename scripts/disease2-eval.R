@@ -231,6 +231,9 @@ gAvgPayoff <- ggplot(data, aes(x=protection * 100,
 		THEME +
 		theme(legend.position = "right")
 
+ggsave(file=paste0(figureDir, "/protectionAvgPayoff.png"),
+		plot=gAvgPayoff, width=10, height=6.5)
+
 
 ###############
 ## INCREASE OF PROTECTION - RATE
@@ -244,7 +247,7 @@ for(p in 1:length(H)){
 	aux[1,]$timePeak <- 0
 	aux[1,]$avgPayoff <- 0
 	
-	for(r in 2:nrow(f)){
+	for(r in 2:nrow(fData)){
 		aux[r,]$peakSize <- abs(fData[r - 1,]$peakSize - fData[r,]$peakSize)
 		aux[r,]$timePeak <- abs(fData[r - 1,]$timePeak - fData[r,]$timePeak)
 		aux[r,]$avgPayoff <- abs(fData[r - 1,]$avgPayoff - fData[r,]$avgPayoff)
@@ -265,11 +268,8 @@ write.table(data, file=paste0(outputDir,"/rate.csv"),
 data <- data.table(read.table(file=paste0(inputDir, "/rate.csv"),
 				header=TRUE, sep=";"))
 
-rPeakSize <- ggplot(newData, aes(x=protection * 100,
-						y=peakSize * 100,
-						group=h,
-						linetype=factor(h),
-						color=factor(h))) +
+rPeakSize <- ggplot(data, aes(x=protection * 100, y=peakSize * 100,
+						group=h, linetype=factor(h), color=factor(h))) +
 		geom_line(size=0.9) +
 		xlab("Protection (%)") +
 		ylab("Peak Size Rate") +
@@ -281,11 +281,11 @@ rPeakSize <- ggplot(newData, aes(x=protection * 100,
 		THEME +
 		theme(legend.position = "right")
 
-rTimePeak <- ggplot(newData, aes(x=protection * 100,
-						y=timePeak,
-						group=h,
-						linetype=factor(h),
-						color=factor(h))) +
+ggsave(file=paste0(figureDir, "/ratePeakSize.png"),
+		plot=rPeakSize, width=10, height=6.5)
+
+rTimePeak <- ggplot(data, aes(x=protection * 100, y=timePeak,
+						group=h, linetype=factor(h), color=factor(h))) +
 		geom_line(size=0.9) +
 		xlab("Protection (%)") +
 		ylab("Time Peak Rate") +
@@ -297,11 +297,11 @@ rTimePeak <- ggplot(newData, aes(x=protection * 100,
 		THEME +
 		theme(legend.position = "right")
 
-rAvgPayoff <- ggplot(newData, aes(x=protection * 100,
-						y=avgPayoff,
-						group=h,
-						linetype=factor(h),
-						color=factor(h))) +
+ggsave(file=paste0(figureDir, "/ratePeakTime.png"),
+		plot=rTimePeak, width=10, height=6.5)
+
+rAvgPayoff <- ggplot(data, aes(x=protection * 100, y=avgPayoff,
+						group=h, linetype=factor(h), color=factor(h))) +
 		geom_line(size=0.9) +
 		xlab("Protection (%)") +
 		ylab("Average Payoff Rate") +
@@ -312,6 +312,9 @@ rAvgPayoff <- ggplot(newData, aes(x=protection * 100,
 				start=0.8, end=0.2) +
 		THEME +
 		theme(legend.position = "right")
+
+ggsave(file=paste0(figureDir, "/rateAvgPayoff.png"),
+		plot=rAvgPayoff, width=10, height=6.5)
 
 
 ###############
@@ -422,6 +425,9 @@ kp_ps <- ggplot(outputKP_PS, aes(x=k, y=up,
 		THEME +
 		theme(legend.position = "right")
 
+ggsave(file=paste0(figureDir, "/kappaXuP-PeakSize.png"),
+		plot=kp_ps, width=10, height=6.5)
+
 
 ###############
 ## Rho x Kappa - Peak Size
@@ -531,6 +537,9 @@ kr_ps <- ggplot(outputKR_PS, aes(x=k, y=(1 - rho),
 		THEME +
 		theme(legend.position = "right")
 
+ggsave(file=paste0(figureDir, "/kappaXrho-PeakSize.png"),
+		plot=kr_ps, width=10, height=6.5)
+
 
 ###############
 ## Rho x uP - Peak Size
@@ -603,7 +612,7 @@ for(i in 1:length(H)){
 						parallelType=2),
 				peakSizeR=peakSizeR)
 		
-		if((result$optim$bestval > error) & (r < maxR)){
+		if((result$optim$bestval > error) | (r > maxR)){
 			hasP <- FALSE
 		} else {
 			outputPR_PS <- data.table(cbind(H[i], r, result$optim$bestmem))

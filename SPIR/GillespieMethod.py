@@ -45,6 +45,7 @@ class GillespieMethod(object):
         h = timeHorizon
         q = disease[Constant.GAMMA]
         
+        found = False
         iswitch = 1
         pUs = -1
         pUp = -1
@@ -73,19 +74,20 @@ class GillespieMethod(object):
             US = (payoffs[State.S] * Tss) + (payoffs[State.I] * Tis) + (payoffs[State.R] * Trs)
             UP = (payoffs[State.P] * Tpp) + (payoffs[State.I] * Tip) + (payoffs[State.R] * Trp)
             
-            if (pUs == -1):
+            if ((pUs == -1) or (pUp == -1)):
                 iswitch = i
                 pUs = US
-            
-            if (pUp == -1):
-                iswitch = i
                 pUp = UP
-                            
+                
             if (((US >= UP) and (pUs < pUp)) or ((UP >= US) and (pUp < pUs))):
                 iswitch = i
+                found = True
                 break
             
             i += step
+        
+        if (not found):
+            iswitch = 1
         
         return iswitch
     
@@ -162,6 +164,8 @@ class GillespieMethod(object):
         i = (self.nAgents[State.I] / float(N)) ** float(1 / float(self.fear))
         
         iSwitch = self.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
+        
+        print(iSwitch)
         
         c = {self.INT_SP: self.decision / float(N),
              self.INT_PS: self.decision / float(N),
