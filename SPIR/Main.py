@@ -234,7 +234,7 @@ if (args.output):
     
     if (outputFormat == Constant.O_STANDARD):
         fname = outputPath + "/" + outputFile + ".csv"
-        f = open(fname, "w")
+        f = open(fname, "w", 0)
         
         if (outputHeader):
             header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + outputSep + Constant.O_PS + outputSep + Constant.O_PP + outputSep + Constant.O_PI + outputSep + Constant.O_PR + "\n"
@@ -344,8 +344,10 @@ if (args.graphic):
         pos = 0
         index = 0
         nSize = len(num[rep])
-        pv = [nAgents[State.S] / float(N), nAgents[State.P] / float(N),
-              nAgents[State.I] / float(N), nAgents[State.R] / float(N),
+        pv = [nAgents[State.S] / float(N),
+              nAgents[State.P] / float(N),
+              nAgents[State.I] / float(N),
+              nAgents[State.R] / float(N),
               nAgents[State.I] / float(N)]
         while (pos < size):
             v = [0, 0, 0, 0, 0]
@@ -365,26 +367,19 @@ if (args.graphic):
                 pv[2] = v[2] / float(n)
                 pv[3] = v[3] / float(n)
                 pv[4] = v[4] / float(n)
-                
-            s[pos] += pv[0]
-            p[pos] += pv[1]
-            i[pos] += pv[2]
-            r[pos] += pv[3]
-            f[pos] += pv[4]
+            
+            if(method == Constant.METHOD_MICRO):
+                x[pos] = (pos * window)
+            elif (method == Constant.METHOD_GILLESPIE):
+                x[pos] = (pos * window) / float(N)
+            s[pos] += (pv[0] / replication)
+            p[pos] += (pv[1] / replication)
+            i[pos] += (pv[2] / replication)
+            r[pos] += (pv[3] / replication)
+            f[pos] += (pv[4] / replication)
             
             pos += 1
             t += window
-    
-    for pos in range(size):
-        if(method == Constant.METHOD_MICRO):
-            x[pos] = (pos * window)
-        elif (method == Constant.METHOD_GILLESPIE):
-            x[pos] = (pos * window) / float(N)
-        s[pos] /= replication
-        p[pos] /= replication
-        i[pos] /= replication
-        r[pos] /= replication
-        f[pos] /= replication
     
     fig = pyplot.figure()
     
