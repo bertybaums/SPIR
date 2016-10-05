@@ -234,11 +234,11 @@ if (args.output):
     
     if (outputFormat == Constant.O_STANDARD):
         fname = outputPath + "/" + outputFile + ".csv"
-        f = open(fname, "w", 0)
+        f = open(fname, "w")
         
         if (outputHeader):
             header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + outputSep + Constant.O_PS + outputSep + Constant.O_PP + outputSep + Constant.O_PI + outputSep + Constant.O_PR + "\n"
-            f.write(header)
+            f.write(str(header))
         
         for rep in range(replication):
             for row in num[rep]:
@@ -297,7 +297,7 @@ if (args.output):
             fname = outputPath + "/" + outputFile + str(rep) + ".csv"
             f = open(fname, "w")
             
-            f.write(header)
+            f.write(str(header))
             
             for index in range(0, pos):
                 timestep = str(index + 1)
