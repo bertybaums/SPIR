@@ -33,7 +33,7 @@ You can configure the SPIR simulations by changing the values of the parameters 
 | fear             | -K               | Distortion of the perceived proportion of Infectious agents in the population (i.e. _distortion factor_) |
 | decision         | -D               | Probability an agent in the Susceptible or Prophylactic state decides which behavior to engage in |
 | time.horizon     | -H               | The time in the future over which agents calculate their utilities to make a behavioral decision |
-| method           | -M               | Method of executing the simulation (0 - Micro, 1 - Gillespie) |
+| method           | -M               | Method of executing the simulation (0 - Micro, 1 - Gillespie, 2 - Efficient Tau Leap) |
 | replication      | -R               | Number of replications to run the scenario using different random seeds |
 | time.steps       | -T               | Length of the simulation in steps |
 | output.format    | -F               | Format of the output file (0 - Standard or 1 - Galapagos) |
@@ -51,7 +51,7 @@ where,
 + **-v**			    verbose
 + **-o**			    writes the output as Comma Separated Values (CSV) files
 + **-g**			    plots the output as a graphic
-+ **configFile**	identify the configuration file that specifies the parameters value to run the simulation (see **Configuration**)
++ **configFile**	    identify the configuration file that specifies the parameters value to run the simulation (see **Configuration**)
 + **params**		  explicit specification of all parameters in the command-line through the symbols (see **Configuration**)
 
 To execute the SPIR model from Linux terminal:

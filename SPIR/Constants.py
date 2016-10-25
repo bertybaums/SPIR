@@ -59,6 +59,8 @@ class Constant():
     ##
     METHOD_MICRO = 0
     METHOD_GILLESPIE = 1
+    METHOD_EFFICIENT_TAU_LEAP = 2
+    
     
     ##
     ## Output format

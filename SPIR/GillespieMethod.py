@@ -7,7 +7,7 @@ from random import uniform
 ##
 ## Our classes
 ##
-from Agent import Agent
+from Util import Util
 from Constants import Constant
 from State import State
 
@@ -39,59 +39,6 @@ class GillespieMethod(object):
         self.timeSteps = timeSteps
     
     ##
-    ## Calculate i Switch
-    ##
-    def calcISwitch(self, timeHorizon, disease, payoffs):
-        h = timeHorizon
-        q = disease[Constant.GAMMA]
-        
-        found = False
-        iswitch = 1
-        pUs = -1
-        pUp = -1
-        step = 0.00001
-        i = step
-        while (i <= 1.0):
-            ## Calculate expected times of Susceptible
-            ps = i * disease[Constant.BETA]
-            Tss = ((1 / float(ps)) - 1) * (1 - ((1 - ps)**h))
-            if (ps != q):
-                Tis = ((1 / float(q)) - 1) * (((((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (((1 / float(ps)) - 1) * (1 - ((1 - ps)**h)))) / ((((1 / float(q)) - 1)) - ((1 / float(ps)) - 1)))
-            else:
-                Tis = (((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (h * ((1 - q)**(h + 1)))
-            Trs = h - Tss - Tis
-            
-            ## Calculate expected times of Prophylactic
-            pp = i * disease[Constant.BETA] * disease[Constant.RHO]
-            Tpp = ((1 / float(pp)) - 1) * (1 - ((1 - pp)**h))
-            if (pp != q):
-                Tip = ((1 / float(q)) - 1) * (((((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (((1 / float(pp)) - 1) * (1 - ((1 - pp)**h)))) / ((((1 / float(q)) - 1)) - ((1 / float(pp)) - 1)))
-            else:
-                Tip = (((1 / float(q)) - 1) * (1 - ((1 - q)**h))) - (h * ((1 - q)**(h + 1)))
-            Trp = h - Tpp - Tip
-            
-            ## Calculate Expected Utilities
-            US = (payoffs[State.S] * Tss) + (payoffs[State.I] * Tis) + (payoffs[State.R] * Trs)
-            UP = (payoffs[State.P] * Tpp) + (payoffs[State.I] * Tip) + (payoffs[State.R] * Trp)
-            
-            if ((pUs == -1) or (pUp == -1)):
-                iswitch = i
-                pUs = US
-                pUp = UP
-                
-            if (((US >= UP) and (pUs < pUp)) or ((UP >= US) and (pUp < pUs))):
-                iswitch = i
-                found = True
-                break
-            
-            i += step
-        
-        if (not found):
-            iswitch = 1
-        
-        return iswitch
-    
-    ##
     ## Execute the simulation
     ##
     def execute(self):
@@ -99,30 +46,8 @@ class GillespieMethod(object):
         ## Initialize agents
         ##
         pDisease = {Constant.BETA: 1 - math.exp(-self.disease[Constant.BETA]),
-                    Constant.RHO: self.disease[Constant.RHO],
+                    Constant.RHO: 1 - math.exp(-self.disease[Constant.RHO]),
                     Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
-        
-        agents = []
-        S = []
-        P = []
-        I = []
-        R = []
-        N = 0
-        for state in self.nAgents:
-            for x in range(self.nAgents[state]):
-                agent = Agent(N, state, pDisease, self.fear, self.timeHorizon, self.payoffs)
-                agents.append(agent)
-                
-                if (state == State.S):
-                    S.append(agent)
-                elif (state == State.P):
-                    P.append(agent)
-                elif (state == State.I):
-                    I.append(agent)
-                elif (state == State.R):
-                    R.append(agent)
-                    
-                N += 1
         
         ##
         ## Output variables
@@ -161,9 +86,11 @@ class GillespieMethod(object):
         ##
         ## Run the simulation
         ##
+        N = self.nAgents[State.S] + self.nAgents[State.P] + self.nAgents[State.I] + self.nAgents[State.R]
+        
         i = (self.nAgents[State.I] / float(N)) ** float(1 / float(self.fear))
         
-        iSwitch = self.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
+        iSwitch = Util.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
         
         c = {self.INT_SP: self.decision / float(N),
              self.INT_PS: self.decision / float(N),
@@ -191,64 +118,34 @@ class GillespieMethod(object):
                 
             if ((index == self.INT_SP) and (self.nAgents[State.S] > 0)):
                 ## Decide
-                agent = S[int(uniform(0, self.nAgents[State.S] - 1))]
                 
-                S.remove(agent)
                 self.nAgents[State.S] -= 1
-                
-                agent.setState(State.P)
-                
-                P.append(agent)
                 self.nAgents[State.P] += 1
                     
             elif ((index == self.INT_PS) and (self.nAgents[State.P] > 0)):
                 ## Decide
-                agent = P[int(uniform(0, self.nAgents[State.P] - 1))]
                 
-                P.remove(agent)
                 self.nAgents[State.P] -= 1
-                
-                agent.setState(State.S)
-                
-                S.append(agent)
                 self.nAgents[State.S] += 1
-        
+                
             elif ((index == self.INT_SI) and (self.nAgents[State.S] > 0)):
                 ## Infect
-                agent = S[int(uniform(0, self.nAgents[State.S] - 1))]
-
-                S.remove(agent)
+                
                 self.nAgents[State.S] -= 1
-                
-                agent.setState(State.I)
-                
-                I.append(agent)
                 self.nAgents[State.I] += 1
-                    
+                
             elif ((index == self.INT_PI) and (self.nAgents[State.P] > 0)):
                 ## Infect
-                agent = P[int(uniform(0, self.nAgents[State.P] - 1))]
                 
-                P.remove(agent)
                 self.nAgents[State.P] -= 1
-                
-                agent.setState(State.I)
-                    
-                I.append(agent)
                 self.nAgents[State.I] += 1
-                    
+                
             elif ((index == self.INT_IR) and (self.nAgents[State.I] > 0)):
                 ## Recover
-                agent = I[int(uniform(0, self.nAgents[State.I] - 1))]
-
-                I.remove(agent)
+                
                 self.nAgents[State.I] -= 1
-                
-                agent.setState(R)
-                
-                R.append(agent)
                 self.nAgents[State.R] += 1
-            
+                
             ##
             ## Update output
             ##

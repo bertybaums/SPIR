@@ -10,7 +10,6 @@ from Constants import Constant
 from State import State
 
 class Agent(object):
-        
     ##
     ## Constructor
     ##

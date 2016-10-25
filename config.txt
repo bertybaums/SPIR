@@ -17,16 +17,16 @@ payoff.R = 1.00
 ##
 ## Disease Information
 ##
-beta = 0.2211
-rho = 0.0099
-gamma = 0.1175
+beta = 0.25
+rho = 0.01
+gamma = 0.125
 
 ##
 ## Decision information
 ##
 fear = 1
-decision = 0.0099
-time.horizon = 30
+decision = 0.01
+time.horizon = 45
 
 ##
 ## Simulation information
@@ -34,7 +34,8 @@ time.horizon = 30
 # Method
 # 0 Microsimulation
 # 1 Gillespie
-method = 1
+# 2 Efficient Tau-Leap
+method = 25.
 replication = 1
 time.steps = 250
 

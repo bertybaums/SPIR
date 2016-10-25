@@ -14,6 +14,7 @@ from Constants import Constant
 from GillespieMethod import GillespieMethod
 from MicroMethod import MicroMethod
 from State import State
+from EfficientTauLeapMethod import EfficientTauLeapMethod
 
 if __name__ == '__main__':
     pass
@@ -214,6 +215,8 @@ for rep in range(replication):
         m = MicroMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps)
     elif (method == Constant.METHOD_GILLESPIE):
         m = GillespieMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
+    elif (method == Constant.METHOD_EFFICIENT_TAU_LEAP):
+        m = EfficientTauLeapMethod(args, agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
     
     ##
     ## Execute simulation
@@ -254,9 +257,9 @@ if (args.output):
             aux = vector[len(vector) - 1][0]
             if (aux > size):
                 size = aux
-    
+                
         size = int((size / float(window)) + 1)
-    
+        
         x = [0 for y in range(size)]
         s = [0 for y in range(size)]
         p = [0 for y in range(size)]
@@ -371,6 +374,8 @@ if (args.graphic):
             if(method == Constant.METHOD_MICRO):
                 x[pos] = (pos * window)
             elif (method == Constant.METHOD_GILLESPIE):
+                x[pos] = (pos * window) / float(N)
+            elif (method == Constant.METHOD_EFFICIENT_TAU_LEAP):
                 x[pos] = (pos * window) / float(N)
             s[pos] += (pv[0] / replication)
             p[pos] += (pv[1] / replication)
