@@ -2,7 +2,7 @@
 ## Evaluation
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 09/22/2016
+## Last Change.: 12/14/2016
 ##
 library(data.table)
 library(DEoptim)
@@ -40,21 +40,21 @@ TIME_PEAK <- 3
 AVG_PAYOFF <- 4
 
 THEME <- theme(axis.title.x = element_text(color = 'black', size = 16, face = 'bold',
-				margin=margin(t=0.2, unit = "cm")),
-		axis.title.y = element_text(color = 'black', size = 16, face = 'bold',
-				margin=margin(r=0.4, unit = "cm")),
-		axis.text.x = element_text(color = 'black', size = 12, face = 'bold'),
-		axis.text.y = element_text(color = 'black', size = 12, face = 'bold'),
-		axis.line.x = element_line(color='black', size=1, linetype='solid'),
-		axis.line.y = element_line(color='black', size=1, linetype='solid'),
-		panel.background = element_rect(fill = "transparent", color = NA),
-		panel.grid.minor = element_blank(),
-		panel.grid.major = element_blank(),
-		plot.margin = unit(c(0.5, 0, 0.5, 0), "cm"),
-		legend.position = "none",
-		legend.title = element_text(color="black", size=14, face="bold"),
-		legend.text = element_text(color="black", size=12, face="bold"),
-		legend.key = element_rect(fill = "white"))
+        margin=margin(t=0.2, unit = "cm")),
+    axis.title.y = element_text(color = 'black', size = 16, face = 'bold',
+        margin=margin(r=0.4, unit = "cm")),
+    axis.text.x = element_text(color = 'black', size = 12, face = 'bold'),
+    axis.text.y = element_text(color = 'black', size = 12, face = 'bold'),
+    axis.line.x = element_line(color='black', size=1, linetype='solid'),
+    axis.line.y = element_line(color='black', size=1, linetype='solid'),
+    panel.background = element_rect(fill = "transparent", color = NA),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_blank(),
+    plot.margin = unit(c(0.5, 0, 0.5, 0), "cm"),
+    legend.position = "none",
+    legend.title = element_text(color="black", size=14, face="bold"),
+    legend.text = element_text(color="black", size=12, face="bold"),
+    legend.key = element_rect(fill = "white"))
 
 
 ###############
@@ -119,51 +119,49 @@ H <- c(15, 30, 45, 90, 180, 360)
 Rhos <- seq(0.01, 1, 0.01)
 
 output <-
-  foreach(i=1:length(H), .combine='rbind') %dopar%{
-    
-    outRho <- NULL
-    for(r in 1:length(Rhos)){
-    	
-    	## ODE parameters with changed rho
-    	parsR <- list(
-    			R0 = R0,
-    			duration = duration,
-    			G = G,
-    			Bs = Bs,
-    			betaS = betaS,
-    			rho = Rhos[r],
-    			gamma = gamma,
-    			lambda = lambda,
-    			kappa = kappa,
-    			delta = delta,
-    			h = H[i],
-    			payoffs = payoffs,
-    			iswitch = calc_iswitch(H[i], betaS, Rhos[r], gamma, lambda, kappa, payoffs)
-    	)
-    	
-    	## Simulate the dynamics with changed rho
-    	simR <- as.data.table(lsoda(yinit, times, SPIRmodel, parsR, rtol=1e-3, atol=1e-3))
-    	
-    	## Calculate output metrics
-    	out <- c(0, 0, 0, 0)
-    	out[PROTECTION] <- 1 - Rhos[r]
-    	out[PEAK_SIZE] <- max(simR$I) / sum(yinit)
-    	out[TIME_PEAK] <- which(simR$I == max(simR$I))[1]
-    	
-    	aux <- which(simR$I < 1)
-    	aux <- ifelse(length(aux) > 0, aux[1] - 1, nrow(simR))
-    	out[AVG_PAYOFF] <- sum((simR[1:aux,]$S * payoffs[1]) +
-    	                         (simR[1:aux,]$P * payoffs[2]) +
-    	                         (simR[1:aux,]$I * payoffs[3]) +
-    	                         (simR[1:aux,]$R * payoffs[4])) /
-    	  (sum(yinit) * aux)
-    	
-    	outRho <- rbind(outRho, cbind(H[i], out[PROTECTION], out[PEAK_SIZE],
-    	                              out[TIME_PEAK], out[AVG_PAYOFF]))
+    foreach(i=1:length(H), .combine='rbind') %dopar%{
+      outRho <- NULL
+      for(r in 1:length(Rhos)){
+        ## ODE parameters with changed rho
+        parsR <- list(
+            R0 = R0,
+            duration = duration,
+            G = G,
+            Bs = Bs,
+            betaS = betaS,
+            rho = Rhos[r],
+            gamma = gamma,
+            lambda = lambda,
+            kappa = kappa,
+            delta = delta,
+            h = H[i],
+            payoffs = payoffs,
+            iswitch = calc_iswitch(H[i], betaS, Rhos[r], gamma, lambda, kappa, payoffs)
+        )
+        
+        ## Simulate the dynamics with changed rho
+        simR <- as.data.table(lsoda(yinit, times, SPIRmodel, parsR, rtol=1e-3, atol=1e-3))
+        
+        ## Calculate output metrics
+        out <- c(0, 0, 0, 0)
+        out[PROTECTION] <- 1 - Rhos[r]
+        out[PEAK_SIZE] <- max(simR$I) / sum(yinit)
+        out[TIME_PEAK] <- which(simR$I == max(simR$I))[1]
+        
+        aux <- which(simR$I < 1)
+        aux <- ifelse(length(aux) > 0, aux[1] - 1, nrow(simR))
+        out[AVG_PAYOFF] <- sum((simR[1:aux,]$S * payoffs[1]) +
+                    (simR[1:aux,]$P * payoffs[2]) +
+                    (simR[1:aux,]$I * payoffs[3]) +
+                    (simR[1:aux,]$R * payoffs[4])) /
+            (sum(yinit) * aux)
+        
+        outRho <- rbind(outRho, cbind(H[i], out[PROTECTION], out[PEAK_SIZE],
+                out[TIME_PEAK], out[AVG_PAYOFF]))
+      }
+      
+      outRho
     }
-    
-    outRho
-  }
 
 ## Organize dataset
 data <- data.table(output)
@@ -171,150 +169,54 @@ names(data) <- c("h", "protection", "peakSize", "timePeak", "avgPayoff")
 data <- data[order(data$protection)]
 
 write.table(data, file=paste0(outputDir,"/increaseProtection.csv"),
-		append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
+    append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
 
 ## Generate plots
-data <- data.table(read.table(file=paste0(inputDir, "/increaseProtection.csv"),
-				header=TRUE, sep=";"))
+data <- fread(paste0(inputDir, "/increaseProtection.csv"),
+    header=TRUE, sep=";")
 
-gPeakSize <- ggplot(data, aes(x=protection * 100,
-                              y=peakSize * 100,
-                              group=h,
-                              linetype=factor(h),
-                              color=factor(h))) +
-  geom_line(size=0.9) +
-  xlab("Protection (%)") +
-  ylab("Peak Size (%)") +
-  scale_linetype_manual(name="Planning\nHorizon",
-                        values=c("solid", "dashed", "longdash",
-                                 "twodash", "dotdash", "dotted")) +
-  scale_color_grey(name="Planning\nHorizon",
-                   start=0.8, end=0.2) +
-  THEME +
-  theme(legend.position = "right")
-
-ggsave(file=paste0(figureDir, "/protectionPeakSize.png"),
-		plot=gPeakSize, width=10, height=6.5)
-
-gTimePeak <- ggplot(data, aes(x=protection * 100,
-                              y=timePeak,
-                              group=h,
-                              linetype=factor(h),
-                              color=factor(h))) +
-  geom_line(size=0.9) +
-  xlab("Protection (%)") +
-  ylab("Time to Peak") +
-  scale_linetype_manual(name="Planning\nHorizon",
-                        values=c("solid", "dashed", "longdash",
-                                 "twodash", "dotdash", "dotted")) +
-  scale_color_grey(name="Planning\nHorizon",
-                   start=0.8, end=0.2) +
-  THEME +
-  theme(legend.position = "right")
-
-ggsave(file=paste0(figureDir, "/protectionPeakTime.png"),
-		plot=gTimePeak, width=10, height=6.5)
-
-gAvgPayoff <- ggplot(data, aes(x=protection * 100,
-                               y=avgPayoff,
-                               group=h,
-                               linetype=factor(h),
-                               color=factor(h))) +
-  geom_line(size=0.9) +
-  xlab("Protection (%)") +
-  ylab("Average Payoff") +
-  scale_linetype_manual(name="Planning\nHorizon",
-                        values=c("solid", "dashed", "longdash",
-                                 "twodash", "dotdash", "dotted")) +
-  scale_color_grey(name="Planning\nHorizon",
-                   start=0.8, end=0.2) +
-  THEME +
-  theme(legend.position = "right")
-
-ggsave(file=paste0(figureDir, "/protectionAvgPayoff.png"),
-		plot=gAvgPayoff, width=10, height=6.5)
-
-
-###############
-## INCREASE OF PROTECTION - RATE
-###############
-rData <- NULL
-for(p in 1:length(H)){
-  fData <- data[which(h == H[p]),][order(protection)]
-  
-  aux <- fData
-	aux[1,]$peakSize <- 0
-  aux[1,]$timePeak <- 0
-  aux[1,]$avgPayoff <- 0
-  
-  for(r in 2:nrow(fData)){
-    aux[r,]$peakSize <- abs(fData[r - 1,]$peakSize - fData[r,]$peakSize)
-    aux[r,]$timePeak <- abs(fData[r - 1,]$timePeak - fData[r,]$timePeak)
-    aux[r,]$avgPayoff <- abs(fData[r - 1,]$avgPayoff - fData[r,]$avgPayoff)
-  }
-  
-  rData <- rbind(rData, aux)
+dataIP <- NULL
+for(p in H){
+  maxIP <- max(data[which(h == p),]$peakSize)
+  dataIP <- rbind(dataIP, data[which((h == p) & (peakSize < maxIP)),])
 }
 
-## Organize dataset
-data <- data.table(rData)
-names(data) <- c("h", "protection", "peakSize", "timePeak", "avgPayoff")
-data <- data[order(data$protection)]
+gPeakSize <- ggplot(dataIP, aes(x=protection * 100, y=peakSize * 100,
+            group=h,
+            color=factor(h))) +
+    geom_line(size=0.9) +
+    xlim(0, 100) +
+    xlab("Protection (%)") +
+    ylab("Peak Size (%)") +
+    scale_color_manual(name="Planning\nHorizon",
+        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+    THEME +
+    theme(legend.position = "right")
 
-write.table(data, file=paste0(outputDir,"/rate.csv"),
-		append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
+ggsave(file=paste0(figureDir, "/protectionPeakSize.png"),
+    plot=gPeakSize, width=10, height=6.5)
 
-## Generate plots
-data <- data.table(read.table(file=paste0(inputDir, "/rate.csv"),
-				header=TRUE, sep=";"))
 
-rPeakSize <- ggplot(data, aes(x=protection * 100, y=peakSize * 100,
-						group=h, linetype=factor(h), color=factor(h))) +
-  geom_line(size=0.9) +
-  xlab("Protection (%)") +
-  ylab("Peak Size Rate") +
-  scale_linetype_manual(name="Planning\nHorizon",
-                        values=c("solid", "dashed", "longdash",
-                                 "twodash", "dotdash", "dotted")) +
-  scale_color_grey(name="Planning\nHorizon",
-                   start=0.8, end=0.2) +
-  THEME +
-  theme(legend.position = "right")
+dataIP <- NULL
+for(p in H){
+  maxIP <- max(data[which(h == p),]$timePeak)
+  dataIP <- rbind(dataIP, data[which((h == p) & (timePeak < maxIP)),])
+}
 
-ggsave(file=paste0(figureDir, "/ratePeakSize.png"),
-		plot=rPeakSize, width=10, height=6.5)
+gTimePeak <- ggplot(dataIP, aes(x=protection * 100, y=timePeak,
+            group=h,
+            color=factor(h))) +
+    geom_line(size=0.9) +
+    xlim(0, 100) +
+    xlab("Protection (%)") +
+    ylab("Time to Peak") +
+    scale_color_manual(name="Planning\nHorizon",
+        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+    THEME +
+    theme(legend.position = "right")
 
-rTimePeak <- ggplot(data, aes(x=protection * 100, y=timePeak,
-						group=h, linetype=factor(h), color=factor(h))) +
-  geom_line(size=0.9) +
-  xlab("Protection (%)") +
-  ylab("Time Peak Rate") +
-  scale_linetype_manual(name="Planning\nHorizon",
-                        values=c("solid", "dashed", "longdash",
-                                 "twodash", "dotdash", "dotted")) +
-  scale_color_grey(name="Planning\nHorizon",
-                   start=0.8, end=0.2) +
-  THEME +
-  theme(legend.position = "right")
-
-ggsave(file=paste0(figureDir, "/ratePeakTime.png"),
-		plot=rTimePeak, width=10, height=6.5)
-
-rAvgPayoff <- ggplot(data, aes(x=protection * 100, y=avgPayoff,
-						group=h, linetype=factor(h), color=factor(h))) +
-  geom_line(size=0.9) +
-  xlab("Protection (%)") +
-  ylab("Average Payoff Rate") +
-  scale_linetype_manual(name="Planning\nHorizon",
-                        values=c("solid", "dashed", "longdash",
-                                 "twodash", "dotdash", "dotted")) +
-  scale_color_grey(name="Planning\nHorizon",
-                   start=0.8, end=0.2) +
-  THEME +
-  theme(legend.position = "right")
-
-ggsave(file=paste0(figureDir, "/rateAvgPayoff.png"),
-		plot=rAvgPayoff, width=10, height=6.5)
+ggsave(file=paste0(figureDir, "/protectionPeakTime.png"),
+    plot=gTimePeak, width=10, height=6.5)
 
 
 ###############
@@ -322,26 +224,25 @@ ggsave(file=paste0(figureDir, "/rateAvgPayoff.png"),
 ###############
 
 optimizeP <- function(up, peakSizeK){
-	
   parsP <- list(
-    R0 = R0,
-    duration = duration,
-    G = G,
-    Bs = Bs,
-    betaS = betaS,
-    rho = rho,
-    gamma = gamma,
-    lambda = lambda,
-    kappa = kappa,
-    delta = delta,
-    h = H[i],
-    payoffs = c(payoffs[1], up, payoffs[3], payoffs[4]),
-    iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, kappa,
-                           c(payoffs[1], up, payoffs[3], payoffs[4]))
+      R0 = R0,
+      duration = duration,
+      G = G,
+      Bs = Bs,
+      betaS = betaS,
+      rho = rho,
+      gamma = gamma,
+      lambda = lambda,
+      kappa = kappa,
+      delta = delta,
+      h = H[i],
+      payoffs = c(payoffs[1], up, payoffs[3], payoffs[4]),
+      iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, kappa,
+          c(payoffs[1], up, payoffs[3], payoffs[4]))
   )
   
   simP <- as.data.table(lsoda(y=yinit, times=times, func=SPIRmodel, parms=parsP,
-                              verbose=FALSE, rtol=1e-3, atol=1e-3))
+          verbose=FALSE, rtol=1e-3, atol=1e-3))
   peakSizeP <- max(simP$I) / sum(yinit)
   
   return(abs(peakSizeP - peakSizeK))
@@ -359,97 +260,101 @@ for(i in 1:length(H)){
   
   hasP <- TRUE
   while(hasP){
-  	
-  	## ODE parameters
-  	parsK <- list(
-  			R0 = R0,
-  			duration = duration,
-  			G = G,
-  			Bs = Bs,
-  			betaS = betaS,
-  			rho = rho,
-  			gamma = gamma,
-  			lambda = lambda,
-  			kappa = k,
-  			delta = delta,
-  			h = H[i],
-  			payoffs = payoffs,
-  			iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, k, payoffs)
-  	)
-  	
+    ## ODE parameters
+    parsK <- list(
+        R0 = R0,
+        duration = duration,
+        G = G,
+        Bs = Bs,
+        betaS = betaS,
+        rho = rho,
+        gamma = gamma,
+        lambda = lambda,
+        kappa = k,
+        delta = delta,
+        h = H[i],
+        payoffs = payoffs,
+        iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, k, payoffs)
+    )
+    
     ## Simulate the dynamics for Kappa and default P payoff
-  	simK <- as.data.table(lsoda(yinit, times, SPIRmodel, parsK,
-  	                            rtol=1e-3, atol=1e-3))
-  	peakSizeK <- max(simK$I) / sum(yinit)
-  	
-  	result <- DEoptim(fn=optimizeP, lower=0, upper=1,
-  	                  control=DEoptim.control(trace=TRUE, VTR=error,
-  	                                          itermax=100, NP=50,
-  	                                          parallelType=2),
-  	                  peakSizeK=peakSizeK)
-  	
-  	if((result$optim$bestval > error) | (k > maxK)){
-  	  hasP <- FALSE
-  	} else {
-			outputKP_PS <- data.table(cbind(H[i], k, result$optim$bestmem))
-			names(outputKP_PS) <- c("h", "k", "up")
-			
-			write.table(outputKP_PS, file=paste0(outputDir,"/calcKP_PS.csv"), append=!header,
-					quote=FALSE, sep=";", col.names=header, row.names=FALSE)
-			
-			k <- k + deltaK
-			
-			if(header){
-				header <- FALSE
-			}
-  	}
+    simK <- as.data.table(lsoda(yinit, times, SPIRmodel, parsK,
+            rtol=1e-3, atol=1e-3))
+    peakSizeK <- max(simK$I) / sum(yinit)
+    
+    result <- DEoptim(fn=optimizeP, lower=0, upper=1,
+        control=DEoptim.control(trace=TRUE, VTR=error,
+            itermax=100, NP=50, parallelType=2),
+        peakSizeK=peakSizeK)
+    
+    if((result$optim$bestval > error) | (k > maxK)){
+      hasP <- FALSE
+    } else {
+      outputKP_PS <- data.table(cbind(H[i], k, result$optim$bestmem))
+      names(outputKP_PS) <- c("h", "k", "up")
+      
+      write.table(outputKP_PS, file=paste0(outputDir,"/calcKP_PS.csv"),
+          append=!header, quote=FALSE, sep=";",
+          col.names=header, row.names=FALSE)
+      
+      k <- k + deltaK
+      
+      if(header){
+        header <- FALSE
+      }
+    }
   }
 }
 
 ## Generate plots
-outputKP_PS <- data.table(read.table(file=paste0(inputDir, "/calcKP_PS.csv"),
-				header=TRUE, sep=";"))
+outputKP_PS <- fread(paste0(inputDir, "/calcKP_PS.csv"),
+        header=TRUE, sep=";")
 
-kp_ps <- ggplot(outputKP_PS, aes(x=k, y=up, group=h,
-						linetype=factor(h), color=factor(h))) +
-		geom_line(size=0.9) +
-		xlab("Kappa") +
-		ylab("Prophylactic Payoff") +
-		scale_linetype_manual(name="Planning\nHorizon",
-				values=c("solid", "dashed", "longdash",
-						"twodash", "dotdash", "dotted")) +
-		scale_color_grey(name="Planning\nHorizon",
-				start=0.8, end=0.2) +
-		THEME +
-		theme(legend.position = "right")
+dataKP <- NULL
+for(p in H){
+  minKP <- min(outputKP_PS[which(h == p),]$up)
+  dataKP <- rbind(dataKP, outputKP_PS[which((h == p) & (up > minKP)),])
+}
+
+kp_ps <- ggplot(dataKP, aes(x=k, y=up,
+            group=h,
+            color=factor(h))) +
+    geom_line(size=0.9) +
+    xlab("Kappa") +
+    ylab("Prophylactic Payoff") +
+    ylim(0.945, 1) +
+    scale_color_manual(name="Planning\nHorizon",
+        values=c("red", "yellow4", "green4", "magenta4", "black", "blue")) +
+    THEME +
+    theme(legend.position = "right")
 
 ggsave(file=paste0(figureDir, "/kappaXuP-PeakSize.png"),
-		plot=kp_ps, width=10, height=6.5)
+    plot=kp_ps, width=10, height=6.5)
 
 
 ###############
 ## Rho x Kappa - Peak Size
 ###############
 optimizeR <- function(r, peakSizeK){
-	
+  
   parsR <- list(
-    R0 = R0,
-    duration = duration,
-    G = G,
-    Bs = Bs,
-    betaS = betaS,
-    rho = r,
-    gamma = gamma,
-    lambda = lambda,
-    kappa = kappa,
-    delta = delta,
-    h = H[i],
-    payoffs = payoffs,
-    iswitch = calc_iswitch(H[i], betaS, r, gamma, lambda, kappa, payoffs)
+      R0 = R0,
+      duration = duration,
+      G = G,
+      Bs = Bs,
+      betaS = betaS,
+      rho = r,
+      gamma = gamma,
+      lambda = lambda,
+      kappa = kappa,
+      delta = delta,
+      h = H[i],
+      payoffs = payoffs,
+      iswitch = calc_iswitch(H[i], betaS, r, gamma, lambda, kappa, payoffs)
   )
   
   simR <- as.data.table(lsoda(y=yinit, times=times, func=SPIRmodel, parms=parsR,
-                              verbose=FALSE, rtol=1e-3, atol=1e-3))
+          verbose=FALSE, rtol=1e-3, atol=1e-3))
   peakSizeR <- max(simR$I) / sum(yinit)
   
   return(abs(peakSizeR - peakSizeK))
@@ -471,6 +376,81 @@ for(i in 1:length(H)){
     
     ## ODE parameters
     parsK <- list(
+        R0 = R0,
+        duration = duration,
+        G = G,
+        Bs = Bs,
+        betaS = betaS,
+        rho = rho,
+        gamma = gamma,
+        lambda = lambda,
+        kappa = k,
+        delta = delta,
+        h = H[i],
+        payoffs = payoffs,
+        iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, k, payoffs)
+    )
+    
+    ## Simulate the dynamics for Kappa and default P payoff
+    simK <- as.data.table(lsoda(yinit, times, SPIRmodel, parsK,
+            rtol=1e-3, atol=1e-3))
+    peakSizeK <- max(simK$I) / sum(yinit)
+    
+    result <- DEoptim(fn=optimizeR, lower=0, upper=1,
+        control=DEoptim.control(trace=FALSE, VTR=error,
+            itermax=100, NP=10, parallelType=2),
+        peakSizeK=peakSizeK)
+    
+    if((result$optim$bestval > error) | (k > maxK)){
+      hasP <- FALSE
+    } else {
+      outputKR_PS <- data.table(cbind(H[i], k, result$optim$bestmem))
+      names(outputKR_PS) <- c("h", "k", "rho")
+      
+      write.table(outputKR_PS, file=paste0(outputDir,"/calcKR_PS.csv"), append=!header,
+          quote=FALSE, sep=";", col.names=header, row.names=FALSE)
+      
+      k <- k + deltaK
+      
+      if(header){
+        header <- FALSE
+      }
+    }
+  }
+}
+
+## Generate plots
+outputKR_PS <- fread(paste0(inputDir, "/calcKR_PS.csv"),
+    header=TRUE, sep=";")
+    
+dataKR <- NULL
+for(p in H){
+  maxKR <- max(outputKR_PS[which(h == p),]$rho)
+  dataKR <- rbind(dataKR, outputKR_PS[which((h == p) & (rho < maxKR)),])
+}
+
+kr_ps <- ggplot(dataKR[which(h != 15),], aes(x=k, y=(1 - rho) * 100,
+            group=h,
+            color=factor(h))) +
+    geom_line(size=0.9) +
+    xlab("Kappa") +
+    ylab("Protection (%)") +
+    ylim(40, 100) +
+    scale_color_manual(name="Planning\nHorizon",
+        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+    THEME +
+    theme(legend.position = "right")
+
+ggsave(file=paste0(figureDir, "/kappaXrho-PeakSize.png"),
+    plot=kr_ps, width=10, height=6.5)
+
+
+###############
+## Rho x uP - Peak Size
+###############
+optimizeP <- function(up, peakSizeR){
+  
+  parsP <- list(
       R0 = R0,
       duration = duration,
       G = G,
@@ -479,91 +459,19 @@ for(i in 1:length(H)){
       rho = rho,
       gamma = gamma,
       lambda = lambda,
-      kappa = k,
+      kappa = kappa,
       delta = delta,
       h = H[i],
-      payoffs = payoffs,
-      iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, k, payoffs)
-    )
-    
-    ## Simulate the dynamics for Kappa and default P payoff
-    simK <- as.data.table(lsoda(yinit, times, SPIRmodel, parsK,
-                                rtol=1e-3, atol=1e-3))
-    peakSizeK <- max(simK$I) / sum(yinit)
-    
-    result <- DEoptim(fn=optimizeR, lower=0, upper=1,
-                      control=DEoptim.control(trace=FALSE, VTR=error,
-                                              itermax=100, NP=10,
-                                              parallelType=2),
-                      peakSizeK=peakSizeK)
-    
-    if((result$optim$bestval > error) | (k > maxK)){
-      hasP <- FALSE
-    } else {
-			outputKR_PS <- data.table(cbind(H[i], k, result$optim$bestmem))
-			names(outputKR_PS) <- c("h", "k", "rho")
-			
-			write.table(outputKR_PS, file=paste0(outputDir,"/calcKR_PS.csv"), append=!header,
-					quote=FALSE, sep=";", col.names=header, row.names=FALSE)
-			
-			k <- k + deltaK
-			
-			if(header){
-				header <- FALSE
-			}
-    }
-  }
-}
-
-## Generate plots
-outputKR_PS <- data.table(read.table(file=paste0(inputDir, "/calcKR_PS.csv"),
-				header=TRUE, sep=";"))
-
-kr_ps <- ggplot(outputKR_PS, aes(x=k, y=(1 - rho), group=h,
-						linetype=factor(h), color=factor(h))) +
-		geom_line(size=0.9) +
-		xlab("Kappa") +
-		ylab("Protection") +
-		ylim(0, 1) + xlim(1, 1.6) +
-		scale_linetype_manual(name="Planning\nHorizon",
-				values=c("solid", "dashed", "longdash",
-						"twodash", "dotdash", "dotted")) +
-		scale_color_grey(name="Planning\nHorizon",
-				start=0.8, end=0.2) +
-		THEME +
-		theme(legend.position = "right")
-
-ggsave(file=paste0(figureDir, "/kappaXrho-PeakSize.png"),
-		plot=kr_ps, width=10, height=6.5)
-
-
-###############
-## Rho x uP - Peak Size
-###############
-optimizeP <- function(up, peakSizeR){
-	
-	parsP <- list(
-			R0 = R0,
-			duration = duration,
-			G = G,
-			Bs = Bs,
-			betaS = betaS,
-			rho = rho,
-			gamma = gamma,
-			lambda = lambda,
-			kappa = kappa,
-			delta = delta,
-			h = H[i],
-			payoffs = c(payoffs[1], up, payoffs[3], payoffs[4]),
-			iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, kappa,
-					c(payoffs[1], up, payoffs[3], payoffs[4]))
-	)
-	
-	simP <- as.data.table(lsoda(y=yinit, times=times, func=SPIRmodel, parms=parsP,
-					verbose=FALSE, rtol=1e-3, atol=1e-3))
-	peakSizeP <- max(simP$I) / sum(yinit)
-	
-	return(abs(peakSizeP - peakSizeR))
+      payoffs = c(payoffs[1], up, payoffs[3], payoffs[4]),
+      iswitch = calc_iswitch(H[i], betaS, rho, gamma, lambda, kappa,
+          c(payoffs[1], up, payoffs[3], payoffs[4]))
+  )
+  
+  simP <- as.data.table(lsoda(y=yinit, times=times, func=SPIRmodel, parms=parsP,
+          verbose=FALSE, rtol=1e-3, atol=1e-3))
+  peakSizeP <- max(simP$I) / sum(yinit)
+  
+  return(abs(peakSizeP - peakSizeR))
 }
 
 
@@ -575,74 +483,77 @@ error <- 0.001
 
 header <- TRUE
 for(i in 1:length(H)){
-	
-	r <- deltaR
-	hasP <- TRUE
-	while(hasP){
-		
-		## ODE parameters
-		parsR <- list(
-				R0 = R0,
-				duration = duration,
-				G = G,
-				Bs = Bs,
-				betaS = betaS,
-				rho = r,
-				gamma = gamma,
-				lambda = lambda,
-				kappa = kappa,
-				delta = delta,
-				h = H[i],
-				payoffs = payoffs,
-				iswitch = calc_iswitch(H[i], betaS, r, gamma, lambda, kappa, payoffs)
-		)
-			
-		## Simulate the dynamics for Kappa and default P payoff
-		simR <- as.data.table(lsoda(yinit, times, SPIRmodel, parsR,
-						rtol=1e-3, atol=1e-3))
-		peakSizeR <- max(simR$I) / sum(yinit)
-		
-		result <- DEoptim(fn=optimizeP, lower=0, upper=1,
-				control=DEoptim.control(trace=FALSE, VTR=error,
-						itermax=100, NP=10,
-						parallelType=2),
-				peakSizeR=peakSizeR)
-		
-		if((result$optim$bestval > error) | (r > maxR)){
-			hasP <- FALSE
-		} else {
-			outputPR_PS <- data.table(cbind(H[i], r, result$optim$bestmem))
-			names(outputPR_PS) <- c("h", "rho", "up")
-			
-			write.table(outputPR_PS, file=paste0(outputDir,"/calcPR_PS.csv"), append=!header,
-					quote=FALSE, sep=";", col.names=header, row.names=FALSE)
-			
-			r <- r + deltaR
-			
-			if(header){
-				header <- FALSE
-			}
-		}
-	}
+  
+  r <- deltaR
+  hasP <- TRUE
+  while(hasP){
+    
+    ## ODE parameters
+    parsR <- list(
+        R0 = R0,
+        duration = duration,
+        G = G,
+        Bs = Bs,
+        betaS = betaS,
+        rho = r,
+        gamma = gamma,
+        lambda = lambda,
+        kappa = kappa,
+        delta = delta,
+        h = H[i],
+        payoffs = payoffs,
+        iswitch = calc_iswitch(H[i], betaS, r, gamma, lambda, kappa, payoffs)
+    )
+    
+    ## Simulate the dynamics for Kappa and default P payoff
+    simR <- as.data.table(lsoda(yinit, times, SPIRmodel, parsR,
+            rtol=1e-3, atol=1e-3))
+    peakSizeR <- max(simR$I) / sum(yinit)
+    
+    result <- DEoptim(fn=optimizeP, lower=0, upper=1,
+        control=DEoptim.control(trace=FALSE, VTR=error,
+            itermax=100, NP=10, parallelType=2),
+        peakSizeR=peakSizeR)
+    
+    if((result$optim$bestval > error) | (r > maxR)){
+      hasP <- FALSE
+    } else {
+      outputPR_PS <- data.table(cbind(H[i], r, result$optim$bestmem))
+      names(outputPR_PS) <- c("h", "rho", "up")
+      
+      write.table(outputPR_PS, file=paste0(outputDir,"/calcPR_PS.csv"), append=!header,
+          quote=FALSE, sep=";", col.names=header, row.names=FALSE)
+      
+      r <- r + deltaR
+      
+      if(header){
+        header <- FALSE
+      }
+    }
+  }
 }
 
 ## Generate plots
-outputPR_PS <- data.table(read.table(file=paste0(inputDir, "/calcPR_PS.csv"),
-				header=TRUE, sep=";"))
+outputPR_PS <- fread(paste0(inputDir, "/calcPR_PS.csv"),
+        header=TRUE, sep=";")
 
-pr_ps <- ggplot(outputPR_PS, aes(x=up, y=(1 - rho), group=h,
-						linetype=factor(h), color=factor(h))) +
-		geom_line(size=0.9) +
-		xlab("Prophylactic Payoff") +
-		ylab("Protection") +
-		ylim(0, 1) + xlim(0, 1) +
-		scale_linetype_manual(name="Planning\nHorizon",
-				values=c("solid", "dashed", "longdash",
-						"twodash", "dotdash", "dotted")) +
-		scale_color_grey(name="Planning\nHorizon",
-				start=0.8, end=0.2) +
-		THEME +
-		theme(legend.position = "right")
+dataPR <- NULL
+for(p in H){
+  minUP <- min(outputPR_PS[which(h == p),]$up)
+  dataPR <- rbind(dataPR, outputPR_PS[which((h == p) & (up > minUP)),])
+}
+
+pr_ps <- ggplot(dataPR, aes(x=up, y=(1 - rho) * 100,
+            group=h,
+            color=factor(h))) +
+    geom_line(size=0.9) +
+    xlab("Prophylactic Payoff") +
+    ylab("Protection (%)") +
+    ylim(25, 100) + xlim(0.85, 1) +
+    scale_color_manual(name="Planning\nHorizon",
+        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+    THEME +
+    theme(legend.position = "right")
 
 ggsave(file=paste0(figureDir, "/rhoXuP-PeakSize.png"),
-		plot=pr_ps, width=10, height=6.5)
+    plot=pr_ps, width=10, height=6.5)

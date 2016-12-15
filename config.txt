@@ -35,8 +35,8 @@ time.horizon = 45
 # 0 Microsimulation
 # 1 Gillespie
 # 2 Efficient Tau-Leap
-method = 25.
-replication = 1
+method = 0
+replication = 10
 time.steps = 250
 
 ##
@@ -45,8 +45,8 @@ time.steps = 250
 # Format
 # 0 Standard
 # 1 Galapagos
-output.format = 0
-output.window = 1
+output.format = 1
+output.window = 100000
 output.path = /home/gnardin
 output.file = output-D2-H30-d01-G
 output.header = True

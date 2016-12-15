@@ -26,6 +26,7 @@ class Constant():
     OUTPUT_HEADER = "output.header"
     OUTPUT_SEP = "output.separator"
     
+    
     ##
     ## Command line parameters
     ##
@@ -54,8 +55,9 @@ class Constant():
     O = "-O"
     S = "-S"
     
+    
     ##
-    ## Methods
+    ## Simulation Methods
     ##
     METHOD_MICRO = 0
     METHOD_GILLESPIE = 1
@@ -67,6 +69,7 @@ class Constant():
     ##
     O_STANDARD = 0
     O_GALAPAGOS = 1
+    
     
     ##
     ## Output
