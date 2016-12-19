@@ -3,11 +3,14 @@
 ## Software Pre-requisites
 The SPIR agent-based model version is written in **Python 3**, thus it can be run on any Python-supported operating system. In addition to **Python 3.0+**, this implementation uses a set of existing standard libraries that needs to be installed prior to its execution:
 + argparse
++ math
 + matplotlib
++ numpy
 + os.path
++ random
 + sys
 + time
-+ itemize
++ xml.etree.ElementTree
 
 ## Download Project from GitHub
 * Open a terminal
@@ -15,33 +18,47 @@ The SPIR agent-based model version is written in **Python 3**, thus it can be ru
 * Type: **git clone https://github.com/bertybaums/SPIR.git**
 
 ## Configuration
-You can configure the SPIR simulations by changing the values of the parameters in the _config.txt_ file. The Table below describes the configuration parameters for the SPIR model.
+You can configure the SPIR simulations by changing the values of the parameters in the _config.xml_ file. The Table below describes the configuration parameters for the SPIR model.
 
-| Parameter Name   | Parameter Symbol | Description |
-|------------------|------------------|-------------|
-| num.agents.S     | -NS              | Initial number of agents in state Susceptible |
-| num.agents.P     | -NP              | Initial number of agents in state Prophylactic |
-| num.agents.I     | -NI              | Initial number of agents in state Infectious |
-| num.agents.R     | -NR              | Initial number of agents in state Recovered |
-| payoff.S         | -PS              | Payoff received per time step in state Susceptible |
-| payoff.P         | -PP              | Payoff received per time step in state Prophylactic |
-| payoff.I         | -PI              | Payoff received per time step in state Infectious |
-| payoff.R         | -PR              | Payoff received per time step in state Recovered |
-| beta             | -BS              | Probability that an agent in state Susceptible becomes infected upon interacting with an Infectious agent |
-| rho              | -RH              | Reduction in the transmission probability when adopting prophylactic behavior |
-| gamma            | -G               | Probability an Infectious agent recover |
-| fear             | -K               | Distortion of the perceived proportion of Infectious agents in the population (i.e. _distortion factor_) |
-| decision         | -D               | Probability an agent in the Susceptible or Prophylactic state decides which behavior to engage in |
-| time.horizon     | -H               | The time in the future over which agents calculate their utilities to make a behavioral decision |
-| method           | -M               | Method of executing the simulation (0 - Micro, 1 - Gillespie, 2 - Efficient Tau Leap) |
-| replication      | -R               | Number of replications to run the scenario using different random seeds |
-| time.steps       | -T               | Length of the simulation in steps |
-| output.format    | -F               | Format of the output file (0 - Standard or 1 - Galapagos) |
-| output.window    | -W               | Size of the window to consolidate the output of several replications |
-| output.path      | -P               | Path of the output file |
-| output.file      | -N               | Name of the output file without extension |
-| output.header    | -O               | Flag that indicates whether or not to write the output's columns header in the output file |
-| output.separator | -S               | Character that separates the fields in the output file |
+| Parameter Tag               | Parameter Symbol | Description |
+|-----------------------------|------------------|-------------|
+| <config>                    |                  | Start the configuration specification |
+|   <agents>                  |                  | Specify the initial number of agents in each state |
+|     <num.agents.S>          | -NS              | Initial number of agents in state Susceptible |
+|     <num.agents.P>          | -NP              | Initial number of agents in state Prophylactic |
+|     <num.agents.I>          | -NI              | Initial number of agents in state Infectious |
+|     <num.agents.R>          | -NR              | Initial number of agents in state Recovered |
+|   </agents>                 |                  | |
+|   <profiles>                |                  | Set of agent profiles |
+|     <profile>               |                  | Specify the profile of a subset of agents (Multiple possible) |
+|       <num.agents>          |                  | Number of agents with this profile |
+|       <payoff.S>            | -PS              | Payoff received per time step in state Susceptible |
+|       <payoff.P>            | -PP              | Payoff received per time step in state Prophylactic |
+|       <payoff.I>            | -PI              | Payoff received per time step in state Infectious |
+|       <payoff.R>            | -PR              | Payoff received per time step in state Recovered |
+|       <rho>                 | -RH              | Reduction in the transmission probability when adopting prophylactic behavior |
+|       <kappa>               | -K               | Distortion of the perceived proportion of Infectious agents in the population (i.e. _distortion factor_) |
+|       <decision.frequency>  | -D               | Probability an agent in the Susceptible or Prophylactic state decides which behavior to engage in |
+|       <planning.horizon>    | -H               | The time in the future over which agents calculate their utilities to make a behavioral decision |
+|     </profile>              |                  | |
+|   </profiles>               |                  | |
+|   <disease>                 |                  | Specify the disease information |
+|     <beta>                  | -BS              | Probability that an agent in state Susceptible becomes infected upon interacting with an Infectious agent |
+|     <gamma>                 | -G               | Probability an Infectious agent recover |
+|   </disease>                |                  | |
+|   <simulation>              |                  | Specify the simulation information |
+|     <method>                | -M               | Method of executing the simulation (0 - Micro, 1 - Gillespie, 2 - Efficient Tau Leap) |
+|     <replications>          | -R               | Number of replications to run the scenario using different random seeds |
+|     <time.steps>            | -T               | Length of the simulation in steps |
+|   </simulation>             |                  | |
+|   <output>                  |                  | Specify the output information |
+|     <output.format>         | -F               | Format of the output file (0 - Standard, 1 - Galapagos) |
+|     <output.window>         | -W               | Size of the window to consolidate the output of several replications |
+|     <output.path>           | -P               | Path of the output file |
+|     <output.filename>       | -N               | Name of the output file without extension |
+|     <output.header>         | -O               | Flag that indicates whether or not to write the output's columns header in the output file |
+|     <output.separator>      | -S               | Character that separates the fields in the output file |
+|   </output>                 |                  | |
 
 ## Usage
 Syntax: **Main.py [-h] [-v] [-o] [-g] \{configFile, params\} ...**
@@ -58,7 +75,7 @@ To execute the SPIR model from Linux terminal:
 * Navigate to the **SPIR** directory
 * Type
 		
-    **python SPIR/Main.py -v -g -o configFile config.txt**
+    **python SPIR/Main.py -v -g -o configFile config.xml**
 		
     or
 		

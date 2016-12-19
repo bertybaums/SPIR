@@ -6,14 +6,12 @@
 ##
 
 ## Python libraries
-import math
+from math import ceil, exp, inf, log
 from numpy import arange, random
-from random import uniform
 
 ## Load our classes
-from Util import Util
-from Constants import Constant
 from State import State
+from SPIR.Utils.Util import Util
 
 class EfficientTauLeapMethod(object):
   ## Number and types of interactions
@@ -28,28 +26,33 @@ class EfficientTauLeapMethod(object):
   ##
   ## Description: Constructor method
   ##
-  ## @param nAgents      Number of agents
-  ## @param payoffs      Payoff of each disease state
-  ## @param disease      Disease parameters
-  ## @param fear         Distortion of disease prevalence
-  ## @param decision     Decision frequency
-  ## @param timeHorizon  Planning horizon
-  ## @param timeSteps    Number of time steps to simulate
+  ## @param nAgents          Number of agents
+  ## @param payoffs          Payoff of each disease state
+  ## @param beta             Disease beta
+  ## @param gamma            Disease gamma
+  ## @param rho              1 - Prophylactic protection
+  ## @param fear             Distortion of disease prevalence
+  ## @param decision         Decision frequency
+  ## @param planningHorizon  Planning horizon
+  ## @param timesteps        Number of time steps to simulate
   ##
   ## @return None
   ##
-  def __init__(self, nAgents, payoffs, disease, fear, decision, timeHorizon, timeSteps):
+  def __init__(self, nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps):
     self.nAgents = nAgents
     self.payoffs = payoffs
-    self.disease = disease
     
+    self.beta = 1 - exp(-beta)
+    self.gamma = 1 - exp(-gamma)
+    
+    self.rho = 1 - exp(-rho)
     self.fear = fear
     if (self.fear == 0):
       self.fear = 1.0
         
     self.decision = decision
-    self.timeHorizon = timeHorizon
-    self.timeSteps = timeSteps
+    self.planningHorizon = planningHorizon
+    self.timesteps = timesteps
     
   ##
   ## Execute the simulation
@@ -89,11 +92,6 @@ class EfficientTauLeapMethod(object):
                 self.nAgents[State.I] * self.payoffs[State.I],
                 self.nAgents[State.R] * self.payoffs[State.R]])
     
-    ## Disease parameters
-    pDisease = {Constant.BETA: 1 - math.exp(-self.disease[Constant.BETA]),
-                Constant.RHO: 1 - math.exp(-self.disease[Constant.RHO]),
-                Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
-    
     ## Total number of agents
     N = self.nAgents[State.S] + self.nAgents[State.P] + self.nAgents[State.I] + self.nAgents[State.R]
     
@@ -101,14 +99,14 @@ class EfficientTauLeapMethod(object):
     i = (self.nAgents[State.I] / float(N)) ** float(1 / float(self.fear))
     
     ## Switching points
-    switchPoint = Util.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
+    switchPoint = Util.calcISwitch(self.planningHorizon, self.beta, self.gamma, self.rho, self.payoffs)
     
     ## Calculate the probability of each type of event (interaction) to occur
     c = {self.INT_SP: self.decision / float(N),
          self.INT_PS: self.decision / float(N),
-         self.INT_SI: self.disease[Constant.BETA] / (float(N) * float(N)),
-         self.INT_PI: (self.disease[Constant.BETA] * self.disease[Constant.RHO]) / (float(N) * float(N)),
-         self.INT_IR: self.disease[Constant.GAMMA] / float(N)}
+         self.INT_SI: self.beta / (float(N) * float(N)),
+         self.INT_PI: (self.beta * self.rho) / (float(N) * float(N)),
+         self.INT_IR: self.gamma / float(N)}
     
     ## Probability density of each event
     a = {self.INT_SP: c[self.INT_SP] * self.nAgents[State.S],
@@ -141,7 +139,7 @@ class EfficientTauLeapMethod(object):
     t = 0
     
     ## Run simulation
-    while((t < self.timeSteps) and (i > 0)):
+    while((t < self.timesteps) and (i > 0)):
       ## Identify critical and non-critical interactions
       Incr = [State.S, State.P, State.I, State.R]
       jc = []
@@ -151,7 +149,7 @@ class EfficientTauLeapMethod(object):
         first = True
         for s in State.STATES:
           if(v[s][j] < 0):
-            aux = math.ceil(self.nAgents[s] / abs(v[s][j]))
+            aux = ceil(self.nAgents[s] / abs(v[s][j]))
             if((aux < l) or (first)):
               l = aux
               first = False
@@ -165,7 +163,7 @@ class EfficientTauLeapMethod(object):
           jnc.append(j)
           
       ## Calculate tau'
-      tau1 = math.inf
+      tau1 = inf
       if(len(jnc) > 0):
         u = [0 for s in State.STATES]
         std = [0 for s in State.STATES]
@@ -181,20 +179,20 @@ class EfficientTauLeapMethod(object):
             if(abs(u[s]) != 0):
               term1 = aux / abs(u[s])
             else:
-              term1 = math.inf
+              term1 = inf
               
             aux = aux * aux
             if(std[s] != 0):
               term2 = aux / std[s]
             else:
-              term2 = math.inf
+              term2 = inf
               
             mintau = min(term1, term2)
             if(mintau < tau1):
               tau1 = mintau
               
       ## Calculate tau''
-      tau2 = math.inf
+      tau2 = inf
       Ac = 0
       for j in jc:
         Ac += a[j]
@@ -204,8 +202,8 @@ class EfficientTauLeapMethod(object):
           
       if(tau1 < (10 / A)):
         count = 0
-        while ((t < self.timeSteps) and (i > 0) and (count < 10)):
-          cumA = uniform(0.0, 1.0) * A
+        while ((t < self.timesteps) and (i > 0) and (count < 10)):
+          cumA = random.uniform(0.0, 1.0) * A
           index = 0
           x = a[index]
           while(x <= cumA):
@@ -283,7 +281,7 @@ class EfficientTauLeapMethod(object):
             A = a[self.INT_SP] + a[self.INT_PS] + a[self.INT_SI] + a[self.INT_PI] + a[self.INT_IR]
             
             ## Advance time to next event
-            t = t + (math.log(1 / uniform(0.0, 1.0)) / float(A))
+            t = t + (log(1 / random.uniform(0.0, 1.0)) / float(A))
       else:
         positive = False
         while(not positive):

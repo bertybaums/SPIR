@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <agents>
+        <!-- Initial number of agents in State Susceptible -->
+        <num.agents.S>900</num.agents.S>
+        
+        <!-- Initial number of agents in State Prophylactic -->
+        <num.agents.P>0</num.agents.P>
+        
+        <!-- Initial number of agents in State Infectious -->
+        <num.agents.I>100</num.agents.I>
+        
+        <!-- Initial number of agents in State Recovered -->
+        <num.agents.R>0</num.agents.R>
+    </agents>
+    
+    <profiles>
+        <profile>
+            <num.agents>1000</num.agents>
+            
+            <!--  Payoffs -->
+            <payoff.S value="float">1.00</payoff.S>
+            <payoff.P value="float">0.95</payoff.P>
+            <payoff.I value="float">0.10</payoff.I>
+            <payoff.R value="float">0.95</payoff.R>
+            
+            <!-- 1 - Prophylactic protection -->
+            <rho value="float">0.99</rho>
+            
+            <!-- Fear -->
+            <kappa value="float">1</kappa>
+            
+            <!-- Decision frequency -->
+            <decision.frequency value="float">0.01</decision.frequency>
+            
+            <!-- Planning Horizon -->
+            <planning.horizon value="int">45</planning.horizon>
+        </profile>
+    </profiles>
+    
+    <disease>
+        <beta value="float">0.031</beta>
+        <gamma value="float">0.015</gamma>
+    </disease>
+    
+    <simulation>
+        <!-- Simulation Methods -->
+        <!-- 0 Microsimulation -->
+        <!-- 1 Gillespie -->
+        <!-- 2 Efficient Tau-Leap -->
+        <method>2</method>
+        
+        <!-- Number of replications -->
+        <replications>1</replications>
+        
+        <!-- Length of the simulation -->
+        <time.steps>1000</time.steps>
+    </simulation>
+    
+    <output>
+        <!-- Format -->
+        <!-- 0 Standard -->
+        <!-- 1 Galapagos -->
+        <output.format>0</output.format>
+        
+        <!-- Summary window -->
+        <output.window>1</output.window>
+        
+        <!-- Output path -->
+        <output.path>/home/gnardin</output.path>
+        
+        <!-- Output filename -->
+        <output.filename>output</output.filename>
+        
+        <!-- Output header -->
+        <output.header>True</output.header>
+        
+        <!-- Output field separator -->
+        <output.separator>;</output.separator>
+    </output>
+</config>

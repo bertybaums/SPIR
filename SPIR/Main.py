@@ -7,10 +7,12 @@ from time import clock
 
 ## Load our classes
 from Constants import Constant
-from GillespieMethod import GillespieMethod
-from MicroMethod import MicroMethod
+from SPIR.Methods.EfficientTauLeapMethod import EfficientTauLeapMethod
+from SPIR.Methods.GillespieMethod import GillespieMethod
+from SPIR.Methods.MicroMethod import MicroMethod
+from SPIR.Methods.NewMicroMethod import NewMicroMethod
+from SPIR.Objects.Config import Config
 from State import State
-from EfficientTauLeapMethod import EfficientTauLeapMethod
 
 if __name__ == '__main__':
     pass
@@ -56,15 +58,15 @@ configCmd.add_argument(Constant.K, nargs=1, required=True,
 configCmd.add_argument(Constant.D, nargs=1, required=True,
                        help="Decision rate")
 configCmd.add_argument(Constant.H, nargs=1, required=True,
-                       help="Time horizon")
+                       help="Planning horizon")
 configCmd.add_argument(Constant.M, nargs=1, required=True,
                        help="Simulation method")
 configCmd.add_argument(Constant.R, nargs=1, required=True,
-                       help="Replication")
+                       help="Replications")
 configCmd.add_argument(Constant.T, nargs=1, required=True,
                        help="Time steps")
 configCmd.add_argument(Constant.W, nargs=1, required=True,
-                       help="Smooth window")
+                       help="Smooth output window")
 configCmd.add_argument(Constant.F, nargs=1, required=True,
                        help="Output format")
 configCmd.add_argument(Constant.P, nargs=1, required=True,
@@ -79,21 +81,24 @@ configCmd.add_argument(Constant.S, nargs=1, required=True,
 args = parser.parse_args()
 
 ## Default values of the input parameters
+types = 1
 nAgents = {State.S: 9999, State.P: 0, State.I: 1, State.R: 0}
 payoffs = {State.S: 1, State.P: 0.95, State.I: 0.6, State.R: 1}
-disease = {Constant.BETA: 0.031, Constant.RHO: 0.25, Constant.GAMMA: 0.015}
+beta = 0.031
+gamma = 0.015
+rho = 0.25
 fear = 1.0
 decision = 0.01
-timeHorizon = 20
+planningHorizon = 20
 method = Constant.METHOD_GILLESPIE
-replication = 1
-timeSteps = 1000
-window = 1
+replications = 1
+timesteps = 1000
+outputWindow = 1
 outputFormat = Constant.O_STANDARD
 outputPath = ""
 outputFilename = "output"
 outputHeader = True
-outputSep = ";"
+outputSeparator = ";"
 
 if (args.__contains__(Constant.FILE)):
   
@@ -103,59 +108,53 @@ if (args.__contains__(Constant.FILE)):
     exit()
     
   ## Load input parameter values from configuration file
-  f = open(args.filename, 'r')
-  for line in f.readlines():
-    param = line.rstrip('\n').replace(' ', '').split('=')
+  config = Config(args.filename)
+  nAgents[State.S] = config.getNumAgents()[0]
+  nAgents[State.P] = config.getNumAgents()[1]
+  nAgents[State.I] = config.getNumAgents()[2]
+  nAgents[State.R] = config.getNumAgents()[3]
+  
+  beta = config.getBeta()
+  gamma = config.getGamma()
+  
+  method = config.getMethod()
+  replications = config.getReplications()
+  timesteps = config.getTimesteps()
+  
+  outputWindow = config.getOutputWindow()
+  outputFormat = config.getOutputFormat()
+  outputPath = config.getOutputPath()
+  outputFilename = config.getOutputFilename()
+  outputHeader = config.getOutputHeader()
+  outputSeparator = config.getOutputSeparator()
+  
+  profiles = config.getProfiles()
+  types = len(profiles)
+  if (method == Constant.METHOD_GILLESPIE) or (method == Constant.METHOD_EFFICIENT_TAU_LEAP) or ((method == Constant.METHOD_MICRO) and (types == 1)):
+    profile = profiles[0]
     
-    if (param[0] == Constant.NUM_AGENTS_S):
-      nAgents[State.S] = int(param[1])
-    elif (param[0] == Constant.NUM_AGENTS_P):
-      nAgents[State.P] = int(param[1])
-    elif (param[0] == Constant.NUM_AGENTS_I):
-      nAgents[State.I] = int(param[1])
-    elif (param[0] == Constant.NUM_AGENTS_R):
-      nAgents[State.R] = int(param[1])
-    elif (param[0] == Constant.PAYOFF_S):
-      payoffs[State.S] = float(param[1])
-    elif (param[0] == Constant.PAYOFF_P):
-      payoffs[State.P] = float(param[1])
-    elif (param[0] == Constant.PAYOFF_I):
-      payoffs[State.I] = float(param[1])
-    elif (param[0] == Constant.PAYOFF_R):
-      payoffs[State.R] = float(param[1])
-    elif (param[0] == Constant.BETA):
-      disease[Constant.BETA] = float(param[1])
-    elif (param[0] == Constant.RHO):
-      disease[Constant.RHO] = float(param[1])
-    elif (param[0] == Constant.GAMMA):
-      disease[Constant.GAMMA] = float(param[1])
-    elif (param[0] == Constant.FEAR):
-      fear = float(param[1])
-    elif (param[0] == Constant.DECISION):
-      decision = float(param[1])
-    elif (param[0] == Constant.TIME_HORIZON):
-      timeHorizon = int(param[1])
-    elif (param[0] == Constant.METHOD):
-      method = int(param[1])
-    elif (param[0] == Constant.REPLICATION):
-      replication = int(param[1])
-    elif (param[0] == Constant.TIME_STEPS):
-      timeSteps = int(param[1])
-    elif (param[0] == Constant.OUTPUT_FORMAT):
-      outputFormat = int(param[1])
-    elif (param[0] == Constant.OUTPUT_WINDOW):
-      window = float(param[1])
-    elif (param[0] == Constant.OUTPUT_PATH):
-      outputPath = param[1]
-    elif (param[0] == Constant.OUTPUT_FILE):
-      outputFile = param[1]
-    elif (param[0] == Constant.OUTPUT_HEADER):
-      outputHeader = bool(param[1])
-    elif (param[0] == Constant.OUTPUT_SEP):
-      outputSep = param[1]
-  f.close()
+    payoffs[State.S] = profile.getPayoffs()[0]
+    payoffs[State.P] = profile.getPayoffs()[1]
+    payoffs[State.I] = profile.getPayoffs()[2]
+    payoffs[State.R] = profile.getPayoffs()[3]
+    rho = profile.getRho()
+    fear = profile.getFear()
+    decision = profile.getDecision()
+    planningHorizon = profile.getPlanningHorizon()
+    
+    method = config.getMethod()
+    replications = config.getReplications()
+    timesteps = config.getTimesteps()
+    
+    outputWindow = config.getOutputWindow()
+    outputFormat = config.getOutputFormat()
+    outputPath = config.getOutputPath()
+    outputFile = config.getOutputFilename()
+    outputHeader = config.getOutputHeader()
+    outputSeparator = config.getOutputSeparator()
 else:
   ## Set input parameter from command line arguments
+  types = 1
   nAgents[State.S] = int(args.NS[0])
   nAgents[State.P] = int(args.NP[0])
   nAgents[State.I] = int(args.NI[0])
@@ -164,21 +163,21 @@ else:
   payoffs[State.P] = float(args.PP[0])
   payoffs[State.I] = float(args.PI[0])
   payoffs[State.R] = float(args.PR[0])
-  disease[Constant.BETA] = float(args.BS[0])
-  disease[Constant.RHO] = float(args.RH[0])
-  disease[Constant.GAMMA] = float(args.G[0])
+  beta = float(args.BS[0])
+  gamma = float(args.G[0])
+  rho = float(args.RH[0])
   fear = float(args.K[0])
   decision = float(args.D[0])
-  timeHorizon = int(args.H[0])
+  planningHorizon = int(args.H[0])
   method = int(args.M[0])
-  replication = int(args.R[0])
-  timeSteps = int(args.T[0])
-  window = float(args.W[0])
+  replications = int(args.R[0])
+  timesteps = int(args.T[0])
+  outputWindow = float(args.W[0])
   outputFormat = int(args.F[0])
   outputPath = args.P[0]
-  outputFile = args.N[0]
+  outputFilename = args.N[0]
   outputHeader = bool(args.O[0])
-  outputSep = args.S[0]
+  outputSeparator = args.S[0]
   
 ## Set the simulation start time
 if (args.verbose):
@@ -191,7 +190,7 @@ for i in nAgents:
 
 ## Execute the simulation
 num = []
-for rep in range(replication):
+for rep in range(replications):
   ## Print the replication on the screen
   if (args.verbose):
     print('Replication:', rep)
@@ -200,12 +199,15 @@ for rep in range(replication):
             State.I: nAgents[State.I], State.R: nAgents[State.R]}
   
   ## Initialize the simulation
-  if (method == Constant.METHOD_MICRO):
-    m = MicroMethod(agents, payoffs, disease, fear, decision, timeHorizon, timeSteps)
-  elif (method == Constant.METHOD_GILLESPIE):
-    m = GillespieMethod(agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
-  elif (method == Constant.METHOD_EFFICIENT_TAU_LEAP):
-    m = EfficientTauLeapMethod(agents, payoffs, disease, fear, decision, timeHorizon, timeSteps * N)
+  if method == Constant.METHOD_MICRO:
+    if types == 1:
+      m = MicroMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
+    else:
+      m = NewMicroMethod(agents, profiles, beta, gamma, timesteps)
+  elif method == Constant.METHOD_GILLESPIE:
+    m = GillespieMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps * N)
+  elif method == Constant.METHOD_EFFICIENT_TAU_LEAP:
+    m = EfficientTauLeapMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps * N)
   
   ## Execute the simulation
   num.append(m.execute())
@@ -221,22 +223,22 @@ if (args.output):
   
   ## Write raw data to the output file (STANDARD format)
   if (outputFormat == Constant.O_STANDARD):
-    fname = outputPath + "/" + outputFile + ".csv"
+    fname = outputPath + "/" + outputFilename + ".csv"
     f = open(fname, "w")
     
     if (outputHeader):
-      header = Constant.O_X + outputSep + Constant.O_T + outputSep + Constant.O_S + outputSep + Constant.O_P + outputSep + Constant.O_I + outputSep + Constant.O_R + outputSep + Constant.O_PS + outputSep + Constant.O_PP + outputSep + Constant.O_PI + outputSep + Constant.O_PR + "\n"
+      header = Constant.O_X + outputSeparator + Constant.O_T + outputSeparator + Constant.O_S + outputSeparator + Constant.O_P + outputSeparator + Constant.O_I + outputSeparator + Constant.O_R + outputSeparator + Constant.O_PS + outputSeparator + Constant.O_PP + outputSeparator + Constant.O_PI + outputSeparator + Constant.O_PR + "\n"
       f.write(str(header))
     
-    for rep in range(replication):
+    for rep in range(replications):
       for row in num[rep]:
-        line = str(rep) + outputSep + str(row[0]) + outputSep + str(row[1]) + outputSep + str(row[2]) + outputSep + str(row[4]) + outputSep + str(row[7]) + outputSep + str(row[10]) + outputSep + str(row[11]) + outputSep + str(row[12]) + outputSep + str(row[13]) + "\n"
+        line = str(rep) + outputSeparator + str(row[0]) + outputSeparator + str(row[1]) + outputSeparator + str(row[2]) + outputSeparator + str(row[4]) + outputSeparator + str(row[7]) + outputSeparator + str(row[10]) + outputSeparator + str(row[11]) + outputSeparator + str(row[12]) + outputSeparator + str(row[13]) + "\n"
         f.write(line)
     f.close()
   
   ## Write summarized data to the output file (GALAPAGOS format)
   elif (outputFormat == Constant.O_GALAPAGOS):
-    header = "simulator_time" + outputSep + "infection_state" + outputSep + "control_measure_status" + outputSep + "count" + "\n"
+    header = "simulator_time" + outputSeparator + "infection_state" + outputSeparator + "control_measure_status" + outputSeparator + "count" + "\n"
     
     size = 0
     for vector in num:
@@ -244,15 +246,15 @@ if (args.output):
       if (aux > size):
         size = aux
         
-    size = int((size / float(window)) + 1)
+    size = int((size / float(outputWindow)) + 1)
     
     x = [0 for y in range(size)]
     s = [0 for y in range(size)]
     p = [0 for y in range(size)]
     i = [0 for y in range(size)]
     r = [0 for y in range(size)]
-    for rep in range(replication):
-      t = window
+    for rep in range(replications):
+      t = outputWindow
       pos = 0
       index = 0
       nSize = len(num[rep])
@@ -281,32 +283,32 @@ if (args.output):
         r[pos] = pv[3]
         
         pos += 1
-        t += window
+        t += outputWindow
           
-      fname = outputPath + "/" + outputFile + str(rep) + ".csv"
+      fname = outputPath + "/" + outputFilename + str(rep) + ".csv"
       f = open(fname, "w")
       
       f.write(str(header))
       
       for index in range(0, pos):
         timestep = str(index + 1)
-        line = timestep + outputSep + Constant.O_S + outputSep + "noControlMeasureAdopted" + outputSep + str(s[index]) + "\n"
+        line = timestep + outputSeparator + Constant.O_S + outputSeparator + "noControlMeasureAdopted" + outputSeparator + str(s[index]) + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + str(p[index]) + "\n"
+        line = timestep + outputSeparator + Constant.O_S + outputSeparator + "controlMeasureAdoptedSuccessfully" + outputSeparator + str(p[index]) + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_S + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
+        line = timestep + outputSeparator + Constant.O_S + outputSeparator + "controlMeasureAdoptedUnsuccessfully" + outputSeparator + "0" + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_I + outputSep + "noControlMeasureAdopted" + outputSep + str(i[index]) + "\n"
+        line = timestep + outputSeparator + Constant.O_I + outputSeparator + "noControlMeasureAdopted" + outputSeparator + str(i[index]) + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
+        line = timestep + outputSeparator + Constant.O_I + outputSeparator + "controlMeasureAdoptedSuccessfully" + outputSeparator + "0" + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_I + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
+        line = timestep + outputSeparator + Constant.O_I + outputSeparator + "controlMeasureAdoptedUnsuccessfully" + outputSeparator + "0" + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_R + outputSep + "noControlMeasureAdopted" + outputSep + str(r[index]) + "\n"
+        line = timestep + outputSeparator + Constant.O_R + outputSeparator + "noControlMeasureAdopted" + outputSeparator + str(r[index]) + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedSuccessfully" + outputSep + "0" + "\n"
+        line = timestep + outputSeparator + Constant.O_R + outputSeparator + "controlMeasureAdoptedSuccessfully" + outputSeparator + "0" + "\n"
         f.write(line)
-        line = timestep + outputSep + Constant.O_R + outputSep + "controlMeasureAdoptedUnsuccessfully" + outputSep + "0" + "\n"
+        line = timestep + outputSeparator + Constant.O_R + outputSeparator + "controlMeasureAdoptedUnsuccessfully" + outputSeparator + "0" + "\n"
         f.write(line)
       f.close()
       
@@ -321,7 +323,7 @@ if (args.graphic):
     if (aux > size):
       size = aux
   
-  size = int((size / float(window)) + 1)
+  size = int((size / float(outputWindow)) + 1)
   
   x = [0 for y in range(size)]
   s = [0 for y in range(size)]
@@ -329,8 +331,8 @@ if (args.graphic):
   i = [0 for y in range(size)]
   r = [0 for y in range(size)]
   f = [0 for y in range(size)]
-  for rep in range(replication):
-    t = window
+  for rep in range(replications):
+    t = outputWindow
     pos = 0
     index = 0
     nSize = len(num[rep])
@@ -359,19 +361,19 @@ if (args.graphic):
         pv[4] = v[4] / float(n)
       
       if(method == Constant.METHOD_MICRO):
-        x[pos] = (pos * window)
+        x[pos] = (pos * outputWindow)
       elif (method == Constant.METHOD_GILLESPIE):
-        x[pos] = (pos * window) / float(N)
+        x[pos] = (pos * outputWindow) / float(N)
       elif (method == Constant.METHOD_EFFICIENT_TAU_LEAP):
-        x[pos] = (pos * window) / float(N)
-      s[pos] += (pv[0] / replication)
-      p[pos] += (pv[1] / replication)
-      i[pos] += (pv[2] / replication)
-      r[pos] += (pv[3] / replication)
-      f[pos] += (pv[4] / replication)
+        x[pos] = (pos * outputWindow) / float(N)
+      s[pos] += (pv[0] / replications)
+      p[pos] += (pv[1] / replications)
+      i[pos] += (pv[2] / replications)
+      r[pos] += (pv[3] / replications)
+      f[pos] += (pv[4] / replications)
       
       pos += 1
-      t += window
+      t += outputWindow
   
   fig = pyplot.figure()
   gs = gridspec.GridSpec(2, 1)

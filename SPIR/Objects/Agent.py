@@ -1,40 +1,41 @@
-##
 ## Python libraries
-##
-from random import uniform
+from numpy import random
 
-##
-## Our classes
-##
-from Constants import Constant
+## Load our classes
 from State import State
-from Util import Util
+from SPIR.Utils.Util import Util
 
 
 class Agent(object):
   ##
   ## Description: Constructor method
   ##
-  ## @param num          Identification of the agent
-  ## @param state        Current state of the agent
-  ## @param disease      Disease parameters
-  ## @param fear         Distortion of disease prevalence
-  ## @param timeHorizon  Planning horizon
-  ## @param payoffs      Payoff of each disease state
-  ## @param switchPoint  Switching points
+  ## @param num              Identification of the agent
+  ## @param state            Current state of the agent
+  ## @param beta             Disease beta
+  ## @param gamma            Disease gamma
+  ## @param rho              1 - Prophylactic protection
+  ## @param fear             Distortion of disease prevalence
+  ## @param decision         Frequency of behavioral decision
+  ## @param planningHorizon  Planning horizon
+  ## @param payoffs          Payoff of each disease state
+  ## @param switchPoint      Switching points
   ##
   ## @return None
   ##
-  def __init__(self, num, state, disease, fear, timeHorizon, payoffs, switchPoint = None):
+  def __init__(self, num, state, beta, gamma, rho, fear, decision, planningHorizon, payoffs, switchPoint = None):
     self.num = num
     self.state = state
-    self.disease = disease
+    self.beta = beta
+    self.gamma = gamma
+    self.rho = rho
     self.fear = fear
-    self.timeHorizon = timeHorizon
+    self.decision = decision
+    self.planningHorizon = planningHorizon
     self.payoffs = payoffs
     
     if (switchPoint == None):
-      self.switchPoint = Util.calcISwitch(self.timeHorizon, self.disease, self.payoffs)
+      self.switchPoint = Util.calcISwitch(self.planningHorizon, self.beta, self.gamma, self.rho, self.payoffs)
     else:
       self.switchPoint = switchPoint
     
@@ -62,14 +63,36 @@ class Agent(object):
   
   
   ##
-  ## Description: Get disease information
+  ## Description: Get disease beta
   ##
   ## @param None
   ##
-  ## @return Disease information
+  ## @return Disease beta
   ##
-  def getDisease(self):
-    return self.disease
+  def getBeta(self):
+    return self.beta
+  
+  
+  ##
+  ## Description: Get disease gamma
+  ##
+  ## @param None
+  ##
+  ## @return Disease gamma
+  ##
+  def getGamma(self):
+    return self.gamma
+  
+  
+  ##
+  ## Description: Get 1 - prophylactic protection
+  ##
+  ## @param None
+  ##
+  ## @return 1 - Prophylactic protection
+  ##
+  def getRho(self):
+    return self.rho
   
   
   ##
@@ -90,8 +113,19 @@ class Agent(object):
   ##
   ## @return Planning horizon
   ##
-  def getTimeHorizon(self):
-    return self.timeHorizon
+  def getDecision(self):
+    return self.decision
+  
+  
+  ##
+  ## Description: Get planning horizon
+  ##
+  ## @param None
+  ##
+  ## @return Planning horizon
+  ##
+  def getPlanningHorizon(self):
+    return self.planningHorizon
   
   
   ##
@@ -117,14 +151,36 @@ class Agent(object):
     
     
   ##
-  ## Description: Set disease information
+  ## Description: Set disease beta
   ##
-  ## @param disease Disease information
+  ## @param beta  Disease beta
   ##
   ## @return None
   ##
-  def setDisease(self, disease):
-    self.disease = disease
+  def setBeta(self, beta):
+    self.beta = beta
+    
+    
+  ##
+  ## Description: Set disease gamma
+  ##
+  ## @param gamma  Disease gamma
+  ##
+  ## @return None
+  ##
+  def setGamma(self, gamma):
+    self.gamma = gamma
+    
+    
+  ##
+  ## Description: Set 1 - Prophylactic protection
+  ##
+  ## @param rho  1 - Prophylactic protection
+  ##
+  ## @return None
+  ##
+  def setRho(self, rho):
+    self.rho = rho
     
     
   ##
@@ -138,15 +194,26 @@ class Agent(object):
     self.fear = fear
     
     
+      ##
+  ## Description: Set frequency of behavioral decision
   ##
-  ## Description: Set planning horizon
-  ##
-  ## @param timeHorizon Planning horizon
+  ## @param decision  Frequency of behavioral decision
   ##
   ## @return None
   ##
-  def setTimeHorizon(self, timehorizon):
-    self.timeHorizon = timehorizon
+  def setDecision(self, decision):
+    self.decision = decision
+    
+    
+  ##
+  ## Description: Set planning horizon
+  ##
+  ## @param planningHorizon Planning horizon
+  ##
+  ## @return None
+  ##
+  def setPlanningHorizon(self, planninghorizon):
+    self.planningHorizon = planninghorizon
     
     
   ##
@@ -171,11 +238,11 @@ class Agent(object):
     US = 0
     UP = 0
     if (i > 0):
-      h = self.timeHorizon
-      q = self.disease[Constant.GAMMA]
+      h = self.planningHorizon
+      q = self.gamma
       
       ## Calculate expected times of Susceptible
-      ps = i * self.disease[Constant.BETA]
+      ps = i * self.beta
       Tss = (1 - ((1 - ps) ** h)) / ps
       if (ps != q):
         Tis = (1 / q) - (((ps * ((1 - q) ** h)) / (q * (ps - q))) * (1 - (((1 - ps) / (1 - q)) ** h))) - (((1 - ps) ** h) / q)
@@ -184,7 +251,7 @@ class Agent(object):
       Trs = h - Tss - Tis
                 
       ## Calculate expected times of Prophylactic
-      pp = i * self.disease[Constant.BETA] * self.disease[Constant.RHO]
+      pp = i * self.beta * self.rho
       Tpp = (1 - ((1 - pp) ** h)) / pp
       if (pp != q):
         Tip = (1 / q) - (((pp * ((1 - q) ** h)) / (q * (pp - q))) * (1 - (((1 - pp) / (1 - q)) ** h))) - (((1 - pp) ** h) / q)
@@ -209,10 +276,10 @@ class Agent(object):
   def interact(self, state):
     if (state == State.I):
       if (self.state == State.S):
-        if (uniform(0.0, 1.0) < self.disease[Constant.BETA]):
+        if (random.uniform(0.0, 1.0) < self.beta):
           self.state = State.I
         elif (self.state == State.P):
-          if (uniform(0.0, 1.0) < (self.disease[Constant.BETA] * self.disease[Constant.RHO])):
+          if (random.uniform(0.0, 1.0) < (self.beta * self.rho)):
             self.state = State.I
     return self.state
     
@@ -232,7 +299,6 @@ class Agent(object):
       adjustedI = i
     
     if (((self.state == State.S) or (self.state == State.P)) and (adjustedI > 0)):
-      
       for iswitch in self.switchPoint:
         if ((adjustedI > iswitch[0]) and (adjustedI < iswitch[1])):
           self.state = State.STATES[iswitch[2]]
@@ -248,7 +314,7 @@ class Agent(object):
   ## @return state New state
   ##
   def recover(self):
-    if ((self.state == State.I) and (uniform(0.0, 1.0) < self.disease[Constant.GAMMA])):
+    if ((self.state == State.I) and (random.uniform(0.0, 1.0) < self.gamma)):
       self.state = State.R
     return self.state
   

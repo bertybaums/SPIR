@@ -1,23 +1,25 @@
-##
-## Our classes
-##
-from Constants import Constant
+## Python library
+from numpy import random
+
+## Load our classes
 from State import State
 
 class Util(object):
   ##
   ## Description: Calculate the switching points
   ##
-  ## @param timeHorizon  Planning horizon
-  ## @param disease      Disease parameters
-  ## @param payoffs      Payoff of each disease state
+  ## @param planningHorizon  Planning horizon
+  ## @param beta             Disease Beta
+  ## @param gamma            Disease Gamma
+  ## @param rho              1 - Prophylactic protection
+  ## @param payoffs          Payoff of each disease state
   ##
   ## @return Switching point
   ##
   @staticmethod
-  def calcISwitch(timeHorizon, disease, payoffs):
-    h = timeHorizon
-    q = disease[Constant.GAMMA]
+  def calcISwitch(planningHorizon, beta, gamma, rho, payoffs):
+    h = planningHorizon
+    q = gamma
     
     iswitch = []
     pI = 0
@@ -28,7 +30,7 @@ class Util(object):
     i = step
     while (i <= 1.0):
       ## Calculate expected times of Susceptible
-      ps = i * disease[Constant.BETA]
+      ps = i * beta
       Tss = ((1 / float(ps)) - 1) * (1 - ((1 - ps) ** h))
       if (ps != q):
         Tis = ((1 / float(q)) - 1) * (((((1 / float(q)) - 1) * (1 - ((1 - q) ** h))) - (((1 / float(ps)) - 1) * (1 - ((1 - ps) ** h)))) / ((((1 / float(q)) - 1)) - ((1 / float(ps)) - 1)))
@@ -37,7 +39,7 @@ class Util(object):
       Trs = h - Tss - Tis
       
       ## Calculate expected times of Prophylactic
-      pp = i * disease[Constant.BETA] * disease[Constant.RHO]
+      pp = i * beta * rho
       Tpp = ((1 / float(pp)) - 1) * (1 - ((1 - pp) ** h))
       if (pp != q):
         Tip = ((1 / float(q)) - 1) * (((((1 / float(q)) - 1) * (1 - ((1 - q) ** h))) - (((1 / float(pp)) - 1) * (1 - ((1 - pp) ** h)))) / ((((1 / float(q)) - 1)) - ((1 / float(pp)) - 1)))
@@ -79,4 +81,31 @@ class Util(object):
       iswitch.append([pI, 1, iState])
     
     return iswitch
+  
+  ##
+  ## Description: Generate value
+  ##
+  ## @param attribute  Format of the content
+  ## @param value      Content of the parameter field
+  ##
+  ## @return Extracted value
+  ##
+  @staticmethod
+  def getValue(value, content):
+    if value == "int":
+      return int(content)
+    elif value == "float":
+      return float(content)
+    elif value == "runif":
+      values = content.split(",")
+      return random.uniform(float(values[0]), float(values[1]))
+    elif value == "rnorm":
+      values = content.split(",")
+      return random.normal(float(values[0]), float(values[1]))
+    elif value == "rpois":
+      return random.poisson(float(content))
+    elif value == "rexp":
+      return random.exponential(float(content))
+      
+    return None
   

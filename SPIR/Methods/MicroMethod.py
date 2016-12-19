@@ -1,43 +1,48 @@
 ##
 ## Python libraries
 ##
-import math
-from random import shuffle, uniform
+from math import exp
+from numpy import random
+from random import shuffle
 
 ##
 ## Load our classes
 ##
-from Agent import Agent
-from Constants import Constant
+from SPIR.Objects.Agent import Agent
 from State import State
-from Util import Util
+from SPIR.Utils.Util import Util
 
 class MicroMethod(object):
   ##
   ## Description: Constructor method
   ##
-  ## @param nAgents      Number of agents
-  ## @param payoffs      Payoff of each disease state
-  ## @param disease      Disease parameters
-  ## @param fear         Distortion of disease prevalence
-  ## @param decision     Decision frequency
-  ## @param timeHorizon  Planning horizon
-  ## @param timeSteps    Number of time steps to simulate
+  ## @param nAgents          Number of agents
+  ## @param payoffs          Payoff of each disease state
+  ## @param beta             Disease beta
+  ## @param gamma            Disease gamma
+  ## @param rho              1 - Prophylactic protection
+  ## @param fear             Distortion of disease prevalence
+  ## @param decision         Decision frequency
+  ## @param planningHorizon  Planning horizon
+  ## @param timesteps        Number of time steps to simulate
   ##
   ## @return None
   ##
-  def __init__(self, nAgents, payoffs, disease, fear, decision, timeHorizon, timeSteps):
+  def __init__(self, nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps):
     self.nAgents = nAgents
     self.payoffs = payoffs
-    self.disease = disease
     
+    self.beta = 1 - exp(-beta)
+    self.gamma = 1 - exp(-gamma)
+    
+    self.rho = 1 - exp(-rho)
     self.fear = fear
     if (self.fear == 0):
         self.fear = 1.0
     
-    self.decision = decision
-    self.timeHorizon = timeHorizon
-    self.timeSteps = timeSteps
+    self.decision = 1 - exp(-decision)
+    self.planningHorizon = planningHorizon
+    self.timesteps = timesteps
     
   ##
   ## Description: Execute the simulation
@@ -47,28 +52,16 @@ class MicroMethod(object):
   ## @return None
   ##
   def execute(self):
-    ## Disease parameters
-    pDisease = {Constant.BETA: 1 - math.exp(-self.disease[Constant.BETA]),
-                Constant.RHO: self.disease[Constant.RHO],
-                Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
-    
-    ## Frequency of behavioral decision
-    self.decision = 1 - math.exp(-self.decision)
-    
     ## Calculate switching points
-    switchPoint = Util.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
+    switchPoint = Util.calcISwitch(self.planningHorizon, self.beta, self.gamma, self.rho, self.payoffs)
     
     ## Initialize agents
     N = 0
     agents = []
-    infected = []
     for state in self.nAgents:
       for x in range(self.nAgents[state]):
-        agent = Agent(N, state, pDisease, self.fear, self.timeHorizon, self.payoffs, switchPoint)
+        agent = Agent(N, state, self.beta, self.gamma, self.rho, self.fear, self.decision, self.planningHorizon, self.payoffs, switchPoint)
         agents.append(agent)
-        
-        if (state == State.I):
-          infected.append(agent)
           
         N += 1
     
@@ -93,7 +86,7 @@ class MicroMethod(object):
     t = 1
     i = self.nAgents[State.I] / float(N)
     
-    while ((t < self.timeSteps) and (i > 0)):
+    while ((t < self.timesteps) and (i > 0)):
       ## Number of agents in each State
       numagents = [0, 0, 0, 0]
       
@@ -128,7 +121,7 @@ class MicroMethod(object):
         
       ## Behavioral decision
       for agent in agents:
-        if (uniform(0.0, 1.0) < self.decision):
+        if (random.uniform(0.0, 1.0) < agent.getDecision()):
           state = agent.getState()
           numagents[state] -= 1
           
@@ -164,3 +157,4 @@ class MicroMethod(object):
       t += 1
     
     return num
+  

@@ -6,13 +6,12 @@
 ##
 
 ## Python libraries
-import math
-from random import uniform
+from math import exp, log
+from numpy import random
 
 ## Load our classes
-from Constants import Constant
 from State import State
-from Util import Util
+from SPIR.Utils.Util import Util
 
 class GillespieMethod(object):
   ## Types of interactions
@@ -25,29 +24,34 @@ class GillespieMethod(object):
   ##
   ## Description: Constructor method
   ##
-  ## @param nAgents      Number of agents
-  ## @param payoffs      Payoff of each disease state
-  ## @param disease      Disease parameters
-  ## @param fear         Distortion of disease prevalence
-  ## @param decision     Decision frequency
-  ## @param timeHorizon  Planning horizon
-  ## @param timeSteps    Number of time steps to simulate
+  ## @param nAgents          Number of agents
+  ## @param payoffs          Payoff of each disease state
+  ## @param beta             Disease beta
+  ## @param gamma            Disease gamma
+  ## @param rho              1 - Prophylactic protection
+  ## @param fear             Distortion of disease prevalence
+  ## @param decision         Decision frequency
+  ## @param planningHorizon  Planning horizon
+  ## @param timesteps        Number of time steps to simulate
   ##
   ## @return None
   ##
-  def __init__(self, nAgents, payoffs, disease, fear, decision, timeHorizon, timeSteps):
+  def __init__(self, nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps):
     self.nAgents = nAgents
     self.payoffs = payoffs
-    self.disease = disease
     
+    self.beta = 1 - exp(-beta)
+    self.gamma = 1 - exp(-gamma)
+    
+    self.rho = 1 - exp(-rho)
     self.fear = fear
     if (self.fear == 0):
       self.fear = 1.0
         
     self.decision = decision
-    self.timeHorizon = timeHorizon
-    self.timeSteps = timeSteps
-  
+    self.planningHorizon = planningHorizon
+    self.timesteps = timesteps
+    
   ##
   ## Execute the simulation
   ##
@@ -86,11 +90,6 @@ class GillespieMethod(object):
                 self.nAgents[State.I] * self.payoffs[State.I],
                 self.nAgents[State.R] * self.payoffs[State.R]])
     
-    ## Disease parameters
-    pDisease = {Constant.BETA: 1 - math.exp(-self.disease[Constant.BETA]),
-            Constant.RHO: 1 - math.exp(-self.disease[Constant.RHO]),
-            Constant.GAMMA: 1 - math.exp(-self.disease[Constant.GAMMA])}
-    
     ## Total number of agents
     N = self.nAgents[State.S] + self.nAgents[State.P] + self.nAgents[State.I] + self.nAgents[State.R]
     
@@ -98,14 +97,14 @@ class GillespieMethod(object):
     i = (self.nAgents[State.I] / float(N)) ** float(1 / float(self.fear))
     
     ## Switching points
-    switchPoint = Util.calcISwitch(self.timeHorizon, pDisease, self.payoffs)
+    switchPoint = Util.calcISwitch(self.planningHorizon, self.beta, self.gamma, self.rho, self.payoffs)
     
     ## Calculate the probability of each type of event (interaction) to occur
     c = {self.INT_SP: self.decision / float(N),
          self.INT_PS: self.decision / float(N),
-         self.INT_SI: self.disease[Constant.BETA] / (float(N) * float(N)),
-         self.INT_PI: (self.disease[Constant.BETA] * self.disease[Constant.RHO]) / (float(N) * float(N)),
-         self.INT_IR: self.disease[Constant.GAMMA] / float(N)}
+         self.INT_SI: self.beta / (float(N) * float(N)),
+         self.INT_PI: (self.beta * self.rho) / (float(N) * float(N)),
+         self.INT_IR: self.gamma / float(N)}
     
     ## Probability density of each event
     a = {self.INT_SP: c[self.INT_SP] * self.nAgents[State.S],
@@ -120,12 +119,12 @@ class GillespieMethod(object):
     prevT = 0
 
     ## Calculate the time step of the next event
-    t = math.log(1 / uniform(0.0, 1.0)) / float(A)
+    t = log(1 / random.uniform(0.0, 1.0)) / float(A)
     
     ## Run simulation
-    while ((t < self.timeSteps) and (i > 0)):
+    while ((t < self.timesteps) and (i > 0)):
       ## Determine the next event
-      cumA = uniform(0.0, 1.0) * A
+      cumA = random.uniform(0.0, 1.0) * A
       index = 0
       x = a[index]
       while(x <= cumA):
@@ -204,6 +203,6 @@ class GillespieMethod(object):
         A = a[self.INT_SP] + a[self.INT_PS] + a[self.INT_SI] + a[self.INT_PI] + a[self.INT_IR]
         
         ## Advance time to next event
-        t = t + (math.log(1 / uniform(0.0, 1.0)) / float(A))
+        t = t + (log(1 / random.uniform(0.0, 1.0)) / float(A))
         
     return num
