@@ -20,21 +20,21 @@
             
             <!--  Payoffs -->
             <payoff.S value="float">1.00</payoff.S>
-            <payoff.P value="float">0.95</payoff.P>
+            <payoff.P value="runif">0.80,1.00</payoff.P>
             <payoff.I value="float">0.10</payoff.I>
             <payoff.R value="float">0.95</payoff.R>
             
             <!-- 1 - Prophylactic protection -->
-            <rho value="float">0.99</rho>
+            <rho value="runif">0.00,0.05</rho>
             
             <!-- Fear -->
-            <kappa value="float">1</kappa>
+            <kappa value="runif">0.8,1.2</kappa>
             
             <!-- Decision frequency -->
-            <decision.frequency value="float">0.01</decision.frequency>
+            <decision.frequency value="runif">0.00,0.05</decision.frequency>
             
             <!-- Planning Horizon -->
-            <planning.horizon value="int">45</planning.horizon>
+            <planning.horizon value="int">360</planning.horizon>
         </profile>
     </profiles>
     
@@ -48,13 +48,14 @@
         <!-- 0 Microsimulation -->
         <!-- 1 Gillespie -->
         <!-- 2 Efficient Tau-Leap -->
-        <method>2</method>
+        <!-- 3 Heterogeneous Microsimulation -->
+        <method>3</method>
         
         <!-- Number of replications -->
         <replications>1</replications>
         
         <!-- Length of the simulation -->
-        <time.steps>1000</time.steps>
+        <time.steps>2000</time.steps>
     </simulation>
     
     <output>
@@ -70,7 +71,7 @@
         <output.path>/home/gnardin</output.path>
         
         <!-- Output filename -->
-        <output.filename>output</output.filename>
+        <output.filename>output-h360</output.filename>
         
         <!-- Output header -->
         <output.header>True</output.header>

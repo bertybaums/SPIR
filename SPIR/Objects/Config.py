@@ -4,7 +4,7 @@ import xml.etree.ElementTree as ET
 ## Load our classes
 from Constants import Constant
 from Objects.Profile import Profile
-from SPIR.Utils.Util import Util
+from Utils.Util import Util
 
 class Config(object):
   ##

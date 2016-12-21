@@ -11,7 +11,7 @@ from numpy import arange, random
 
 ## Load our classes
 from State import State
-from SPIR.Utils.Util import Util
+from Utils.Util import Util
 
 class EfficientTauLeapMethod(object):
   ## Number and types of interactions

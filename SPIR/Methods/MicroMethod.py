@@ -8,9 +8,9 @@ from random import shuffle
 ##
 ## Load our classes
 ##
-from SPIR.Objects.Agent import Agent
+from Objects.Agent import Agent
 from State import State
-from SPIR.Utils.Util import Util
+from Utils.Util import Util
 
 class MicroMethod(object):
   ##

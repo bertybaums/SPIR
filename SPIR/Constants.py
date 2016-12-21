@@ -70,6 +70,7 @@ class Constant():
   METHOD_MICRO = 0
   METHOD_GILLESPIE = 1
   METHOD_EFFICIENT_TAU_LEAP = 2
+  METHOD_HETEROGENEOUS_MICRO = 3
   
   ## Output format
   O_STANDARD = 0

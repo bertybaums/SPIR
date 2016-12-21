@@ -1,7 +1,7 @@
 from Objects.Config import Config
 
 if __name__ == '__main__':
-  config = Config("/data/workspace/cmci/SPIR/config.xml")
+  config = Config("/data/workspace/cmci/SPIR/config/config.xml")
   
   print(config.getNumAgents())
   

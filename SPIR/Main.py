@@ -7,11 +7,11 @@ from time import clock
 
 ## Load our classes
 from Constants import Constant
-from SPIR.Methods.EfficientTauLeapMethod import EfficientTauLeapMethod
-from SPIR.Methods.GillespieMethod import GillespieMethod
-from SPIR.Methods.MicroMethod import MicroMethod
-from SPIR.Methods.NewMicroMethod import NewMicroMethod
-from SPIR.Objects.Config import Config
+from Methods.EfficientTauLeapMethod import EfficientTauLeapMethod
+from Methods.GillespieMethod import GillespieMethod
+from Methods.MicroMethod import MicroMethod
+from Methods.NewMicroMethod import NewMicroMethod
+from Objects.Config import Config
 from State import State
 
 if __name__ == '__main__':
@@ -129,8 +129,7 @@ if (args.__contains__(Constant.FILE)):
   outputSeparator = config.getOutputSeparator()
   
   profiles = config.getProfiles()
-  types = len(profiles)
-  if (method == Constant.METHOD_GILLESPIE) or (method == Constant.METHOD_EFFICIENT_TAU_LEAP) or ((method == Constant.METHOD_MICRO) and (types == 1)):
+  if (method == Constant.METHOD_GILLESPIE) or (method == Constant.METHOD_EFFICIENT_TAU_LEAP) or (method == Constant.METHOD_MICRO):
     profile = profiles[0]
     
     payoffs[State.S] = profile.getPayoffs()[0]
@@ -200,14 +199,13 @@ for rep in range(replications):
   
   ## Initialize the simulation
   if method == Constant.METHOD_MICRO:
-    if types == 1:
-      m = MicroMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
-    else:
-      m = NewMicroMethod(agents, profiles, beta, gamma, timesteps)
+    m = MicroMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
   elif method == Constant.METHOD_GILLESPIE:
     m = GillespieMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps * N)
   elif method == Constant.METHOD_EFFICIENT_TAU_LEAP:
     m = EfficientTauLeapMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps * N)
+  elif method == Constant.METHOD_HETEROGENEOUS_MICRO:
+    m = NewMicroMethod(agents, profiles, beta, gamma, timesteps)
   
   ## Execute the simulation
   num.append(m.execute())
@@ -362,10 +360,13 @@ if (args.graphic):
       
       if(method == Constant.METHOD_MICRO):
         x[pos] = (pos * outputWindow)
-      elif (method == Constant.METHOD_GILLESPIE):
+      elif(method == Constant.METHOD_GILLESPIE):
         x[pos] = (pos * outputWindow) / float(N)
-      elif (method == Constant.METHOD_EFFICIENT_TAU_LEAP):
+      elif(method == Constant.METHOD_EFFICIENT_TAU_LEAP):
         x[pos] = (pos * outputWindow) / float(N)
+      elif(method == Constant.METHOD_HETEROGENEOUS_MICRO):
+        x[pos] = (pos * outputWindow)
+        
       s[pos] += (pv[0] / replications)
       p[pos] += (pv[1] / replications)
       i[pos] += (pv[2] / replications)

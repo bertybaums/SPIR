@@ -1,5 +1,5 @@
 ## Load our classes
-from SPIR.Utils.Util import Util
+from Utils.Util import Util
 
 class Profile(object):
   ##
@@ -115,8 +115,6 @@ class Profile(object):
     value = Util.getValue(self.kappa[0], self.kappa[1])
     if value < 0:
       value = 0.00
-    elif value > 1:
-      value = 1.00
       
     return value
   
@@ -169,10 +167,8 @@ class Profile(object):
     value = Util.getValue(self.h[0], self.h[1])
     if value < 0:
       value = 0.00
-    elif value > 1:
-      value = 1.00
       
-    return value
+    return int(value)
   
   ##
   ## Description: Set planning horizon attribute and content
