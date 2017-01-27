@@ -1,5 +1,5 @@
 class Constant():
-  ## Configuration file fields
+  # # Configuration file fields
   CONFIG = "config"
   
   PROFILES = "profiles"
@@ -37,7 +37,7 @@ class Constant():
   OUTPUT_HEADER = "output.header"
   OUTPUT_SEP = "output.separator"
   
-  ## Command line parameters
+  # # Command line parameters
   FILE = "filename"
   NS = "-NS"
   NP = "-NP"
@@ -63,17 +63,17 @@ class Constant():
   O = "-O"
   S = "-S"
   
-  ## Simulation Methods
+  # # Simulation Methods
   METHOD_MICRO = 0
   METHOD_GILLESPIE = 1
   METHOD_EFFICIENT_TAU_LEAP = 2
   METHOD_HETEROGENEOUS_MICRO = 3
   
-  ## Output format
+  # # Output format
   O_STANDARD = 0
   O_GALAPAGOS = 1
   
-  ## Output
+  # # Output
   O_X = "replication"
   O_T = "time"
   O_S = "susceptible"

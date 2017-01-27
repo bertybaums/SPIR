@@ -1,4 +1,4 @@
-from SPIR.Objects.Config import Config
+from Objects.Config import Config
 
 if __name__ == '__main__':
   config = Config("/data/workspace/cmci/SPIR/config/config.xml")

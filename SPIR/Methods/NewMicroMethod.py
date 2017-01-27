@@ -1,30 +1,30 @@
-##
-## Python libraries
-##
+# #
+# # Python libraries
+# #
 from math import exp
 from numpy import random
 from random import shuffle
 
-##
-## Load our classes
-##
-from SPIR.Objects.Agent import Agent
+# #
+# # Load our classes
+# #
+from Objects.Agent import Agent
 from State import State
 from Constants import Constant
 
 class NewMicroMethod(object):
-  ##
-  ## Description: Constructor method
-  ##
-  ## @param profiles           Agent profile
-  ## @param beta               Disease beta
-  ## @param gamma              Disease gamma
-  ## @param timesteps          Number of time steps to simulate
-  ## @param prefixOutputFile   Prefix of file name of the agent characteristics and status
-  ## @param outputSeparator    Separator character for the output file
-  ##
-  ## @return None
-  ##
+  # #
+  # # Description: Constructor method
+  # #
+  # # @param profiles           Agent profile
+  # # @param beta               Disease beta
+  # # @param gamma              Disease gamma
+  # # @param timesteps          Number of time steps to simulate
+  # # @param prefixOutputFile   Prefix of file name of the agent characteristics and status
+  # # @param outputSeparator    Separator character for the output file
+  # #
+  # # @return None
+  # #
   def __init__(self, replica, profiles, beta, gamma, timesteps, prefixOutputFile, outputSeparator):
     self.numAgents = 0
     
@@ -36,25 +36,25 @@ class NewMicroMethod(object):
     self.prefixOutputFile = prefixOutputFile
     self.outputSeparator = outputSeparator
     
-  ##
-  ## Description: Get total number of agents simulated
-  ##
-  ## @param None
-  ##
-  ## @return None
-  ##
+  # #
+  # # Description: Get total number of agents simulated
+  # #
+  # # @param None
+  # #
+  # # @return None
+  # #
   def getNumAgents(self):
     return self.numAgents
     
-  ##
-  ## Description: Execute the simulation
-  ##
-  ## @param None
-  ##
-  ## @return None
-  ##
+  # #
+  # # Description: Execute the simulation
+  # #
+  # # @param None
+  # #
+  # # @return None
+  # #
   def execute(self):
-    ## Initialize agents
+    # # Initialize agents
     nAgents = [0, 0, 0, 0]
     agents = []
     
@@ -92,7 +92,7 @@ class NewMicroMethod(object):
         
         agents.append(agent)
         
-        ## Record the agents characteristics
+        # # Record the agents characteristics
         line = str(self.replica) + sep + str(self.numAgents) + sep + str(state) + sep + str(profile.getRho()) + sep + str(profile.getFear()) + sep + str(profile.getDecision()) + sep + str(profile.getPlanningHorizon()) + sep + str(profile.getPayoffs()[0]) + sep + str(profile.getPayoffs()[1]) + sep + str(profile.getPayoffs()[2]) + sep + str(profile.getPayoffs()[3]) + "\n"
         
         print(self.numAgents)
@@ -104,7 +104,7 @@ class NewMicroMethod(object):
         
     f.close()
     
-    ## Initialize output variables
+    # # Initialize output variables
     total = [0, 0, 0, 0]
     for agent in agents:
       state = agent.getState()
@@ -126,7 +126,7 @@ class NewMicroMethod(object):
                 total[State.I],
                 total[State.R]])
     
-    ## Run the simulation
+    # # Run the simulation
     t = 1
     i = nAgents[State.I] / float(self.numAgents)
     
@@ -139,10 +139,10 @@ class NewMicroMethod(object):
       f = open(stateFile, "a")
     
     while ((t < self.timesteps) and (i > 0)):
-      ## Shuffle the vector of agents
+      # # Shuffle the vector of agents
       shuffle(agents)
       
-      ## Neighbor agents in the vector interact
+      # # Neighbor agents in the vector interact
       n = self.numAgents
       infected = []
       while(n > 1):
@@ -162,18 +162,18 @@ class NewMicroMethod(object):
         
         n = n - 2
         
-      ## Behavioral decision
+      # # Behavioral decision
       for agent in agents:
         if (random.uniform(0.0, 1.0) < agent.getDecision()):
           state = agent.getState()
           if (state == State.S) or (state == State.P):
             agent.decide(i)
           
-      ## Recovery
+      # # Recovery
       for agent in infected:
         agent.recover()
         
-      ## Record output information
+      # # Record output information
       numagents = [0, 0, 0, 0]
       total = [0, 0, 0, 0]
       for agent in agents:
@@ -199,10 +199,10 @@ class NewMicroMethod(object):
                   total[State.I],
                   total[State.R]])
       
-      ## Recalculate the disease prevalence
+      # # Recalculate the disease prevalence
       i = numagents[State.I] / float(self.numAgents)
       
-      ## Advance time
+      # # Advance time
       t += 1
     
     f.close()

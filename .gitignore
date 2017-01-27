@@ -43,8 +43,8 @@ nosetests.xml
 # Python
 __*
 
-# Jupyter
-.ipynb_checkpoints
+# Eclipse
+.externalToolBuilders
 
 # Data files
 data
