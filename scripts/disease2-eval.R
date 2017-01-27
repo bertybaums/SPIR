@@ -2,7 +2,7 @@
 ## Evaluation
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 12/14/2016
+## Last Change.: 12/28/2016
 ##
 library(data.table)
 library(DEoptim)
@@ -111,11 +111,11 @@ yinit <- c(S = N - initI, P = 0, I = initI, R = 0)
 # Length of the simulation
 times <- seq(1, timesteps, 1)
 
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 ###############
 ## Generate the output metrics when increasing protection
 ###############
-H <- c(15, 30, 45, 90, 180, 360)
 Rhos <- seq(0.01, 1, 0.01)
 
 output <-
@@ -169,11 +169,11 @@ data <- data.table(output)
 names(data) <- c("h", "protection", "peakSize", "timePeak", "avgPayoff")
 data <- data[order(data$protection)]
 
-write.table(data, file=paste0(outputDir,"/increaseProtection.csv"),
+write.table(data, file=paste0(outputDir,"/calcP_PT.csv"),
     append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
 
 ## Generate plots
-data <- data.table(read.table(file=paste0(inputDir, "/increaseProtection.csv"),
+data <- data.table(read.table(file=paste0(inputDir, "/calcP_PT.csv"),
         header=TRUE, sep=";"))
 
 dataIP <- NULL
@@ -222,7 +222,6 @@ ggsave(file=paste0(figureDir, "/protectionPeakTime.png"),
 ###############
 ## P x Kappa - Peak Size
 ###############
-
 optimizeP <- function(up, peakSizeK){
   ## ODE parameters with changed P payoff
   parsP <- list(
@@ -249,7 +248,7 @@ optimizeP <- function(up, peakSizeK){
   return(abs(peakSizeP - peakSizeK))
 }
 
-H <- c(15, 30, 45, 90, 180, 360)
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 deltaK <- 0.001
 maxK <- 3
@@ -363,7 +362,7 @@ optimizeR <- function(r, peakSizeK){
 }
 
 
-H <- c(15, 30, 45, 90, 180, 360)
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 deltaK <- 0.001
 maxK <- 3
@@ -476,7 +475,7 @@ optimizeP <- function(up, peakSizeR){
 }
 
 
-H <- c(15, 30, 45, 90, 180, 360)
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 deltaR <- 0.001
 maxR <- 1

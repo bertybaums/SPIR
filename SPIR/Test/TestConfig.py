@@ -1,9 +1,7 @@
-from Objects.Config import Config
+from SPIR.Objects.Config import Config
 
 if __name__ == '__main__':
   config = Config("/data/workspace/cmci/SPIR/config/config.xml")
-  
-  print(config.getNumAgents())
   
   print(config.getBeta())
   print(config.getGamma())
@@ -13,7 +11,7 @@ if __name__ == '__main__':
     print(profile.getPayoffs())
     print(profile.getRho())
     print(profile.getFear())
-    print(profile.getDecisionFrequency())
+    print(profile.getDecision())
     print(profile.getPlanningHorizon())
     
   print(config.getMethod())

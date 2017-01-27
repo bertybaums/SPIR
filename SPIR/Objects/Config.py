@@ -3,8 +3,8 @@ import xml.etree.ElementTree as ET
 
 ## Load our classes
 from Constants import Constant
-from Objects.Profile import Profile
-from Utils.Util import Util
+from SPIR.Objects.Profile import Profile
+from SPIR.Utils.Util import Util
 
 class Config(object):
   ##
@@ -16,11 +16,6 @@ class Config(object):
   ##
   def __init__(self, filename):
     self.filename = filename
-    
-    self.num_agents_s = 0
-    self.num_agents_p = 0
-    self.num_agents_i = 0
-    self.num_agents_r = 0
     
     self.profiles = []
     
@@ -50,19 +45,6 @@ class Config(object):
   def getFilename(self):
     return self.filename
   
-  ##
-  ## Description: Get number of agents in each state
-  ##
-  ## @param  None
-  ##
-  ## @return  Number of agents
-  ##
-  def getNumAgents(self):
-    return [self.num_agents_s,
-            self.num_agents_p,
-            self.num_agents_i,
-            self.num_agents_r]
-    
   ##
   ## Description: Get agent profiles
   ##
@@ -197,26 +179,20 @@ class Config(object):
     if root.tag == Constant.CONFIG:
       
       for e1 in root:
-        ## AGENTS parameters
-        if e1.tag == Constant.AGENTS:
-          for e2 in e1:
-            if e2.tag == Constant.NUM_AGENTS_S:
-              self.num_agents_s = int(e2.text)
-            elif e2.tag == Constant.NUM_AGENTS_P:
-              self.num_agents_p = int(e2.text)
-            elif e2.tag == Constant.NUM_AGENTS_I:
-              self.num_agents_i = int(e2.text)
-            elif e2.tag == Constant.NUM_AGENTS_R:
-              self.num_agents_r = int(e2.text)
-              
         ## PROFILES parameters
-        elif e1.tag == Constant.PROFILES:
+        if e1.tag == Constant.PROFILES:
           for e2 in e1:
             if e2.tag == Constant.PROFILE:
               p = Profile()
               for e3 in e2:
-                if e3.tag == Constant.NUM_AGENTS:
-                  p.setNumAgents(int(e3.text))
+                if e3.tag == Constant.NUM_AGENTS_S:
+                  p.setNumAgentsS(int(e3.text))
+                elif e3.tag == Constant.NUM_AGENTS_P:
+                  p.setNumAgentsP(int(e3.text))
+                elif e3.tag == Constant.NUM_AGENTS_I:
+                  p.setNumAgentsI(int(e3.text))
+                elif e3.tag == Constant.NUM_AGENTS_R:
+                  p.setNumAgentsR(int(e3.text))
                 elif e3.tag == Constant.PAYOFF_S:
                   p.setPayoffs(0, e3.attrib.get("value"), e3.text)
                 elif e3.tag == Constant.PAYOFF_P:

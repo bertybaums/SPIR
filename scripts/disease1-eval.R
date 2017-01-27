@@ -2,7 +2,7 @@
 ## Evaluation
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 12/14/2016
+## Last Change.: 12/28/2016
 ##
 library(data.table)
 library(DEoptim)
@@ -111,13 +111,13 @@ yinit <- c(S = N - initI, P = 0, I = initI, R = 0)
 # Length of the simulation
 times <- seq(1, timesteps, 1)
 
+# Planning horizons
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 ###############
 ## Generate the output metrics when increasing protection
 ###############
-H <- c(15, 30, 45, 90, 180, 360)
 Rhos <- seq(0.01, 1, 0.01)
-
 output <-
     foreach(i=1:length(H), .combine='rbind') %dopar%{
       outRho <- NULL
@@ -168,14 +168,14 @@ data <- data.table(output)
 names(data) <- c("h", "protection", "peakSize", "timePeak", "avgPayoff")
 data <- data[order(data$protection)]
 
-write.table(data, file=paste0(outputDir,"/increaseProtection.csv"),
+write.table(data, file=paste0(outputDir,"/calcP_PT.csv"),
     append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
 
 ## Generate plots
-data <- fread(paste0(inputDir, "/increaseProtection.csv"),
+data <- fread(paste0(inputDir, "/calcP_PT.csv"),
     header=TRUE, sep=";")
 
-dataIP <- NULL
+dataIP <- data.table(cbind(h=15,protection=0,peakSize=0,timePeak=0,avgPayoff=0))
 for(p in H){
   maxIP <- max(data[which(h == p),]$peakSize)
   dataIP <- rbind(dataIP, data[which((h == p) & (peakSize < maxIP)),])
@@ -189,7 +189,7 @@ gPeakSize <- ggplot(dataIP, aes(x=protection * 100, y=peakSize * 100,
     xlab("Protection (%)") +
     ylab("Peak Size (%)") +
     scale_color_manual(name="Planning\nHorizon",
-        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+        values=c("red", "yellow4", "green4", "magenta4", "blue", "orange", "purple", "black")) +
     THEME +
     theme(legend.position = "right")
 
@@ -197,10 +197,10 @@ ggsave(file=paste0(figureDir, "/protectionPeakSize.png"),
     plot=gPeakSize, width=10, height=6.5)
 
 
-dataIP <- NULL
+dataIP <- data.table(cbind(h=15,protection=0,peakSize=0,timePeak=0,avgPayoff=0))
 for(p in H){
-  maxIP <- max(data[which(h == p),]$timePeak)
-  dataIP <- rbind(dataIP, data[which((h == p) & (timePeak < maxIP)),])
+  maxIP <- data[which(h == p),]$timePeak[1]
+  dataIP <- rbind(dataIP, data[which((h == p) & (timePeak != maxIP)),])
 }
 
 gTimePeak <- ggplot(dataIP, aes(x=protection * 100, y=timePeak,
@@ -211,7 +211,7 @@ gTimePeak <- ggplot(dataIP, aes(x=protection * 100, y=timePeak,
     xlab("Protection (%)") +
     ylab("Time to Peak") +
     scale_color_manual(name="Planning\nHorizon",
-        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+        values=c("red", "yellow4", "green4", "magenta4", "blue", "orange", "purple", "black")) +
     THEME +
     theme(legend.position = "right")
 
@@ -222,7 +222,6 @@ ggsave(file=paste0(figureDir, "/protectionPeakTime.png"),
 ###############
 ## uP x Kappa - Peak Size
 ###############
-
 optimizeP <- function(up, peakSizeK){
   parsP <- list(
       R0 = R0,
@@ -248,7 +247,7 @@ optimizeP <- function(up, peakSizeK){
   return(abs(peakSizeP - peakSizeK))
 }
 
-H <- c(15, 30, 45, 90, 180, 360)
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 deltaK <- 0.001
 maxK <- 3
@@ -324,7 +323,7 @@ kp_ps <- ggplot(dataKP, aes(x=k, y=up,
     ylab("Prophylactic Payoff") +
     ylim(0.945, 1) +
     scale_color_manual(name="Planning\nHorizon",
-        values=c("red", "yellow4", "green4", "magenta4", "black", "blue")) +
+        values=c("red", "yellow4", "green4", "magenta4", "blue", "orange", "purple", "black")) +
     THEME +
     theme(legend.position = "right")
 
@@ -361,7 +360,7 @@ optimizeR <- function(r, peakSizeK){
 }
 
 
-H <- c(15, 30, 45, 90, 180, 360)
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 deltaK <- 0.001
 maxK <- 3
@@ -423,21 +422,21 @@ for(i in 1:length(H)){
 outputKR_PS <- fread(paste0(inputDir, "/calcKR_PS.csv"),
     header=TRUE, sep=";")
     
-dataKR <- NULL
+dataKR <- data.table(cbind(h=15,k=1,rho=1))
 for(p in H){
   maxKR <- max(outputKR_PS[which(h == p),]$rho)
   dataKR <- rbind(dataKR, outputKR_PS[which((h == p) & (rho < maxKR)),])
 }
 
-kr_ps <- ggplot(dataKR[which(h != 15),], aes(x=k, y=(1 - rho) * 100,
-            group=h,
+kr_ps <- ggplot(dataKR, aes(x=k, y=(1 - rho) * 100,
+            group=factor(h),
             color=factor(h))) +
     geom_line(size=0.9) +
     xlab("Kappa") +
     ylab("Protection (%)") +
-    ylim(40, 100) +
+    ylim(99, 100) +
     scale_color_manual(name="Planning\nHorizon",
-        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+        values=c("red", "yellow4", "green4", "magenta4", "blue", "orange", "purple", "black")) +
     THEME +
     theme(legend.position = "right")
 
@@ -475,7 +474,7 @@ optimizeP <- function(up, peakSizeR){
 }
 
 
-H <- c(15, 30, 45, 90, 180, 360)
+H <- c(15, 30, 45, 90, 180, 360, 720, 1440)
 
 deltaR <- 0.001
 maxR <- 1
@@ -537,7 +536,7 @@ for(i in 1:length(H)){
 outputPR_PS <- fread(paste0(inputDir, "/calcPR_PS.csv"),
         header=TRUE, sep=";")
 
-dataPR <- NULL
+dataPR <- data.table(cbind(h=15,rho=1,up=1))
 for(p in H){
   minUP <- min(outputPR_PS[which(h == p),]$up)
   dataPR <- rbind(dataPR, outputPR_PS[which((h == p) & (up > minUP)),])
@@ -551,7 +550,7 @@ pr_ps <- ggplot(dataPR, aes(x=up, y=(1 - rho) * 100,
     ylab("Protection (%)") +
     ylim(25, 100) + xlim(0.85, 1) +
     scale_color_manual(name="Planning\nHorizon",
-        values=c("red", "yellow4", "green4", "magenta4", "black")) +
+        values=c("red", "yellow4", "green4", "magenta4", "blue", "orange", "purple", "black")) +
     THEME +
     theme(legend.position = "right")
 

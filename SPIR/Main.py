@@ -7,11 +7,11 @@ from time import clock
 
 ## Load our classes
 from Constants import Constant
-from Methods.EfficientTauLeapMethod import EfficientTauLeapMethod
-from Methods.GillespieMethod import GillespieMethod
-from Methods.MicroMethod import MicroMethod
-from Methods.NewMicroMethod import NewMicroMethod
-from Objects.Config import Config
+from SPIR.Methods.EfficientTauLeapMethod import EfficientTauLeapMethod
+from SPIR.Methods.GillespieMethod import GillespieMethod
+from SPIR.Methods.MicroMethod import MicroMethod
+from SPIR.Methods.NewMicroMethod import NewMicroMethod
+from SPIR.Objects.Config import Config
 from State import State
 
 if __name__ == '__main__':
@@ -82,7 +82,7 @@ args = parser.parse_args()
 
 ## Default values of the input parameters
 types = 1
-nAgents = {State.S: 9999, State.P: 0, State.I: 1, State.R: 0}
+nAgents = {State.S: 0, State.P: 0, State.I: 0, State.R: 0}
 payoffs = {State.S: 1, State.P: 0.95, State.I: 0.6, State.R: 1}
 beta = 0.031
 gamma = 0.015
@@ -109,10 +109,6 @@ if (args.__contains__(Constant.FILE)):
     
   ## Load input parameter values from configuration file
   config = Config(args.filename)
-  nAgents[State.S] = config.getNumAgents()[0]
-  nAgents[State.P] = config.getNumAgents()[1]
-  nAgents[State.I] = config.getNumAgents()[2]
-  nAgents[State.R] = config.getNumAgents()[3]
   
   beta = config.getBeta()
   gamma = config.getGamma()
@@ -131,6 +127,11 @@ if (args.__contains__(Constant.FILE)):
   profiles = config.getProfiles()
   if (method == Constant.METHOD_GILLESPIE) or (method == Constant.METHOD_EFFICIENT_TAU_LEAP) or (method == Constant.METHOD_MICRO):
     profile = profiles[0]
+    
+    nAgents[State.S] = profile.getNumAgentsS()
+    nAgents[State.P] = profile.getNumAgentsP()
+    nAgents[State.I] = profile.getNumAgentsI()
+    nAgents[State.R] = profile.getNumAgentsR()
     
     payoffs[State.S] = profile.getPayoffs()[0]
     payoffs[State.P] = profile.getPayoffs()[1]
@@ -182,11 +183,6 @@ else:
 if (args.verbose):
   start = clock()
 
-## Set the total number of agents
-N = 0
-for i in nAgents:
-  N += nAgents[i]
-
 ## Execute the simulation
 num = []
 for rep in range(replications):
@@ -199,16 +195,18 @@ for rep in range(replications):
   
   ## Initialize the simulation
   if method == Constant.METHOD_MICRO:
-    m = MicroMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
+    m = MicroMethod(nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
   elif method == Constant.METHOD_GILLESPIE:
-    m = GillespieMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps * N)
+    m = GillespieMethod(nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
   elif method == Constant.METHOD_EFFICIENT_TAU_LEAP:
-    m = EfficientTauLeapMethod(agents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps * N)
+    m = EfficientTauLeapMethod(nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
   elif method == Constant.METHOD_HETEROGENEOUS_MICRO:
-    m = NewMicroMethod(agents, profiles, beta, gamma, timesteps)
+    m = NewMicroMethod(rep, profiles, beta, gamma, timesteps, outputPath + "/" + outputFilename, outputSeparator)
   
   ## Execute the simulation
   num.append(m.execute())
+  
+  N = m.getNumAgents()
   
 ## Print the simulation execution time
 if (args.verbose):

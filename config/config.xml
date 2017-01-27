@@ -1,40 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-    <agents>
-        <!-- Initial number of agents in State Susceptible -->
-        <num.agents.S>900</num.agents.S>
-        
-        <!-- Initial number of agents in State Prophylactic -->
-        <num.agents.P>0</num.agents.P>
-        
-        <!-- Initial number of agents in State Infectious -->
-        <num.agents.I>100</num.agents.I>
-        
-        <!-- Initial number of agents in State Recovered -->
-        <num.agents.R>0</num.agents.R>
-    </agents>
-    
     <profiles>
         <profile>
-            <num.agents>1000</num.agents>
+            <!-- Initial number of agents in State Susceptible -->
+            <num.agents.S>9</num.agents.S>
+            
+            <!-- Initial number of agents in State Prophylactic -->
+            <num.agents.P>0</num.agents.P>
+            
+            <!-- Initial number of agents in State Infectious -->
+            <num.agents.I>1</num.agents.I>
+            
+            <!-- Initial number of agents in State Recovered -->
+            <num.agents.R>0</num.agents.R>
             
             <!--  Payoffs -->
             <payoff.S value="float">1.00</payoff.S>
-            <payoff.P value="runif">0.80,1.00</payoff.P>
-            <payoff.I value="float">0.10</payoff.I>
-            <payoff.R value="float">0.95</payoff.R>
+            <payoff.P value="runif">0.0,1.00</payoff.P>
+            <payoff.I value="runif">0.00,1.00</payoff.I>
+            <payoff.R value="runif">0.00,1.00</payoff.R>
             
             <!-- 1 - Prophylactic protection -->
-            <rho value="runif">0.00,0.05</rho>
+            <rho value="runif">0.00,1.00</rho>
             
             <!-- Fear -->
-            <kappa value="runif">0.8,1.2</kappa>
+            <kappa value="rnorm">1.00,1.0</kappa>
             
             <!-- Decision frequency -->
-            <decision.frequency value="runif">0.00,0.05</decision.frequency>
+            <decision.frequency value="runif">0.00,0.1</decision.frequency>
             
             <!-- Planning Horizon -->
-            <planning.horizon value="int">360</planning.horizon>
+            <planning.horizon value="rgamma">5,15</planning.horizon>
         </profile>
     </profiles>
     
@@ -52,10 +48,10 @@
         <method>3</method>
         
         <!-- Number of replications -->
-        <replications>1</replications>
+        <replications>2</replications>
         
         <!-- Length of the simulation -->
-        <time.steps>2000</time.steps>
+        <time.steps>200</time.steps>
     </simulation>
     
     <output>
@@ -71,7 +67,7 @@
         <output.path>/home/gnardin</output.path>
         
         <!-- Output filename -->
-        <output.filename>output-h360</output.filename>
+        <output.filename>output</output.filename>
         
         <!-- Output header -->
         <output.header>True</output.header>

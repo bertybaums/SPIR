@@ -1,5 +1,5 @@
 ## Load our classes
-from Utils.Util import Util
+from SPIR.Utils.Util import Util
 
 class Profile(object):
   ##
@@ -10,8 +10,17 @@ class Profile(object):
   ## @return None
   ##
   def __init__(self):
-    ## Number of agents
-    self.num_agents = 0
+    ## Number of Susceptible agents
+    self.num_agents_s = 0
+    
+    ## Number of Prophylactic agents
+    self.num_agents_p = 0
+    
+    ## Number of Infectious agents
+    self.num_agents_i = 0
+    
+    ## Number of Recovered agents
+    self.num_agents_r = 0
     
     ## Agent states payoff
     self.payoffs = [["", ""], ["", ""], ["", ""], ["", ""]]
@@ -36,17 +45,90 @@ class Profile(object):
   ## @return Number of agents
   ##
   def getNumAgents(self):
-    return self.num_agents
+    return [self.num_agents_s,
+            self.num_agents_p,
+            self.num_agents_i,
+            self.num_agents_r]
   
   ##
-  ## Description: Set number of agents
+  ## Description: Get number of Susceptible agents
   ##
-  ## @param num_agents  Number of agents
+  ## @param None
+  ##
+  ## @return Number of Susceptible agents
+  ##
+  def getNumAgentsS(self):
+    return self.num_agents_s
+  
+  ##
+  ## Description: Set number of Susceptible agents
+  ##
+  ## @param num_agents  Number of Susceptible agents
   ##
   ## @return None
   ##
-  def setNumAgents(self, num_agents):
-    self.num_agents = num_agents
+  def setNumAgentsS(self, num_agents_s):
+    self.num_agents_s = num_agents_s
+    
+  ##
+  ## Description: Get number of Prophylactic agents
+  ##
+  ## @param None
+  ##
+  ## @return Number of Prophylactic agents
+  ##
+  def getNumAgentsP(self):
+    return self.num_agents_p
+  
+  ##
+  ## Description: Set number of Prophylactic agents
+  ##
+  ## @param num_agents  Number of Prophylactic agents
+  ##
+  ## @return None
+  ##
+  def setNumAgentsP(self, num_agents_p):
+    self.num_agents_p = num_agents_p
+    
+  ##
+  ## Description: Get number of Infectious agents
+  ##
+  ## @param None
+  ##
+  ## @return Number of Infectious agents
+  ##
+  def getNumAgentsI(self):
+    return self.num_agents_i
+  
+  ##
+  ## Description: Set number of Infectious agents
+  ##
+  ## @param num_agents  Number of Infectious agents
+  ##
+  ## @return None
+  ##
+  def setNumAgentsI(self, num_agents_i):
+    self.num_agents_i = num_agents_i
+    
+  ##
+  ## Description: Get number of Recovered agents
+  ##
+  ## @param None
+  ##
+  ## @return Number of Recovered agents
+  ##
+  def getNumAgentsR(self):
+    return self.num_agents_r
+  
+  ##
+  ## Description: Set number of Recovered agents
+  ##
+  ## @param num_agents  Number of Recovered agents
+  ##
+  ## @return None
+  ##
+  def setNumAgentsR(self, num_agents_r):
+    self.num_agents_r = num_agents_r
     
   ##
   ## Description: Get agent states payoff

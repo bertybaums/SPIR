@@ -106,6 +106,9 @@ class Util(object):
       return random.poisson(float(content))
     elif value == "rexp":
       return random.exponential(float(content))
+    elif value == "rgamma":
+      values = content.split(",")
+      return random.gamma(float(values[0]), float(values[1]))
       
     return None
   

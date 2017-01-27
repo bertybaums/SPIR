@@ -2,16 +2,13 @@ class Constant():
   ## Configuration file fields
   CONFIG = "config"
   
-  AGENTS = "agents"
+  PROFILES = "profiles"
+  PROFILE = "profile"
+  
   NUM_AGENTS_S = "num.agents.S"
   NUM_AGENTS_P = "num.agents.P"
   NUM_AGENTS_I = "num.agents.I"
   NUM_AGENTS_R = "num.agents.R"
-  
-  PROFILES = "profiles"
-  PROFILE = "profile"
-  
-  NUM_AGENTS = "num.agents"
   
   PAYOFF_S = "payoff.S"
   PAYOFF_P = "payoff.P"
@@ -87,4 +84,15 @@ class Constant():
   O_PP = "payoff_prophylactic"
   O_PI = "payoff_infectious"
   O_PR = "payoff_recovered"
+  
+  O_ID = "id"
+  O_STATE = "state"
+  O_RHO = "rho"
+  O_KAPPA = "kappa"
+  O_DELTA = "delta"
+  O_H = "h"
+  O_UPS = "payoffS"
+  O_UPP = "payoffP"
+  O_UPI = "payoffI"
+  O_UPR = "payoffR"
   

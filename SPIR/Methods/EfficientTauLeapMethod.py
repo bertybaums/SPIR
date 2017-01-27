@@ -11,7 +11,7 @@ from numpy import arange, random
 
 ## Load our classes
 from State import State
-from Utils.Util import Util
+from SPIR.Utils.Util import Util
 
 class EfficientTauLeapMethod(object):
   ## Number and types of interactions
@@ -40,6 +40,10 @@ class EfficientTauLeapMethod(object):
   ##
   def __init__(self, nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps):
     self.nAgents = nAgents
+    self.numAgents = 0
+    for i in self.nAgents:
+      self.numAgents += self.nAgents[i]
+      
     self.payoffs = payoffs
     
     self.beta = 1 - exp(-beta)
@@ -52,7 +56,17 @@ class EfficientTauLeapMethod(object):
         
     self.decision = decision
     self.planningHorizon = planningHorizon
-    self.timesteps = timesteps
+    self.timesteps = timesteps * self.numAgents
+    
+  ##
+  ## Description: Get total number of agents simulated
+  ##
+  ## @param None
+  ##
+  ## @return None
+  ##
+  def getNumAgents(self):
+    return self.numAgents
     
   ##
   ## Execute the simulation

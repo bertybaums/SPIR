@@ -8,9 +8,9 @@ from random import shuffle
 ##
 ## Load our classes
 ##
-from Objects.Agent import Agent
+from SPIR.Objects.Agent import Agent
+from SPIR.Utils.Util import Util
 from State import State
-from Utils.Util import Util
 
 class MicroMethod(object):
   ##
@@ -30,6 +30,10 @@ class MicroMethod(object):
   ##
   def __init__(self, nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps):
     self.nAgents = nAgents
+    self.numAgents = 0
+    for i in self.nAgents:
+      self.numAgents += self.nAgents[i]
+      
     self.payoffs = payoffs
     
     self.beta = 1 - exp(-beta)
@@ -43,6 +47,16 @@ class MicroMethod(object):
     self.decision = 1 - exp(-decision)
     self.planningHorizon = planningHorizon
     self.timesteps = timesteps
+    
+  ##
+  ## Description: Get total number of agents simulated
+  ##
+  ## @param None
+  ##
+  ## @return None
+  ##
+  def getNumAgents(self):
+    return self.numAgents
     
   ##
   ## Description: Execute the simulation

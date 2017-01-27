@@ -2,9 +2,8 @@
 from numpy import random
 
 ## Load our classes
+from SPIR.Utils.Util import Util
 from State import State
-from Utils.Util import Util
-
 
 class Agent(object):
   ##
