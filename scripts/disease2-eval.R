@@ -2,7 +2,7 @@
 ## Evaluation
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 12/28/2016
+## Last Change.: 02/01/2017
 ##
 library(data.table)
 library(DEoptim)
@@ -321,8 +321,8 @@ kp_ps <- ggplot(dataKP, aes(x=k, y=up,
             group=h,
             color=factor(h))) +
     geom_line(size=0.9) +
-    xlab("Kappa") +
-    ylab("Prophylactic Payoff") +
+    xlab("Kappa (P=0.95)") +
+    ylab("Prophylactic Payoff (Kappa=1") +
     ylim(0.945, 1) +
     scale_color_manual(name="Planning\nHorizon",
         values=c("red", "yellow4", "green4", "magenta4", "black", "blue")) +
@@ -434,8 +434,8 @@ kr_ps <- ggplot(dataKR[which(h != 15),], aes(x=k, y=(1 - rho) * 100,
             group=h,
             color=factor(h))) +
     geom_line(size=0.9) +
-    xlab("Kappa") +
-    ylab("Protection (%)") +
+    xlab("Kappa (Protection=99%)") +
+    ylab("Protection (%) (Kappa=1)") +
     ylim(0, 100) +
     scale_color_manual(name="Planning\nHorizon",
         values=c("red", "yellow4", "green4", "magenta4", "black")) +
@@ -547,8 +547,8 @@ pr_ps <- ggplot(dataPR, aes(x=up, y=(1 - rho) * 100,
             group=h,
             color=factor(h))) +
     geom_line(size=0.9) +
-    xlab("Prophylactic Payoff") +
-    ylab("Protection (%)") +
+    xlab("Prophylactic Payoff (Protection=99%)") +
+    ylab("Protection (%) P=0.95)") +
     ylim(0, 100) + xlim(0, 1) +
     scale_color_manual(name="Planning\nHorizon",
         values=c("red", "yellow4", "green4", "magenta4", "black")) +

@@ -1,17 +1,17 @@
 class State():
   
-  # # Susceptible
+  ## Susceptible
   S = 0
   
-  # # Prophylactic
+  ## Prophylactic
   P = 1
   
-  # # Infectious
+  ## Infectious
   I = 2
   
-  # # Recovered
+  ## Recovered
   R = 3
   
-  # # Vector of the states
+  ## Vector of the states
   STATES = [S, P, I, R]
   

@@ -1,21 +1,21 @@
-# # Python library
+## Python library
 from numpy import random
 
-# # Load our classes
+## Load our classes
 from State import State
 
 class Util(object):
-  # #
-  # # Description: Calculate the switching points
-  # #
-  # # @param planningHorizon  Planning horizon
-  # # @param beta             Disease Beta
-  # # @param gamma            Disease Gamma
-  # # @param rho              1 - Prophylactic protection
-  # # @param payoffs          Payoff of each disease state
-  # #
-  # # @return Switching point
-  # #
+  ##
+  ## Description: Calculate the switching points
+  ##
+  ## @param planningHorizon  Planning horizon
+  ## @param beta             Disease Beta
+  ## @param gamma            Disease Gamma
+  ## @param rho              1 - Prophylactic protection
+  ## @param payoffs          Payoff of each disease state
+  ##
+  ## @return Switching point
+  ##
   @staticmethod
   def calcISwitch(planningHorizon, beta, gamma, rho, payoffs):
     h = planningHorizon
@@ -29,7 +29,7 @@ class Util(object):
     step = 0.00001
     i = step
     while (i <= 1.0):
-      # # Calculate expected times of Susceptible
+      ## Calculate expected times of Susceptible
       ps = i * beta
       Tss = ((1 / float(ps)) - 1) * (1 - ((1 - ps) ** h))
       if (ps != q):
@@ -38,7 +38,7 @@ class Util(object):
         Tis = (((1 / float(q)) - 1) * (1 - ((1 - q) ** h))) - (h * ((1 - q) ** (h + 1)))
       Trs = h - Tss - Tis
       
-      # # Calculate expected times of Prophylactic
+      ## Calculate expected times of Prophylactic
       pp = i * beta * rho
       Tpp = ((1 / float(pp)) - 1) * (1 - ((1 - pp) ** h))
       if (pp != q):
@@ -47,7 +47,7 @@ class Util(object):
         Tip = (((1 / float(q)) - 1) * (1 - ((1 - q) ** h))) - (h * ((1 - q) ** (h + 1)))
       Trp = h - Tpp - Tip
       
-      # # Calculate Expected Utilities
+      ## Calculate Expected Utilities
       US = (payoffs[State.S] * Tss) + (payoffs[State.I] * Tis) + (payoffs[State.R] * Trs)
       UP = (payoffs[State.P] * Tpp) + (payoffs[State.I] * Tip) + (payoffs[State.R] * Trp)
       
@@ -82,14 +82,14 @@ class Util(object):
     
     return iswitch
   
-  # #
-  # # Description: Generate value
-  # #
-  # # @param attribute  Format of the content
-  # # @param value      Content of the parameter field
-  # #
-  # # @return Extracted value
-  # #
+  ##
+  ## Description: Generate value
+  ##
+  ## @param attribute  Format of the content
+  ## @param value      Content of the parameter field
+  ##
+  ## @return Extracted value
+  ##
   @staticmethod
   def getValue(value, content):
     if value == "int":

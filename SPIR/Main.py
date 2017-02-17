@@ -1,11 +1,12 @@
-# # Python libraries
+## Python libraries
 import argparse
+from copy import deepcopy
 from matplotlib import pyplot, gridspec
 from os.path import isfile
 from sys import exit
 from time import clock
 
-# # Load our classes
+## Load our classes
 from Constants import Constant
 from Methods.EfficientTauLeapMethod import EfficientTauLeapMethod
 from Methods.GillespieMethod import GillespieMethod
@@ -17,7 +18,7 @@ from State import State
 if __name__ == '__main__':
     pass
 
-# # Command Line Argument Parsing
+## Command Line Argument Parsing
 parser = argparse.ArgumentParser(prog="Main.py")
 
 parser.add_argument("-v", "--verbose", action="store_true")
@@ -80,7 +81,7 @@ configCmd.add_argument(Constant.S, nargs=1, required=True,
 
 args = parser.parse_args()
 
-# # Default values of the input parameters
+## Default values of the input parameters
 types = 1
 nAgents = {State.S: 0, State.P: 0, State.I: 0, State.R: 0}
 payoffs = {State.S: 1, State.P: 0.95, State.I: 0.6, State.R: 1}
@@ -102,12 +103,12 @@ outputSeparator = ";"
 
 if (args.__contains__(Constant.FILE)):
   
-  # # Check if the configuration file exists
+  ## Check if the configuration file exists
   if (not isfile(str(args.filename))):
     print("Configuration file does not exist")
     exit()
     
-  # # Load input parameter values from configuration file
+  ## Load input parameter values from configuration file
   config = Config(args.filename)
   
   beta = config.getBeta()
@@ -153,7 +154,7 @@ if (args.__contains__(Constant.FILE)):
     outputHeader = config.getOutputHeader()
     outputSeparator = config.getOutputSeparator()
 else:
-  # # Set input parameter from command line arguments
+  ## Set input parameter from command line arguments
   types = 1
   nAgents[State.S] = int(args.NS[0])
   nAgents[State.P] = int(args.NP[0])
@@ -179,21 +180,19 @@ else:
   outputHeader = bool(args.O[0])
   outputSeparator = args.S[0]
   
-# # Set the simulation start time
+## Set the simulation start time
 if (args.verbose):
   start = clock()
 
-# # Execute the simulation
+## Execute the simulation
 num = []
+agents = []
 for rep in range(replications):
-  # # Print the replication on the screen
+  ## Print the replication on the screen
   if (args.verbose):
     print('Replication:', rep)
   
-  agents = {State.S: nAgents[State.S], State.P: nAgents[State.P],
-            State.I: nAgents[State.I], State.R: nAgents[State.R]}
-  
-  # # Initialize the simulation
+  ## Initialize the simulation
   if method == Constant.METHOD_MICRO:
     m = MicroMethod(nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
   elif method == Constant.METHOD_GILLESPIE:
@@ -202,22 +201,26 @@ for rep in range(replications):
     m = EfficientTauLeapMethod(nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
   elif method == Constant.METHOD_HETEROGENEOUS_MICRO:
     m = NewMicroMethod(rep, profiles, beta, gamma, timesteps, outputPath + "/" + outputFilename, outputSeparator)
-  
-  # # Execute the simulation
+    
+    if(rep == 0):
+      agents = deepcopy(m.getAgents())
+      N = len(agents)
+    else:
+      m.setAgents(deepcopy(agents))
+      
+  ## Execute the simulation
   num.append(m.execute())
   
-  N = m.getNumAgents()
-  
-# # Print the simulation execution time
+## Print the simulation execution time
 if (args.verbose):
   end = clock()
   print('Processing Time:', str(end - start), 's')
   
   
-# # Output
+## Output
 if (args.output):
   
-  # # Write raw data to the output file (STANDARD format)
+  ## Write raw data to the output file (STANDARD format)
   if (outputFormat == Constant.O_STANDARD):
     fname = outputPath + "/" + outputFilename + ".csv"
     f = open(fname, "w")
@@ -232,7 +235,7 @@ if (args.output):
         f.write(line)
     f.close()
   
-  # # Write summarized data to the output file (GALAPAGOS format)
+  ## Write summarized data to the output file (GALAPAGOS format)
   elif (outputFormat == Constant.O_GALAPAGOS):
     header = "simulator_time" + outputSeparator + "infection_state" + outputSeparator + "control_measure_status" + outputSeparator + "count" + "\n"
     
@@ -309,9 +312,9 @@ if (args.output):
       f.close()
       
       
-# #
-# # Generate graphical visualization
-# #
+##
+## Generate graphical visualization
+##
 if (args.graphic):
   size = 0
   for vector in num:
@@ -377,7 +380,7 @@ if (args.graphic):
   fig = pyplot.figure()
   gs = gridspec.GridSpec(2, 1)
   
-  # # Plot the number of agents in each state over time
+  ## Plot the number of agents in each state over time
   p1 = fig.add_subplot(gs[0, 0])
   lineS, = p1.plot(x, s, "k")
   lineP, = p1.plot(x, p, "b")
@@ -387,7 +390,7 @@ if (args.graphic):
   pyplot.ylabel('Number')
   p1.legend((lineS, lineP, lineI, lineR), ('S', 'P', 'I', 'R'), title='Legend')
   
-  # # Plot the disease prevalence over time
+  ## Plot the disease prevalence over time
   p2 = fig.add_subplot(gs[1, 0])
   lineI, = p2.plot(x, f, "r")
   pyplot.xlabel('Time')

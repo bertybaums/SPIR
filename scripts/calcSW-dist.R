@@ -2,7 +2,7 @@
 ## Calculate a distribution of Switch Points
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 12/28/2016
+## Last Change.: 02/15/2017
 ##
 library(doParallel)
 library(data.table)
@@ -46,7 +46,7 @@ payoffs <- c(1.00, 0, 0, 0)
 h <- as.integer(rgamma(N, shape=3, scale=15))
 rho <- runif(N, 0.00, 0.50)
 k <- rnorm(N, 1.00, 0.02)
-payoff.P <- runif(N, 0.80, 1.00)
+payoff.P <- runif(N, 0.90, 1.00)
 payoff.I <- runif(N, 0.00, 0.20)
 payoff.R <- runif(N, 0.90, 1.00)
 
@@ -62,11 +62,11 @@ if(combID == 2){
 } else if((combID >= 3) & (combID <= 29)){
   ## payoff.P
   if((combID >= 3) & (combID <= 11)){
-    payoff.P <- rep(0.80, N)
-  } else if((combID >= 12) & (combID <= 20)){
     payoff.P <- rep(0.90, N)
-  } else if((combID >= 21) & (combID <= 29)){
+  } else if((combID >= 12) & (combID <= 20)){
     payoff.P <- rep(0.95, N)
+  } else if((combID >= 21) & (combID <= 29)){
+    payoff.P <- rep(0.99, N)
   }
   
   ## payoff.I

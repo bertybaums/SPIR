@@ -9,16 +9,16 @@
             <num.agents.P>0</num.agents.P>
             
             <!-- Initial number of agents in State Infectious -->
-            <num.agents.I>1</num.agents.I>
+            <num.agents.I>2</num.agents.I>
             
             <!-- Initial number of agents in State Recovered -->
             <num.agents.R>0</num.agents.R>
             
             <!--  Payoffs -->
             <payoff.S value="float">1.00</payoff.S>
-            <payoff.P value="runif">0.0,1.00</payoff.P>
-            <payoff.I value="runif">0.00,1.00</payoff.I>
-            <payoff.R value="runif">0.00,1.00</payoff.R>
+            <payoff.P value="runif">0.90,1.00</payoff.P>
+            <payoff.I value="runif">0.00,0.20</payoff.I>
+            <payoff.R value="runif">0.90,1.00</payoff.R>
             
             <!-- 1 - Prophylactic protection -->
             <rho value="runif">0.00,1.00</rho>
@@ -48,7 +48,7 @@
         <method>3</method>
         
         <!-- Number of replications -->
-        <replications>2</replications>
+        <replications>10</replications>
         
         <!-- Length of the simulation -->
         <time.steps>200</time.steps>
