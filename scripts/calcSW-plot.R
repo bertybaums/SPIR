@@ -6,6 +6,9 @@ baseDir <- "/data/workspace/cmci/SPIR"
 inputDir <- paste0(baseDir, "/data/raw/dist")
 outputDir <- paste0(baseDir, "/data/figures/dist")
 
+WIDTH <- 8
+HEIGHT <- 5
+
 THEME <- theme(axis.title.x = element_text(color = 'black', size = 16, face = 'bold',
         margin=margin(t=0.2, unit = "cm")),
     axis.title.y = element_text(color = 'black', size = 16, face = 'bold',
@@ -26,7 +29,7 @@ THEME <- theme(axis.title.x = element_text(color = 'black', size = 16, face = 'b
 data1 <- fread(paste0(inputDir, "/calcSW-1.csv"), header=TRUE, sep=";")
 data2 <- fread(paste0(inputDir, "/calcSW-2.csv"), header=TRUE, sep=";")
 
-ggplot() +
+pl <- ggplot() +
     xlim(0, 1) +
     xlab("Switching Point") +
     ylab("") +
@@ -35,6 +38,8 @@ ggplot() +
     geom_histogram(data=data2, aes(x=i, y=..count.. / 100000), binwidth=0.05,
         fill="blue", alpha=0.2, position="identity") +
     THEME
+ggsave(paste0(outputDir, "/dist-random-static.png"),
+    pl, width=WIDTH, height=HEIGHT)
 
 
 data1 <- fread(paste0(inputDir, "/calcSW-3.csv"), header=TRUE, sep=";")
@@ -47,7 +52,7 @@ data7 <- fread(paste0(inputDir, "/calcSW-9.csv"), header=TRUE, sep=";")
 data8 <- fread(paste0(inputDir, "/calcSW-10.csv"), header=TRUE, sep=";")
 data9 <- fread(paste0(inputDir, "/calcSW-11.csv"), header=TRUE, sep=";")
 
-ggplot() +
+pl <- ggplot() +
     xlim(0, 1) +
     ylim(0, 1) +
     xlab("Switching Point") +
@@ -71,6 +76,8 @@ ggplot() +
     geom_histogram(data=data9, aes(x=i, y=..count.. / 100000), binwidth=0.05,
         fill="grey", alpha=0.6, position="identity") +
     THEME
+ggsave(paste0(outputDir, "/dist-payoffP090.png"),
+    pl, width=WIDTH, height=HEIGHT)
 
 
 data1 <- fread(paste0(inputDir, "/calcSW-12.csv"), header=TRUE, sep=";")
@@ -83,7 +90,7 @@ data7 <- fread(paste0(inputDir, "/calcSW-18.csv"), header=TRUE, sep=";")
 data8 <- fread(paste0(inputDir, "/calcSW-19.csv"), header=TRUE, sep=";")
 data9 <- fread(paste0(inputDir, "/calcSW-20.csv"), header=TRUE, sep=";")
 
-ggplot() +
+pl <- ggplot() +
     xlim(0, 1) +
     ylim(0, 1) +
     xlab("Switching Point") +
@@ -107,6 +114,8 @@ ggplot() +
     geom_histogram(data=data9, aes(x=i, y=..count.. / 100000),
         binwidth=0.05, fill="grey", alpha=0.6, position="identity") +
     THEME
+ggsave(paste0(outputDir, "/dist-payoffP095.png"),
+    pl, width=WIDTH, height=HEIGHT)
 
 
 data1 <- fread(paste0(inputDir, "/calcSW-21.csv"), header=TRUE, sep=";")
@@ -119,7 +128,7 @@ data7 <- fread(paste0(inputDir, "/calcSW-27.csv"), header=TRUE, sep=";")
 data8 <- fread(paste0(inputDir, "/calcSW-28.csv"), header=TRUE, sep=";")
 data9 <- fread(paste0(inputDir, "/calcSW-29.csv"), header=TRUE, sep=";")
 
-ggplot() +
+pl <- ggplot() +
     xlim(0, 1) +
     ylim(0, 1) +
     xlab("Switching Point") +
@@ -143,6 +152,8 @@ ggplot() +
     geom_histogram(data=data9, aes(x=i, y=..count.. / 100000),
         binwidth=0.05, fill="grey", alpha=0.6, position="identity") +
     THEME
+ggsave(paste0(outputDir, "/dist-payoffP099.png"),
+    pl, width=WIDTH, height=HEIGHT)
 
 
 data1 <- fread(paste0(inputDir, "/calcSW-30.csv"), header=TRUE, sep=";")
@@ -151,7 +162,7 @@ data3 <- fread(paste0(inputDir, "/calcSW-32.csv"), header=TRUE, sep=";")
 data4 <- fread(paste0(inputDir, "/calcSW-33.csv"), header=TRUE, sep=";")
 data5 <- fread(paste0(inputDir, "/calcSW-34.csv"), header=TRUE, sep=";")
 
-ggplot() +
+pl <- ggplot() +
     xlim(0, 1) +
     ylim(0, 1) +
     xlab("Switching Point") +
@@ -167,6 +178,8 @@ ggplot() +
     geom_histogram(data=data5, aes(x=i, y=..count.. / 100000),
         binwidth=0.05, fill="green", alpha=0.5, position="identity") +
     THEME
+ggsave(paste0(outputDir, "/dist-rho.png"),
+    pl, width=WIDTH, height=HEIGHT)
 
 
 data1 <- fread(paste0(inputDir, "/calcSW-35.csv"), header=TRUE, sep=";")
@@ -175,7 +188,7 @@ data3 <- fread(paste0(inputDir, "/calcSW-37.csv"), header=TRUE, sep=";")
 data4 <- fread(paste0(inputDir, "/calcSW-38.csv"), header=TRUE, sep=";")
 data5 <- fread(paste0(inputDir, "/calcSW-39.csv"), header=TRUE, sep=";")
 
-ggplot() +
+pl <- ggplot() +
     xlim(0, 1) +
     ylim(0, 1) +
     xlab("Switching Point") +
@@ -191,6 +204,8 @@ ggplot() +
     geom_histogram(data=data5, aes(x=i, y=..count.. / 100000),
         binwidth=0.05, fill="green", alpha=0.5, position="identity") +
     THEME
+ggsave(paste0(outputDir, "/dist-kappa.png"),
+    pl, width=WIDTH, height=HEIGHT)
 
 
 data1 <- fread(paste0(inputDir, "/calcSW-40.csv"), header=TRUE, sep=";")
@@ -200,7 +215,7 @@ data4 <- fread(paste0(inputDir, "/calcSW-43.csv"), header=TRUE, sep=";")
 data5 <- fread(paste0(inputDir, "/calcSW-44.csv"), header=TRUE, sep=";")
 data6 <- fread(paste0(inputDir, "/calcSW-45.csv"), header=TRUE, sep=";")
 
-ggplot() +
+pl <- ggplot() +
     xlim(0, 1) +
     ylim(0, 1) +
     xlab("Switching Point") +
@@ -218,3 +233,5 @@ ggplot() +
     geom_histogram(data=data6, aes(x=i, y=..count.. / 100000),
         binwidth=0.05, fill="purple", alpha=0.6, position="identity") +
     THEME
+ggsave(paste0(outputDir, "/dist-h.png"),
+    pl, width=WIDTH, height=HEIGHT)

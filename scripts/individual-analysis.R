@@ -2,24 +2,33 @@
 ## Summarizes heterogeneous simulation results
 ##
 ## Author......: Luis Gustavo Nardin
-## Last Change.: 02/16/2017
+## Last Change.: 02/17/2017
 ##
 library(data.table)
 library(ggplot2)
 
 baseDir <- "/data/downloads/garbage/spir"
 inputDir <- paste0(baseDir, "/raw/hete")
-outputDir <- paste0(baseDir, "/output")
+outputDir <- paste0(baseDir, "/output/summary")
 
 ## Combination of parameters
 nComb <- 48
 
 ## 1 - Time to get infected
-## 2 - Time to adopt prophylactic behavior
-## 3 - Frequency of prophylactic behavior adoption
-## 4 - Proportion of infected + recovered
-## 5 - Accumulated payoff
-type <- 5
+## 2 - Number of agents that get infected
+## 3 - Proportion of infected + recovered
+## 4 - Time to adopt prophylactic behavior
+## 5 - Number that adopted prophylactic behavior
+## 6 - Proportion of prophylactic behavior adoption
+## 7 - Accumulated payoff
+types <- 7
+TIME_INFECTED <- 1
+NUM_INFECTED <- 2
+PROP_INFECTED <- 3
+TIME_ADOPTED <- 4
+NUM_ADOPTED <- 5
+PROP_ADOPTED <- 6
+ACC_PAYOFF <- 7
 
 ## Switching point range
 swRange <- list(c(0, 0.01), c(0.01, 0.02), c(0.02, 0.03), c(0.03, 0.04),
@@ -29,13 +38,16 @@ swRange <- list(c(0, 0.01), c(0.01, 0.02), c(0.02, 0.03), c(0.03, 0.04),
     c(0.19, 0.20), c(0.20, 1.00))
 
 ## Output data
-outputM <- array(0, dim=c(nComb, type, length(swRange)))
-outputD <- array(0, dim=c(nComb, type, length(swRange)))
-outputS <- array(0, dim=c(nComb, type, length(swRange)))
+outputM <- array(0, dim=c(nComb, types, length(swRange)))
+outputD <- array(0, dim=c(nComb, types, length(swRange)))
+outputS <- array(0, dim=c(nComb, types, length(swRange)))
 
-outputQM <- array(0, dim=c(nComb, type, 4))
-outputQD <- array(0, dim=c(nComb, type, 4))
-outputQS <- array(0, dim=c(nComb, type, 4))
+outputQM <- array(0, dim=c(nComb, types, 4))
+outputQD <- array(0, dim=c(nComb, types, 4))
+outputQS <- array(0, dim=c(nComb, types, 4))
+
+outputQ <- array(0, dim=c(nComb, length(swRange)))
+outputQQ <- array(0, dim=c(nComb, 4))
 
 for(j in 1:nComb){
   dataI <- fread(paste0(inputDir, "/output-", j, "-init.csv"))
@@ -50,15 +62,29 @@ for(j in 1:nComb){
   qtRange[[3]] <- c(as.numeric(qt[3]), as.numeric(qt[4]))
   qtRange[[4]] <- c(as.numeric(qt[4]), 1)
   
+  ## Total number of agents
+  for(i in 1:length(swRange)){
+    aux <- nrow(dataI[which((switchPoint > swRange[[i]][1]) &
+                    (switchPoint <= swRange[[i]][2])),])
+    outputQ[j, i] <- ifelse(is.null(aux), 0, aux)
+  }
+  
+  for(i in 1:length(qtRange)){
+    aux <- nrow(dataI[which((switchPoint > qtRange[[i]][1]) &
+                    (switchPoint <= qtRange[[i]][2])),])
+    outputQQ[j, i] <- ifelse(is.null(aux), 0, aux)
+  }
+  
   dataR <- fread(paste0(inputDir, "/output-", j, "-raw.csv"))
   setkey(dataR, replication, id)
   
   replications <- length(unique(dataR$replication))
-  
-  ## Time to become infected
+    
+  ## 1 - Time to get infected
+  ## 2 - Number of agents that get infected
+  ## 3 - Proportion of infected + recovered
   timeI <- dataR[which(state == 2),
-      list(time=ifelse(!is.infinite(min(time)),
-              min(time, na.rm = TRUE), NA)), by=list(replication, id)]
+      list(time=min(time, na.rm = TRUE)), by=list(replication, id)]
   timeI <- timeI[,list(time=mean(time, na.rm=TRUE)), by=id]
   setkey(timeI, id)
   
@@ -66,23 +92,36 @@ for(j in 1:nComb){
   for(i in 1:length(swRange)){
     aux <- data[which((switchPoint > swRange[[i]][1]) &
                 (switchPoint <= swRange[[i]][2])),]$time
-    outputM[j, 1, i] <- mean(aux, na.rm=TRUE)
-    outputD[j, 1, i] <- median(aux, na.rm=TRUE)
-    outputS[j, 1, i] <- sd(aux, na.rm=TRUE)
+    outputM[j, TIME_INFECTED, i] <- mean(aux, na.rm=TRUE)
+    outputD[j, TIME_INFECTED, i] <- median(aux, na.rm=TRUE)
+    outputS[j, TIME_INFECTED, i] <- sd(aux, na.rm=TRUE)
+    
+    num <- length(aux[!is.na(aux)])
+    outputM[j, NUM_INFECTED, i] <- num
+    
+    prop <- num / length(aux)
+    outputM[j, PROP_INFECTED, i] <- prop
   }
   
   for(i in 1:length(qtRange)){
     aux <- data[which((switchPoint > qtRange[[i]][1]) &
                 (switchPoint <= qtRange[[i]][2])),]$time
-    outputQM[j, 1, i] <- mean(aux, na.rm=TRUE)
-    outputQD[j, 1, i] <- median(aux, na.rm=TRUE)
-    outputQS[j, 1, i] <- sd(aux, na.rm=TRUE)
+    outputQM[j, TIME_INFECTED, i] <- mean(aux, na.rm=TRUE)
+    outputQD[j, TIME_INFECTED, i] <- median(aux, na.rm=TRUE)
+    outputQS[j, TIME_INFECTED, i] <- sd(aux, na.rm=TRUE)
+    
+    num <- length(aux[!is.na(aux)])
+    outputQM[j, NUM_INFECTED, i] <- num
+    
+    prop <- num / length(aux)
+    outputQM[j, PROP_INFECTED, i] <- prop
   }
   
-  ## Time to adopt prophylactic behavior
+  ## 4 - Time to adopt prophylactic behavior
+  ## 5 - Number that adopted prophylactic behavior
+  ## 6 - Proportion of prophylactic behavior adoption
   timeP <- dataR[which(state == 1),
-      list(time=ifelse(!is.infinite(min(time)),
-              min(time, na.rm = TRUE), NA)), by=list(replication, id)]
+      list(time=min(time, na.rm = TRUE)), by=list(replication, id)]
   timeP <- timeP[,list(time=mean(time, na.rm=TRUE)), by=id]
   setkey(timeP, id)
   
@@ -90,102 +129,29 @@ for(j in 1:nComb){
   for(i in 1:length(swRange)){
     aux <- data[which((switchPoint > swRange[[i]][1]) &
                 (switchPoint <= swRange[[i]][2])),]$time
-    outputM[j, 2, i] <- mean(aux, na.rm=TRUE)
-    outputD[j, 2, i] <- median(aux, na.rm=TRUE)
-    outputS[j, 2, i] <- sd(aux, na.rm=TRUE)
+    outputM[j, TIME_ADOPTED, i] <- mean(aux, na.rm=TRUE)
+    outputD[j, TIME_ADOPTED, i] <- median(aux, na.rm=TRUE)
+    outputS[j, TIME_ADOPTED, i] <- sd(aux, na.rm=TRUE)
+    
+    num <- length(aux[!is.na(aux)])
+    outputM[j, NUM_ADOPTED, i] <- num
+    
+    prop <- num / length(aux)
+    outputM[j, PROP_ADOPTED, i] <- prop
   }
   
   for(i in 1:length(qtRange)){
     aux <- data[which((switchPoint > qtRange[[i]][1]) &
                 (switchPoint <= qtRange[[i]][2])),]$time
-    outputQM[j, 2, i] <- mean(aux, na.rm=TRUE)
-    outputQD[j, 2, i] <- median(aux, na.rm=TRUE)
-    outputQS[j, 2, i] <- sd(aux, na.rm=TRUE)
-  }
-  
-  ## Proportion of prophylactic behavior adopters
-  freqP <- dataR[which(state == 1), list(num=ifelse(.N > 0, 1, 0)),
-      by=list(replication, id)]
-  freqP <- freqP[,list(num=sum(num, na.rm=TRUE) / replications), by=id]
-  setkey(freqP, id)
-  
-  data <- merge(dataI, freqP, all.x=TRUE)
-  data[which(is.na(data$num)),]$num <- 0
-  for(i in 1:length(swRange)){
-    aux <- data[which((switchPoint > swRange[[i]][1]) &
-                (switchPoint <= swRange[[i]][2])),]$num
-    outputM[j, 3, i] <- mean(aux, na.rm=TRUE)
-    outputD[j, 3, i] <- median(aux, na.rm=TRUE)
-    outputS[j, 3, i] <- sd(aux, na.rm=TRUE)
-  }
-  
-  for(i in 1:length(qtRange)){
-    aux <- data[which((switchPoint > qtRange[[i]][1]) &
-                (switchPoint <= qtRange[[i]][2])),]$num
-    outputQM[j, 3, i] <- mean(aux, na.rm=TRUE)
-    outputQD[j, 3, i] <- median(aux, na.rm=TRUE)
-    outputQS[j, 3, i] <- sd(aux, na.rm=TRUE)
-  }
-  
-  ## Proportion of infected + recovered
-  s <- dataR[, list(num=nrow(.SD[which(state == 0 & time == max(time)),])),
-      by=list(replication, id)]
-  s <- s[,list(num=sum(num, na.rm=TRUE) / replications), by=id]
-  setkey(s, id)
-  data <- merge(dataI, s, all.x=TRUE)
-  names(data) <- c(names(data)[-length(names(data))], "S")
-  
-  p <- dataR[, list(num=nrow(.SD[which(state == 1 & time == max(time)),])),
-      by=list(replication, id)]
-  p <- p[,list(num=sum(num, na.rm=TRUE) / replications), by=id]
-  setkey(p, id)
-  data <- merge(data, p, all.x=TRUE)
-  names(data) <- c(names(data)[-length(names(data))], "P")
-  
-  i <- dataR[, list(num=nrow(.SD[which(state == 2 & time == max(time)),])),
-      by=list(replication, id)]
-  i <- i[,list(num=sum(num) / replications), by=id]
-  setkey(i, id)
-  data <- merge(data, i, all.x=TRUE)
-  names(data) <- c(names(data)[-length(names(data))], "I")
-  
-  r <- dataR[, list(num=nrow(.SD[which(state == 3 & time == max(time)),])),
-      by=list(replication, id)]
-  r <- r[,list(num=sum(num) / replications), by=id]
-  setkey(r, id)
-  data <- merge(data, r, all.x=TRUE)
-  names(data) <- c(names(data)[-length(names(data))], "R")
-  
-  for(i in 1:length(swRange)){
-    aux <- data[which((switchPoint > swRange[[i]][1]) &
-                (switchPoint <= swRange[[i]][2])),]
+    outputQM[j, TIME_ADOPTED, i] <- mean(aux, na.rm=TRUE)
+    outputQD[j, TIME_ADOPTED, i] <- median(aux, na.rm=TRUE)
+    outputQS[j, TIME_ADOPTED, i] <- sd(aux, na.rm=TRUE)
     
-    aux$S[is.na(aux$S)] <- 0
-    aux$P[is.na(aux$P)] <- 0
-    aux$I[is.na(aux$I)] <- 0
-    aux$R[is.na(aux$R)] <- 0
+    num <- length(aux[!is.na(aux)])
+    outputQM[j, NUM_ADOPTED, i] <- num
     
-    calc <- sum(aux$I, aux$R) / sum(aux$S, aux$P, aux$I, aux$R)
-    
-    outputM[j, 4, i] <- mean(calc, na.rm=TRUE)
-    outputD[j, 4, i] <- median(calc, na.rm=TRUE)
-    outputS[j, 4, i] <- sd(calc, na.rm=TRUE)
-  }
-  
-  for(i in 1:length(qtRange)){
-    aux <- data[which((switchPoint > qtRange[[i]][1]) &
-                (switchPoint <= qtRange[[i]][2])),]
-    
-    aux$S[is.na(aux$S)] <- 0
-    aux$P[is.na(aux$P)] <- 0
-    aux$I[is.na(aux$I)] <- 0
-    aux$R[is.na(aux$R)] <- 0
-    
-    calc <- sum(aux$I, aux$R) / sum(aux$S, aux$P, aux$I, aux$R)
-    
-    outputQM[j, 4, i] <- mean(calc, na.rm=TRUE)
-    outputQD[j, 4, i] <- median(calc, na.rm=TRUE)
-    outputQS[j, 4, i] <- sd(calc, na.rm=TRUE)
+    prop <- num / length(aux)
+    outputQM[j, PROP_ADOPTED, i] <- prop
   }
   
   ## Accumulated payoff
@@ -222,12 +188,12 @@ for(j in 1:nComb){
     aux$numI[is.na(aux$numI)] <- 0
     aux$numR[is.na(aux$numR)] <- 0
     
-    calc <- (aux$numS * aux$payoffS) + (aux$numP * aux$payoffP) + 
+    calc <- (aux$numS * aux$payoffS) + (aux$numP * aux$payoffP) +
         (aux$numI * aux$payoffI) + (aux$numR * aux$payoffR)
     
-    outputM[j, 5, i] <- mean(calc, na.rm=TRUE)
-    outputD[j, 5, i] <- median(calc, na.rm=TRUE)
-    outputS[j, 5, i] <- sd(calc, na.rm=TRUE)
+    outputM[j, ACC_PAYOFF, i] <- mean(calc, na.rm=TRUE)
+    outputD[j, ACC_PAYOFF, i] <- median(calc, na.rm=TRUE)
+    outputS[j, ACC_PAYOFF, i] <- sd(calc, na.rm=TRUE)
   }
   
   for(i in 1:length(qtRange)){
@@ -239,27 +205,67 @@ for(j in 1:nComb){
     aux$numI[is.na(aux$numI)] <- 0
     aux$numR[is.na(aux$numR)] <- 0
     
-    calc <- (aux$numS * aux$payoffS) + (aux$numP * aux$payoffP) + 
+    calc <- (aux$numS * aux$payoffS) + (aux$numP * aux$payoffP) +
         (aux$numI * aux$payoffI) + (aux$numR * aux$payoffR)
     
-    outputQM[j, 5, i] <- mean(calc, na.rm=TRUE)
-    outputQD[j, 5, i] <- median(calc, na.rm=TRUE)
-    outputQS[j, 5, i] <- sd(calc, na.rm=TRUE)
+    outputQM[j, ACC_PAYOFF, i] <- mean(calc, na.rm=TRUE)
+    outputQD[j, ACC_PAYOFF, i] <- median(calc, na.rm=TRUE)
+    outputQS[j, ACC_PAYOFF, i] <- sd(calc, na.rm=TRUE)
   }
 }
 
+## Variable
+## 0 - Mean
+## 1 - Median
+## 2 - Standard Deviation
+## 3 - Quantity
+
 data <- NULL
 for(j in 1:nComb){
-  for(t in 1:type){
+  for(l in 1:length(swRange)){
+    data <- rbind(data, cbind(j, l, 3, outputQ[j, l]))
+  }
+}
+
+data <- data.table(data)
+names(data) <- c("comb", "range", "var", "value")
+
+write.table(data, file=paste0(outputDir,"/num-sw.csv"),
+    append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
+
+
+data <- NULL
+for(j in 1:nComb){
+  for(l in 1:length(qtRange)){
+    data <- rbind(data, cbind(j, l, 3, outputQQ[j, l]))
+  }
+}
+
+data <- data.table(data)
+names(data) <- c("comb", "range", "var", "value")
+
+write.table(data, file=paste0(outputDir,"/num-qt.csv"),
+    append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
+
+
+data <- NULL
+for(j in 1:nComb){
+  for(t in 1:types){
     for(l in 1:length(swRange)){
-      data <- rbind(data, cbind(j, t, l, outputM[j, t, l], outputD[j, t, l],
-              outputS[j, t, l]))
+      if((t == TIME_INFECTED) | (t == TIME_ADOPTED) | t == ACC_PAYOFF){
+        data <- rbind(data, cbind(j, t, l, 0, outputM[j, t, l]))
+        data <- rbind(data, cbind(j, t, l, 1, outputD[j, t, l]))
+        data <- rbind(data, cbind(j, t, l, 2, outputS[j, t, l]))
+      } else if((t == NUM_INFECTED) | (t == PROP_INFECTED) |
+          (t == NUM_ADOPTED) | (t == PROP_ADOPTED)){
+        data <- rbind(data, cbind(j, t, l, 3, outputM[j, t, l]))
+      }
     }
   }
 }
 
 data <- data.table(data)
-names(data) <- c("comb", "type", "range", "meanValue", "medianValue", "sdValue")
+names(data) <- c("comb", "type", "range", "var", "value")
 
 write.table(data, file=paste0(outputDir,"/individual-sw.csv"),
     append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
@@ -267,16 +273,22 @@ write.table(data, file=paste0(outputDir,"/individual-sw.csv"),
 
 data <- NULL
 for(j in 1:nComb){
-  for(t in 1:type){
+  for(t in 1:types){
     for(l in 1:length(qtRange)){
-      data <- rbind(data, cbind(j, t, l, outputQM[j, t, l], outputQD[j, t, l],
-              outputQS[j, t, l]))
+      if((t == TIME_INFECTED) | (t == TIME_ADOPTED) | t == ACC_PAYOFF){
+        data <- rbind(data, cbind(j, t, l, 0, outputQM[j, t, l]))
+        data <- rbind(data, cbind(j, t, l, 1, outputQD[j, t, l]))
+        data <- rbind(data, cbind(j, t, l, 2, outputQS[j, t, l]))
+      } else if((t == NUM_INFECTED) | (t == PROP_INFECTED) |
+          (t == NUM_ADOPTED) | (t == PROP_ADOPTED)){
+        data <- rbind(data, cbind(j, t, l, 3, outputQM[j, t, l]))
+      }
     }
   }
 }
 
 data <- data.table(data)
-names(data) <- c("comb", "type", "range", "meanValue", "medianValue", "sdValue")
+names(data) <- c("comb", "type", "range", "var", "value")
 
 write.table(data, file=paste0(outputDir,"/individual-qt.csv"),
     append=FALSE, quote=FALSE, sep=";", row.names=FALSE, col.names=TRUE)
