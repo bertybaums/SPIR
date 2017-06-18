@@ -3,13 +3,13 @@
     <profiles>
         <profile>
             <!-- Initial number of agents in State Susceptible -->
-            <num.agents.S>9</num.agents.S>
+            <num.agents.S>990</num.agents.S>
             
             <!-- Initial number of agents in State Prophylactic -->
             <num.agents.P>0</num.agents.P>
             
             <!-- Initial number of agents in State Infectious -->
-            <num.agents.I>2</num.agents.I>
+            <num.agents.I>10</num.agents.I>
             
             <!-- Initial number of agents in State Recovered -->
             <num.agents.R>0</num.agents.R>
@@ -21,16 +21,16 @@
             <payoff.R value="runif">0.90,1.00</payoff.R>
             
             <!-- 1 - Prophylactic protection -->
-            <rho value="runif">0.00,1.00</rho>
+            <rho value="runif">0.00,0.50</rho>
             
             <!-- Fear -->
-            <kappa value="rnorm">1.00,1.0</kappa>
+            <kappa value="rnorm">1.00,0.02</kappa>
             
             <!-- Decision frequency -->
-            <decision.frequency value="runif">0.00,0.1</decision.frequency>
+            <decision.frequency value="runif">0.00,0.04</decision.frequency>
             
             <!-- Planning Horizon -->
-            <planning.horizon value="rgamma">5,15</planning.horizon>
+            <planning.horizon value="rgamma">3,15</planning.horizon>
         </profile>
     </profiles>
     
@@ -40,6 +40,14 @@
     </disease>
     
     <simulation>
+        <!-- Network type -->
+        <!-- complete -->
+        <!-- random [probability] -->
+        <!-- smallworld [neighbors] [probability] -->
+        <!-- scalefree [neighbors] -->
+        <!-- NOTE: Replace [probability] and [neighbors] by a value -->
+        <networkType>complete</networkType>
+        
         <!-- Simulation Methods -->
         <!-- 0 Microsimulation -->
         <!-- 1 Gillespie -->
@@ -51,7 +59,7 @@
         <replications>10</replications>
         
         <!-- Length of the simulation -->
-        <time.steps>200</time.steps>
+        <time.steps>1000</time.steps>
     </simulation>
     
     <output>
@@ -67,7 +75,7 @@
         <output.path>/home/gnardin</output.path>
         
         <!-- Output filename -->
-        <output.filename>output</output.filename>
+        <output.filename>output-complete</output.filename>
         
         <!-- Output header -->
         <output.header>True</output.header>

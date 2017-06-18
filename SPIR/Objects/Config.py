@@ -76,6 +76,16 @@ class Config(object):
     return self.gamma
   
   ##
+  ## Description: Get network type
+  ##
+  ## @param  None
+  ##
+  ## @return  Network type
+  ##
+  def getNetworkType(self):
+    return self.networkType
+  
+  ##
   ## Description: Get simulation method
   ##
   ## @param  None
@@ -222,7 +232,9 @@ class Config(object):
         ## SIMULATION parameters
         elif e1.tag == Constant.SIMULATION:
           for e2 in e1:
-            if e2.tag == Constant.METHOD:
+            if e2.tag == Constant.NETWORK_TYPE:
+              self.networkType = e2.text
+            elif e2.tag == Constant.METHOD:
               self.method = int(e2.text)
             elif e2.tag == Constant.REPLICATIONS:
               self.replications = int(e2.text)

@@ -114,6 +114,7 @@ if (args.__contains__(Constant.FILE)):
   beta = config.getBeta()
   gamma = config.getGamma()
   
+  networkType = config.getNetworkType()
   method = config.getMethod()
   replications = config.getReplications()
   timesteps = config.getTimesteps()
@@ -143,6 +144,7 @@ if (args.__contains__(Constant.FILE)):
     decision = profile.getDecision()
     planningHorizon = profile.getPlanningHorizon()
     
+    networkType = config.getNetworkType()
     method = config.getMethod()
     replications = config.getReplications()
     timesteps = config.getTimesteps()
@@ -200,12 +202,14 @@ for rep in range(replications):
   elif method == Constant.METHOD_EFFICIENT_TAU_LEAP:
     m = EfficientTauLeapMethod(nAgents, payoffs, beta, gamma, rho, fear, decision, planningHorizon, timesteps)
   elif method == Constant.METHOD_HETEROGENEOUS_MICRO:
-    m = NewMicroMethod(rep, profiles, beta, gamma, timesteps, outputPath + "/" + outputFilename, outputSeparator)
+    m = NewMicroMethod(rep, networkType, profiles, beta, gamma, timesteps, outputPath + "/" + outputFilename, outputSeparator)
     
     if(rep == 0):
+      #network = deepcopy(m.getNetwork())
       agents = deepcopy(m.getAgents())
       N = len(agents)
     else:
+      #m.setNetwork(deepcopy(network))
       m.setAgents(deepcopy(agents))
       
   ## Execute the simulation

@@ -25,6 +25,7 @@ class Constant():
   GAMMA = "gamma"
   
   SIMULATION = "simulation"
+  NETWORK_TYPE = "networkType"
   METHOD = "method"
   REPLICATIONS = "replications"
   TIME_STEPS = "time.steps"
@@ -68,6 +69,12 @@ class Constant():
   METHOD_GILLESPIE = 1
   METHOD_EFFICIENT_TAU_LEAP = 2
   METHOD_HETEROGENEOUS_MICRO = 3
+  
+  ## Network types
+  NET_COMPLETE = "complete"
+  NET_RANDOM = "random"
+  NET_SMALLWORLD = "smallworld"
+  NET_SCALEFREE = "scalefree"
   
   ## Output format
   O_STANDARD = 0

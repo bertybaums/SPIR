@@ -1,8 +1,10 @@
 ## Python library
 from numpy import random
+import networkx as nx
 
 ## Load our classes
 from State import State
+from Constants import Constant
 
 class Util(object):
   ##
@@ -85,8 +87,8 @@ class Util(object):
   ##
   ## Description: Generate value
   ##
-  ## @param attribute  Format of the content
-  ## @param value      Content of the parameter field
+  ## @param value    Format of the content
+  ## @param content  Content of the parameter field
   ##
   ## @return Extracted value
   ##
@@ -111,4 +113,38 @@ class Util(object):
       return random.gamma(float(values[0]), float(values[1]))
       
     return None
+  
+  ##
+  ## Description: Create a network
+  ##
+  ## @param num_agents  Number of agents
+  ## @param type        Type of the network (Complete, Random, SmallWorld,
+  ##                    Scalefree)
+  ##
+  ## @return Network object
+  ##
+  @staticmethod
+  def createNetwork(num_agents, type):
+    
+    param = type.lower().split(' ')
+    
+    if(param[0] == Constant.NET_COMPLETE):
+      network = nx.complete_graph(num_agents)
+    elif(param[0] == Constant.NET_RANDOM):
+      if(len(param) >= 2):
+        p = float(param[1]) ## Probablity
+        network = nx.erdos_renyi_graph(num_agents, p)
+    elif(param[0] == Constant.NET_SMALLWORLD):
+      if(len(param) >= 3):
+        k = int(param[1]) ## Nearest neighbors
+        p = float(param[2]) ## Probability
+        network = nx.connected_watts_strogatz_graph(num_agents, k, p)
+    elif(param[0] == Constant.NET_SCALEFREE):
+      if(len(param) >= 2):
+        k = int(param[1]) ## Neighbors
+        network = nx.barabasi_albert_graph(num_agents, k)
+    else:
+      network = nx.Graph()
+    
+    return network
   

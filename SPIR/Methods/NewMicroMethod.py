@@ -12,12 +12,14 @@ from random import shuffle
 from Objects.Agent import Agent
 from State import State
 from Constants import Constant
+from Utils.Util import Util
 
 class NewMicroMethod(object):
   ##
   ## Description: Constructor method
   ##
   ## @param profiles           Agent profile
+  ## @param networkType        Type of the network
   ## @param beta               Disease beta
   ## @param gamma              Disease gamma
   ## @param timesteps          Number of time steps to simulate
@@ -26,10 +28,9 @@ class NewMicroMethod(object):
   ##
   ## @return None
   ##
-  def __init__(self, replica, profiles, beta, gamma, timesteps, prefixOutputFile, outputSeparator):
-    self.numAgents = 0
-    
+  def __init__(self, replica, networkType, profiles, beta, gamma, timesteps, prefixOutputFile, outputSeparator):
     self.replica = replica
+    self.networkType = networkType
     self.profiles = profiles
     self.beta = 1 - exp(-beta)
     self.gamma = 1 - exp(-gamma)
@@ -38,6 +39,7 @@ class NewMicroMethod(object):
     self.outputSeparator = outputSeparator
     
     if(replica == 0):
+      self.numAgents = 0
       self.nAgents = [0, 0, 0, 0]
       self.agents = []
       
@@ -88,6 +90,8 @@ class NewMicroMethod(object):
           self.numAgents += 1
           
       f.close()
+      
+      self.network = Util.createNetwork(self.numAgents, self.networkType)
     
   ##
   ## Description: Gets the initial agents
@@ -115,6 +119,28 @@ class NewMicroMethod(object):
       self.nAgents[agent.getState()] += 1
       self.numAgents += 1
       
+    self.network = Util.createNetwork(self.numAgents, self.networkType)
+      
+  ##
+  ## Description: Gets the network
+  ##
+  ## @param None
+  ##
+  ## @return Network
+  ##
+  def getNetwork(self):
+    return(self.network)
+    
+  ##
+  ## Description: Set the network
+  ##
+  ## @param network  Agents' network
+  ##
+  ## @return None
+  ##
+  def setNetwork(self, network):
+    self.network = network
+    
   ##
   ## Description: Execute the simulation
   ##
@@ -159,28 +185,30 @@ class NewMicroMethod(object):
       f = open(stateFile, "a")
     
     while ((t < self.timesteps) and (i > 0)):
-      ## Shuffle the vector of agents
-      shuffle(self.agents)
       
-      ## Neighbor agents in the vector interact
-      n = self.numAgents
+      nodes = self.network.nodes()
+      shuffle(nodes)
+      
       infected = []
-      while(n > 1):
-        a1 = self.agents[n - 1]
-        a2 = self.agents[n - 2]
+      while(nodes):
+        node = nodes.pop()
+        a1 = self.agents[node]
         
-        a1State = a1.getState()
-        a2State = a2.getState()
-        
-        if (a1State == State.I):
-          infected.append(a1)
-          a2.interact(a1State)
+        neighbors = self.network.neighbors(node)
+        if(neighbors):
+          neighbor = random.choice(neighbors)
+          a2 = self.agents[neighbor]
           
-        if (a2State == State.I):
-          infected.append(a2)
-          a1.interact(a2State)
-        
-        n = n - 2
+          a1State = a1.getState()
+          a2State = a2.getState()
+          
+          if (a1State == State.I):
+            infected.append(a1)
+            a2.interact(a1State)
+            
+          if (a2State == State.I):
+            infected.append(a2)
+            a1.interact(a2State)
         
       ## Behavioral decision
       for agent in self.agents:
